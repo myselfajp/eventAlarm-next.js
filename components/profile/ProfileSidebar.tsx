@@ -12,6 +12,7 @@ import {
   LogOut,
 } from "lucide-react";
 import ParticipantModal from "./ParticipantModal";
+import CoachModal from "./CoachModal";
 
 interface ProfileSidebarProps {
   onLogout: () => void;
@@ -19,6 +20,7 @@ interface ProfileSidebarProps {
 
 const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ onLogout }) => {
   const [isParticipantModalOpen, setIsParticipantModalOpen] = useState(false);
+  const [isCoachModalOpen, setIsCoachModalOpen] = useState(false);
 
   const handleCreateParticipant = (formData: any) => {
     console.log("Creating participant:", formData);
@@ -34,9 +36,18 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ onLogout }) => {
     setIsParticipantModalOpen(false);
   };
 
-  const handleCoachEdit = () => {
-    console.log("Coach edit clicked");
-    // Add coach edit logic here
+  const handleCreateCoach = (formData: any) => {
+    console.log("Creating coach:", formData);
+    // Here you can add logic to save the coach data
+    // For now, we'll just log it
+  };
+
+  const handleOpenCoachModal = () => {
+    setIsCoachModalOpen(true);
+  };
+
+  const handleCloseCoachModal = () => {
+    setIsCoachModalOpen(false);
   };
 
   const handleFacilityAdd = () => {
@@ -133,10 +144,10 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ onLogout }) => {
             <Users className="w-6 h-6 mx-auto mb-1" />
             <div className="text-xs">Coach</div>
             <button
-              onClick={handleCoachEdit}
+              onClick={handleOpenCoachModal}
               className="bg-cyan-500 text-white text-xs px-3 py-1 rounded mt-2 w-full hover:bg-cyan-600 transition-colors"
             >
-              Edit
+              Add
             </button>
           </div>
           <div className="bg-white/20 rounded-lg p-3 text-center">
@@ -167,6 +178,13 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ onLogout }) => {
         isOpen={isParticipantModalOpen}
         onClose={handleCloseParticipantModal}
         onSubmit={handleCreateParticipant}
+      />
+
+      {/* Coach Modal */}
+      <CoachModal
+        isOpen={isCoachModalOpen}
+        onClose={handleCloseCoachModal}
+        onSubmit={handleCreateCoach}
       />
     </div>
   );
