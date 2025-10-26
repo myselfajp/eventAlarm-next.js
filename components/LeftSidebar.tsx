@@ -15,11 +15,11 @@ const FAKE_USER = {
   password: "password123",
   participant: "p1a2b3c4-5d6e-7f8g-9h0i-1j2k3l4m5n6o",
   coach: null,
-  facilities: [
+  facility: [
     "a3f8c9d2-1e4b-4c7d-9a2f-8b5e3c1d6a4e",
     "b7e2d4f1-3a9c-4e8d-b5f2-9c6a1d8e4b7f",
   ],
-  companies: ["c1d3e5f7-2a4b-4d8e-9f1a-3c5b7d9e1f2a"],
+  company: ["c1d3e5f7-2a4b-4d8e-9f1a-3c5b7d9e1f2a"],
 };
 
 const DUMMY_FACILITIES = [
@@ -132,8 +132,18 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isOpen }) => {
       {isLoggedIn ? (
         <ProfileSidebar
           onLogout={handleLogout}
-          initialFacilities={DUMMY_FACILITIES}
-          initialCompanies={DUMMY_COMPANIES}
+          initialFacilities={
+            FAKE_USER.facility
+              ? DUMMY_FACILITIES.filter((f) =>
+                  FAKE_USER.facility.includes(f.id)
+                )
+              : []
+          }
+          initialCompanies={
+            FAKE_USER.company
+              ? DUMMY_COMPANIES.filter((c) => FAKE_USER.company.includes(c.id))
+              : []
+          }
           hasParticipantProfile={FAKE_USER.participant !== null}
           hasCoachProfile={FAKE_USER.coach !== null}
         />
