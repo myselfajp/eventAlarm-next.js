@@ -146,7 +146,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isOpen }) => {
       ) : (
         <LoginForm
           onToggleForm={toggleForm}
-          onLogin={handleLogin}
+          onLogin={setIsLoggedIn}
           loginError={loginError}
         />
       )}
