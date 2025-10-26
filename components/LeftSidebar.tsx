@@ -13,6 +13,8 @@ interface LeftSidebarProps {
 const FAKE_USER = {
   email: "demo@example.com",
   password: "password123",
+  participant: "p1a2b3c4-5d6e-7f8g-9h0i-1j2k3l4m5n6o",
+  coach: null,
   facilities: [
     "a3f8c9d2-1e4b-4c7d-9a2f-8b5e3c1d6a4e",
     "b7e2d4f1-3a9c-4e8d-b5f2-9c6a1d8e4b7f",
@@ -132,6 +134,8 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isOpen }) => {
           onLogout={handleLogout}
           initialFacilities={DUMMY_FACILITIES}
           initialCompanies={DUMMY_COMPANIES}
+          hasParticipantProfile={FAKE_USER.participant !== null}
+          hasCoachProfile={FAKE_USER.coach !== null}
         />
       ) : showRegistration ? (
         <RegistrationForm
