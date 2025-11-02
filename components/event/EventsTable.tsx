@@ -62,6 +62,8 @@ interface EventsTableProps {
   onSearchChange: (search: string) => void;
   onSortChange: (sortBy: string, sortType: "asc" | "desc") => void;
   onFilterChange: (sportGroup?: string, sport?: string) => void;
+  onPrivateToggle: (isPrivate: boolean) => void;
+  isPrivateFilter: boolean;
 }
 
 const EventsTable: React.FC<EventsTableProps> = ({
@@ -75,6 +77,8 @@ const EventsTable: React.FC<EventsTableProps> = ({
   onSearchChange,
   onSortChange,
   onFilterChange,
+  onPrivateToggle,
+  isPrivateFilter,
 }) => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -430,6 +434,24 @@ const EventsTable: React.FC<EventsTableProps> = ({
                 ))}
               </div>
             )}
+          </div>
+
+          <div className="flex items-center gap-2 ml-auto">
+            <span className="text-sm text-gray-700 font-medium">
+              Private Event
+            </span>
+            <button
+              onClick={() => onPrivateToggle(!isPrivateFilter)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                isPrivateFilter ? "bg-cyan-500" : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  isPrivateFilter ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
           </div>
         </div>
       </div>

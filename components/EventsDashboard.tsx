@@ -33,6 +33,7 @@ const EventsDashboard = () => {
     sortType: "asc" as "asc" | "desc",
     sportGroup: undefined as string | undefined,
     sport: undefined as string | undefined,
+    private: false,
   });
 
   const fetchEvents = useCallback(async () => {
@@ -61,6 +62,8 @@ const EventsDashboard = () => {
       if (filters.sport) {
         payload.sport = filters.sport;
       }
+
+      payload.private = filters.private;
 
       const response = await fetchJSON(EP.EVENTS.getEvents, {
         method: "POST",
@@ -96,6 +99,7 @@ const EventsDashboard = () => {
     filters.sortType,
     filters.sportGroup,
     filters.sport,
+    filters.private,
   ]);
 
   useEffect(() => {
@@ -117,6 +121,11 @@ const EventsDashboard = () => {
 
   const handleFilterChange = (sportGroup?: string, sport?: string) => {
     setFilters((prev) => ({ ...prev, sportGroup, sport }));
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
+  };
+
+  const handlePrivateToggle = (isPrivate: boolean) => {
+    setFilters((prev) => ({ ...prev, private: isPrivate }));
     setPagination((prev) => ({ ...prev, currentPage: 1 }));
   };
 
@@ -171,6 +180,8 @@ const EventsDashboard = () => {
             onSearchChange={handleSearchChange}
             onSortChange={handleSortChange}
             onFilterChange={handleFilterChange}
+            onPrivateToggle={handlePrivateToggle}
+            isPrivateFilter={filters.private}
           />
         </div>
       </div>
