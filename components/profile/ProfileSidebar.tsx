@@ -16,6 +16,8 @@ import {
   Edit,
   Check,
 } from "lucide-react";
+import { useMe } from "@/app/hooks/useAuth";
+import { useQueryClient } from "@tanstack/react-query";
 import ParticipantModal from "./ParticipantModal";
 import CoachModal from "./CoachModal";
 import FacilityModal from "./FacilityModal";
@@ -26,17 +28,18 @@ interface ProfileSidebarProps {
   onLogout: () => void;
   initialFacilities?: any[];
   initialCompanies?: any[];
-  hasParticipantProfile?: boolean;
-  hasCoachProfile?: boolean;
 }
 
 const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   onLogout,
   initialFacilities = [],
   initialCompanies = [],
-  hasParticipantProfile = false,
-  hasCoachProfile = false,
 }) => {
+  const { data: user } = useMe();
+  const queryClient = useQueryClient();
+  const hasParticipantProfile = !!user?.participant;
+  const hasCoachProfile = !!user?.coach;
+
   const [isParticipantModalOpen, setIsParticipantModalOpen] = useState(false);
   const [isCoachModalOpen, setIsCoachModalOpen] = useState(false);
   const [isFacilityModalOpen, setIsFacilityModalOpen] = useState(false);
@@ -49,10 +52,10 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   const [editingCompany, setEditingCompany] = useState<any | null>(null);
   const [isFindModalOpen, setIsFindModalOpen] = useState(false);
 
-  const handleCreateParticipant = (formData: any) => {
-    console.log("Creating participant:", formData);
-    // Here you can add logic to save the participant data
-    // For now, we'll just log it
+  const handleCreateParticipant = async (formData: any) => {
+    console.log("Participant profile saved:", formData);
+    await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+    setIsParticipantModalOpen(false);
   };
 
   const handleOpenParticipantModal = () => {
@@ -180,8 +183,12 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
         <div className="w-20 h-20 sm:w-24 sm:h-24 bg-green-500 rounded-2xl flex items-center justify-center mb-3">
           <div className="text-white text-3xl sm:text-4xl">😊</div>
         </div>
-        <h2 className="font-semibold text-gray-800">bozer surati</h2>
-        <p className="text-sm text-gray-500">Author</p>
+        <h2 className="font-semibold text-gray-800">
+          {user?.firstName && user?.lastName
+            ? `${user.firstName} ${user.lastName}`
+            : "User"}
+        </h2>
+        <p className="text-sm text-gray-500">{user?.email || ""}</p>
       </div>
 
       <div className="flex justify-around mb-6 sm:mb-8 text-center">

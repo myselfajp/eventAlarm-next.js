@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useMe, useSignOut } from "@/app/hooks/useAuth";
 import LoginForm from "./auth/LoginForm";
 import RegistrationForm from "./auth/RegistrationForm";
 import ProfileSidebar from "./profile/ProfileSidebar";
@@ -58,69 +59,19 @@ const DUMMY_COMPANIES = [
 ];
 
 const LeftSidebar: React.FC<LeftSidebarProps> = ({ isOpen }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { data: user, isLoading: userLoading } = useMe();
+  const { mutate: signOut } = useSignOut();
+  const isLoggedIn = !!user;
+
   const [showRegistration, setShowRegistration] = useState(false);
-  const [loginError, setLoginError] = useState("");
-  const [registrationError, setRegistrationError] = useState("");
-
-  const handleLogin = (email: string, password: string) => {
-    setLoginError("");
-
-    if (email === FAKE_USER.email && password === FAKE_USER.password) {
-      setIsLoggedIn(true);
-    } else {
-      setLoginError("Invalid email or password");
-    }
-  };
-
-  const handleRegistration = (formData: any) => {
-    setRegistrationError("");
-
-    // Validation
-    if (
-      !formData.firstName ||
-      !formData.lastName ||
-      !formData.phoneNumber ||
-      !formData.birthday ||
-      !formData.email ||
-      !formData.password ||
-      !formData.confirmPassword
-    ) {
-      setRegistrationError("Please fill in all required fields");
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setRegistrationError("Passwords do not match");
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      setRegistrationError("Password must be at least 8 characters long");
-      return;
-    }
-
-    if (!formData.agreeTerms) {
-      setRegistrationError("Please agree to the terms and conditions");
-      return;
-    }
-
-    // Simulate successful registration
-    setIsLoggedIn(true);
-    setShowRegistration(false);
-  };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
+    signOut();
     setShowRegistration(false);
-    setLoginError("");
-    setRegistrationError("");
   };
 
   const toggleForm = () => {
     setShowRegistration(!showRegistration);
-    setLoginError("");
-    setRegistrationError("");
   };
 
   return (
@@ -144,21 +95,11 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isOpen }) => {
               ? DUMMY_COMPANIES.filter((c) => FAKE_USER.company.includes(c.id))
               : []
           }
-          hasParticipantProfile={FAKE_USER.participant !== null}
-          hasCoachProfile={FAKE_USER.coach !== null}
         />
       ) : showRegistration ? (
-        <RegistrationForm
-          onToggleForm={toggleForm}
-          onRegister={handleRegistration}
-          registrationError={registrationError}
-        />
+        <RegistrationForm onToggleForm={toggleForm} />
       ) : (
-        <LoginForm
-          onToggleForm={toggleForm}
-          onLogin={setIsLoggedIn}
-          loginError={loginError}
-        />
+        <LoginForm onToggleForm={toggleForm} onLogin={() => {}} loginError="" />
       )}
     </div>
   );

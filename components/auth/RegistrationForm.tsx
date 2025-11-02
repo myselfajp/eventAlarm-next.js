@@ -2,11 +2,10 @@
 
 import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { useSignUp } from "@/app/hooks/useAuth";
 
 interface RegistrationFormProps {
   onToggleForm: () => void;
-  onRegister: (formData: RegistrationData) => void;
-  registrationError: string;
 }
 
 interface RegistrationData {
@@ -22,9 +21,8 @@ interface RegistrationData {
 
 const RegistrationForm: React.FC<RegistrationFormProps> = ({
   onToggleForm,
-  onRegister,
-  registrationError,
 }) => {
+  const { mutate: signUp, isPending, error } = useSignUp();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -35,20 +33,37 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const [validationError, setValidationError] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const formData: RegistrationData = {
+    setValidationError("");
+
+    if (!agreeTerms) {
+      setValidationError("Please agree to the terms and conditions");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setValidationError("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 8) {
+      setValidationError("Password must be at least 8 characters long");
+      return;
+    }
+
+    const formData = {
       firstName,
       lastName,
-      phoneNumber,
-      birthday,
+      phone: phoneNumber,
+      age: birthday,
       email,
       password,
-      confirmPassword,
-      agreeTerms,
     };
-    onRegister(formData);
+
+    signUp(formData);
   };
 
   return (
@@ -228,17 +243,20 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
             </label>
           </div>
 
-          {registrationError && (
+          {(validationError || error) && (
             <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-3 py-2 rounded-lg">
-              {registrationError}
+              {validationError ||
+                (error as any)?.message ||
+                "Registration failed"}
             </div>
           )}
 
           <button
             type="submit"
-            className="w-full bg-cyan-500 hover:bg-cyan-600 text-white py-2.5 px-4 rounded-lg transition-colors font-medium shadow-sm hover:shadow-md text-sm"
+            disabled={isPending}
+            className="w-full bg-cyan-500 hover:bg-cyan-600 disabled:opacity-60 disabled:cursor-not-allowed text-white py-2.5 px-4 rounded-lg transition-colors font-medium shadow-sm hover:shadow-md text-sm"
           >
-            Create Account
+            {isPending ? "Creating Account..." : "Create Account"}
           </button>
         </form>
       </div>

@@ -60,8 +60,13 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
   const [showGoalDropdown, setShowGoalDropdown] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [initializing, setInitializing] = useState(false);
   const [error, setError] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
+
+  const [selectedSportGroupName, setSelectedSportGroupName] = useState("");
+  const [selectedSportName, setSelectedSportName] = useState("");
+  const [selectedGoalName, setSelectedGoalName] = useState("");
 
   const skillLevels = [
     { value: 1, label: "Beginner (1-2)", range: [1, 2] },
@@ -95,15 +100,75 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
   }, [showSportGroupDropdown, showSportDropdown, showGoalDropdown]);
 
   const loadData = async () => {
-    setLoading(true);
+    setInitializing(true);
     try {
       if (participantId) {
+        await fetchParticipantData();
         setIsEditMode(true);
       } else {
         resetForm();
       }
     } finally {
-      setLoading(false);
+      setInitializing(false);
+    }
+  };
+
+  const fetchParticipantData = async () => {
+    if (!participantId) return;
+
+    try {
+      const res = await fetchJSON(EP.PARTICIPANT.getDetails(participantId), {
+        method: "GET",
+      });
+
+      if (res.success && res.data) {
+        const participantData = res.data.participant || res.data;
+
+        const mainSportId =
+          typeof participantData.mainSport === "string"
+            ? participantData.mainSport
+            : participantData.mainSport?._id || "";
+
+        const sportGroupId = participantData.mainSport?.group || "";
+
+        const sportGoalId =
+          typeof participantData.sportGoal === "string"
+            ? participantData.sportGoal
+            : participantData.sportGoal?._id || "";
+
+        const skillLevel = participantData.skillLevel || 5;
+
+        const sportGroupName = participantData.mainSport?.groupName || "";
+        const sportName = participantData.mainSport?.name || "";
+        const goalName = participantData.sportGoal?.name || "";
+
+        setSelectedSportGroupName(sportGroupName);
+        setSelectedSportName(sportName);
+        setSelectedGoalName(goalName);
+
+        setFormData({
+          sportGroup: sportGroupId,
+          mainSport: mainSportId,
+          skillLevel: skillLevel,
+          sportGoal: sportGoalId,
+        });
+
+        if (sportGroupId) {
+          await fetchSportsInGroup(sportGroupId);
+        }
+
+        console.log("Loaded participant data with names:", {
+          sportGroup: sportGroupId,
+          sportGroupName: sportGroupName,
+          mainSport: mainSportId,
+          sportName: sportName,
+          skillLevel: skillLevel,
+          sportGoal: sportGoalId,
+          goalName: goalName,
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching participant data:", err);
     }
   };
 
@@ -187,7 +252,8 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
 
   const handleInputChange = (
     field: keyof ParticipantFormData,
-    value: string | number
+    value: string | number,
+    displayName?: string
   ) => {
     setFormData((prev) => {
       const updated = {
@@ -197,6 +263,16 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
 
       if (field === "sportGroup") {
         updated.mainSport = "";
+        setSelectedSportName("");
+        if (displayName) setSelectedSportGroupName(displayName);
+      }
+
+      if (field === "mainSport" && displayName) {
+        setSelectedSportName(displayName);
+      }
+
+      if (field === "sportGoal" && displayName) {
+        setSelectedGoalName(displayName);
       }
 
       return updated;
@@ -257,6 +333,9 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
       sportGoal: "",
     });
     setIsEditMode(false);
+    setSelectedSportGroupName("");
+    setSelectedSportName("");
+    setSelectedGoalName("");
   };
 
   const handleClose = () => {
@@ -266,16 +345,22 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
   };
 
   const getSelectedSportGroupName = () => {
+    if (!formData.sportGroup) return "Select Sport Group";
+    if (selectedSportGroupName) return selectedSportGroupName;
     const group = sportGroups.find((g) => g._id === formData.sportGroup);
     return group ? group.name : "Select Sport Group";
   };
 
   const getSelectedSportName = () => {
+    if (!formData.mainSport) return "Select Sport";
+    if (selectedSportName) return selectedSportName;
     const sport = sports.find((s) => s._id === formData.mainSport);
     return sport ? sport.name : "Select Sport";
   };
 
   const getSelectedGoalName = () => {
+    if (!formData.sportGoal) return "Select Goal";
+    if (selectedGoalName) return selectedGoalName;
     const goal = sportGoals.find((g) => g._id === formData.sportGoal);
     return goal ? goal.name : "Select Goal";
   };
@@ -315,208 +400,233 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
 
         {/* Modal Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Sport Group Dropdown */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sport Group <span className="text-red-500">*</span>
-            </label>
-            <div className="relative dropdown-container">
-              <button
-                type="button"
-                onClick={() =>
-                  setShowSportGroupDropdown(!showSportGroupDropdown)
-                }
-                className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors text-left flex items-center justify-between bg-white"
-                disabled={loading}
-              >
-                <span
-                  className={
-                    formData.sportGroup ? "text-gray-800" : "text-gray-400"
-                  }
-                >
-                  {getSelectedSportGroupName()}
-                </span>
-                <ChevronDown className="w-4 h-4 text-gray-400" />
-              </button>
-
-              {showSportGroupDropdown && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                  {loading ? (
-                    <div className="px-3 py-4 text-sm text-gray-500 text-center">
-                      Loading...
-                    </div>
-                  ) : sportGroups.length > 0 ? (
-                    sportGroups.map((group) => (
-                      <button
-                        key={group._id}
-                        type="button"
-                        onClick={() => {
-                          handleInputChange("sportGroup", group._id);
-                          setShowSportGroupDropdown(false);
-                        }}
-                        className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg"
-                      >
-                        {group.name}
-                      </button>
-                    ))
-                  ) : (
-                    <div className="px-3 py-4 text-sm text-gray-500 text-center">
-                      No sport groups available
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Main Sport Dropdown */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Main Sport <span className="text-red-500">*</span>
-            </label>
-            <div className="relative dropdown-container">
-              <button
-                type="button"
-                onClick={() => {
-                  if (formData.sportGroup) {
-                    setShowSportDropdown(!showSportDropdown);
-                  }
-                }}
-                className={`w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors text-left flex items-center justify-between bg-white ${
-                  !formData.sportGroup ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-                disabled={loading || !formData.sportGroup}
-              >
-                <span
-                  className={
-                    formData.mainSport ? "text-gray-800" : "text-gray-400"
-                  }
-                >
-                  {getSelectedSportName()}
-                </span>
-                <ChevronDown className="w-4 h-4 text-gray-400" />
-              </button>
-
-              {showSportDropdown && formData.sportGroup && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                  {loading ? (
-                    <div className="px-3 py-4 text-sm text-gray-500 text-center">
-                      Loading...
-                    </div>
-                  ) : sports.length > 0 ? (
-                    sports.map((sport) => (
-                      <button
-                        key={sport._id}
-                        type="button"
-                        onClick={() => {
-                          handleInputChange("mainSport", sport._id);
-                          setShowSportDropdown(false);
-                        }}
-                        className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg"
-                      >
-                        {sport.name}
-                      </button>
-                    ))
-                  ) : (
-                    <div className="px-3 py-4 text-sm text-gray-500 text-center">
-                      No sports in this group
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-            {!formData.sportGroup && (
-              <p className="text-xs text-gray-500 mt-1">
-                Please select a sport group first
-              </p>
-            )}
-          </div>
-
-          {/* Skill Level Slider */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Skill Level <span className="text-red-500">*</span>
-            </label>
-            <div className="space-y-2">
-              <input
-                type="range"
-                min="1"
-                max="10"
-                value={formData.skillLevel}
-                onChange={(e) =>
-                  handleInputChange("skillLevel", Number(e.target.value))
-                }
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-                disabled={loading}
-              />
-              <div className="flex justify-between text-xs text-gray-600">
-                <span>Beginner (1)</span>
-                <span className="font-medium text-cyan-600">
-                  {getSkillLevelLabel()}
-                </span>
-                <span>Pro (10)</span>
+          {initializing && (
+            <div className="flex items-center justify-center py-8">
+              <div className="flex flex-col items-center space-y-3">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-500"></div>
+                <p className="text-sm text-gray-600">Loading profile...</p>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Sport Goal Dropdown */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sport Goal <span className="text-red-500">*</span>
-            </label>
-            <div className="relative dropdown-container">
-              <button
-                type="button"
-                onClick={() => setShowGoalDropdown(!showGoalDropdown)}
-                className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors text-left flex items-center justify-between bg-white"
-                disabled={loading}
-              >
-                <span
-                  className={
-                    formData.sportGoal ? "text-gray-800" : "text-gray-400"
+          <div
+            className={
+              initializing ? "opacity-0 pointer-events-none" : "space-y-4"
+            }
+          >
+            {/* Sport Group Dropdown */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sport Group <span className="text-red-500">*</span>
+              </label>
+              <div className="relative dropdown-container">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowSportGroupDropdown(!showSportGroupDropdown)
                   }
+                  className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors text-left flex items-center justify-between bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={loading || initializing}
                 >
-                  {getSelectedGoalName()}
-                </span>
-                <ChevronDown className="w-4 h-4 text-gray-400" />
-              </button>
+                  <span
+                    className={
+                      formData.sportGroup ? "text-gray-800" : "text-gray-400"
+                    }
+                  >
+                    {getSelectedSportGroupName()}
+                  </span>
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                </button>
 
-              {showGoalDropdown && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                  {loading ? (
-                    <div className="px-3 py-4 text-sm text-gray-500 text-center">
-                      Loading...
-                    </div>
-                  ) : sportGoals.length > 0 ? (
-                    sportGoals.map((goal) => (
-                      <button
-                        key={goal._id}
-                        type="button"
-                        onClick={() => {
-                          handleInputChange("sportGoal", goal._id);
-                          setShowGoalDropdown(false);
-                        }}
-                        className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg"
-                      >
-                        {goal.name}
-                      </button>
-                    ))
-                  ) : (
-                    <div className="px-3 py-4 text-sm text-gray-500 text-center">
-                      No goals available
-                    </div>
-                  )}
-                </div>
+                {showSportGroupDropdown && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {loading ? (
+                      <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                        Loading...
+                      </div>
+                    ) : sportGroups.length > 0 ? (
+                      sportGroups.map((group) => (
+                        <button
+                          key={group._id}
+                          type="button"
+                          onClick={() => {
+                            handleInputChange(
+                              "sportGroup",
+                              group._id,
+                              group.name
+                            );
+                            setShowSportGroupDropdown(false);
+                          }}
+                          className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                        >
+                          {group.name}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                        No sport groups available
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Main Sport Dropdown */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Main Sport <span className="text-red-500">*</span>
+              </label>
+              <div className="relative dropdown-container">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (formData.sportGroup) {
+                      setShowSportDropdown(!showSportDropdown);
+                    }
+                  }}
+                  className={`w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors text-left flex items-center justify-between bg-white ${
+                    !formData.sportGroup || loading || initializing
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                  disabled={loading || !formData.sportGroup || initializing}
+                >
+                  <span
+                    className={
+                      formData.mainSport ? "text-gray-800" : "text-gray-400"
+                    }
+                  >
+                    {getSelectedSportName()}
+                  </span>
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                </button>
+
+                {showSportDropdown && formData.sportGroup && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {loading ? (
+                      <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                        Loading...
+                      </div>
+                    ) : sports.length > 0 ? (
+                      sports.map((sport) => (
+                        <button
+                          key={sport._id}
+                          type="button"
+                          onClick={() => {
+                            handleInputChange(
+                              "mainSport",
+                              sport._id,
+                              sport.name
+                            );
+                            setShowSportDropdown(false);
+                          }}
+                          className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                        >
+                          {sport.name}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                        No sports in this group
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              {!formData.sportGroup && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Please select a sport group first
+                </p>
               )}
             </div>
-          </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-3 py-2 rounded-lg">
-              {error}
+            {/* Skill Level Slider */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Skill Level <span className="text-red-500">*</span>
+              </label>
+              <div className="space-y-2">
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={formData.skillLevel}
+                  onChange={(e) =>
+                    handleInputChange("skillLevel", Number(e.target.value))
+                  }
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={loading || initializing}
+                />
+                <div className="flex justify-between text-xs text-gray-600">
+                  <span>Beginner (1)</span>
+                  <span className="font-medium text-cyan-600">
+                    {getSkillLevelLabel()}
+                  </span>
+                  <span>Pro (10)</span>
+                </div>
+              </div>
             </div>
-          )}
+
+            {/* Sport Goal Dropdown */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sport Goal <span className="text-red-500">*</span>
+              </label>
+              <div className="relative dropdown-container">
+                <button
+                  type="button"
+                  onClick={() => setShowGoalDropdown(!showGoalDropdown)}
+                  className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors text-left flex items-center justify-between bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={loading || initializing}
+                >
+                  <span
+                    className={
+                      formData.sportGoal ? "text-gray-800" : "text-gray-400"
+                    }
+                  >
+                    {getSelectedGoalName()}
+                  </span>
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                </button>
+
+                {showGoalDropdown && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {loading ? (
+                      <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                        Loading...
+                      </div>
+                    ) : sportGoals.length > 0 ? (
+                      sportGoals.map((goal) => (
+                        <button
+                          key={goal._id}
+                          type="button"
+                          onClick={() => {
+                            handleInputChange("sportGoal", goal._id, goal.name);
+                            setShowGoalDropdown(false);
+                          }}
+                          className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                        >
+                          {goal.name}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                        No goals available
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-3 py-2 rounded-lg">
+                {error}
+              </div>
+            )}
+          </div>
 
           {/* Modal Footer */}
           <div className="flex gap-3 pt-4">
@@ -524,14 +634,14 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
               type="button"
               onClick={handleClose}
               className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading}
+              disabled={loading || initializing}
             >
               Cancel
             </button>
             <button
               type="submit"
               className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-cyan-500 hover:bg-cyan-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading}
+              disabled={loading || initializing}
             >
               {loading ? "Saving..." : isEditMode ? "Update" : "Create"}
             </button>
