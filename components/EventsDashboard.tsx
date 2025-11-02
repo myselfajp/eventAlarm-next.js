@@ -182,6 +182,7 @@ const EventsDashboard = () => {
         calendarView={calendarView}
         setCalendarView={setCalendarView}
         calendarEvents={calendarEvents}
+        onEventCreated={fetchEvents}
       />
 
       <button

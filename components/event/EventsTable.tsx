@@ -139,8 +139,14 @@ const EventsTable: React.FC<EventsTableProps> = ({
   }, [selectedSportGroup]);
 
   useEffect(() => {
-    onFilterChange(selectedSportGroup || undefined, selectedSport || undefined);
-  }, [selectedSportGroup, selectedSport, onFilterChange]);
+    if (selectedSport) {
+      onFilterChange(selectedSportGroup, selectedSport);
+    } else if (selectedSportGroup) {
+      onFilterChange(selectedSportGroup, undefined);
+    } else {
+      onFilterChange(undefined, undefined);
+    }
+  }, [selectedSportGroup, selectedSport]);
 
   const fetchSportGroups = async () => {
     try {

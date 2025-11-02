@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Plus, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import AddEventModal from "./event/AddEventModal";
+import { useMe } from "@/app/hooks/useAuth";
 
 interface CalendarEvent {
   day: number;
@@ -17,6 +18,7 @@ interface RightSidebarProps {
   calendarView: string;
   setCalendarView: (view: string) => void;
   calendarEvents: CalendarEvent[];
+  onEventCreated?: () => void;
 }
 
 const RightSidebar: React.FC<RightSidebarProps> = ({
@@ -26,12 +28,11 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   calendarView,
   setCalendarView,
   calendarEvents,
+  onEventCreated,
 }) => {
+  const { data: user } = useMe();
   const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
-
-  const handleCreateEvent = (formData: any) => {
-    console.log("Creating event:", formData);
-  };
+  const isCoach = user?.coach != null;
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -127,13 +128,15 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="font-semibold text-gray-800">Dashboard</h3>
-          <button
-            onClick={() => setIsAddEventModalOpen(true)}
-            className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Add Event
-          </button>
+          {isCoach && (
+            <button
+              onClick={() => setIsAddEventModalOpen(true)}
+              className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Add Event
+            </button>
+          )}
         </div>
 
         <div className="mb-6">
@@ -215,7 +218,11 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
       <AddEventModal
         isOpen={isAddEventModalOpen}
         onClose={() => setIsAddEventModalOpen(false)}
-        onSubmit={handleCreateEvent}
+        onSuccess={() => {
+          if (onEventCreated) {
+            onEventCreated();
+          }
+        }}
       />
     </div>
   );
