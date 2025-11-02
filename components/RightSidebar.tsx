@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Plus, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import AddEventModal from "./event/AddEventModal";
 
 interface CalendarEvent {
   day: number;
@@ -26,6 +27,12 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   setCalendarView,
   calendarEvents,
 }) => {
+  const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
+
+  const handleCreateEvent = (formData: any) => {
+    console.log("Creating event:", formData);
+  };
+
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -120,7 +127,10 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="font-semibold text-gray-800">Dashboard</h3>
-          <button className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+          <button
+            onClick={() => setIsAddEventModalOpen(true)}
+            className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+          >
             <Plus className="w-4 h-4" />
             Add Event
           </button>
@@ -201,6 +211,12 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
           </div>
         </div>
       </div>
+
+      <AddEventModal
+        isOpen={isAddEventModalOpen}
+        onClose={() => setIsAddEventModalOpen(false)}
+        onSubmit={handleCreateEvent}
+      />
     </div>
   );
 };
