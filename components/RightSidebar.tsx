@@ -30,7 +30,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   calendarEvents,
   onEventCreated,
 }) => {
-  const { data: user } = useMe();
+  const { data: user, isLoading: userLoading } = useMe();
   const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
   const isCoach = user?.coach != null;
 
@@ -128,7 +128,9 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="font-semibold text-gray-800">Dashboard</h3>
-          {isCoach && (
+          {userLoading ? (
+            <div className="w-28 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
+          ) : isCoach ? (
             <button
               onClick={() => setIsAddEventModalOpen(true)}
               className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
@@ -136,7 +138,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
               <Plus className="w-4 h-4" />
               Add Event
             </button>
-          )}
+          ) : null}
         </div>
 
         <div className="mb-6">

@@ -132,21 +132,19 @@ const EventsTable: React.FC<EventsTableProps> = ({
     if (selectedSportGroup) {
       fetchSportsInGroup(selectedSportGroup);
       setSelectedSport("");
+      onFilterChange(selectedSportGroup, undefined);
     } else {
       setSports([]);
       setSelectedSport("");
+      onFilterChange(undefined, undefined);
     }
   }, [selectedSportGroup]);
 
   useEffect(() => {
     if (selectedSport) {
       onFilterChange(selectedSportGroup, selectedSport);
-    } else if (selectedSportGroup) {
-      onFilterChange(selectedSportGroup, undefined);
-    } else {
-      onFilterChange(undefined, undefined);
     }
-  }, [selectedSportGroup, selectedSport]);
+  }, [selectedSport]);
 
   const fetchSportGroups = async () => {
     try {

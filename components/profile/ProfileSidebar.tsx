@@ -165,18 +165,11 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   };
 
   return (
-    <div className="h-full overflow-y-auto p-4 sm:p-6">
+    <div className="h-full overflow-y-auto p-4 sm:p-6 flex flex-col">
       <div className="flex items-center justify-between mb-6 sm:mb-8">
         <h1 className="text-lg sm:text-xl font-bold text-cyan-500">
           Events Dashboard
         </h1>
-        <button
-          onClick={onLogout}
-          className="text-gray-400 hover:text-gray-600 transition-colors"
-          title="Logout"
-        >
-          <LogOut className="w-5 h-5" />
-        </button>
       </div>
 
       <div className="flex flex-col items-center mb-6 sm:mb-8">
@@ -696,6 +689,17 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
           </div>
         </div>
       )}
+
+      {/* Logout Button at Bottom */}
+      <div className="mt-auto pt-6 border-t border-gray-200">
+        <button
+          onClick={onLogout}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+        >
+          <LogOut className="w-5 h-5" />
+          <span>Logout</span>
+        </button>
+      </div>
 
       {/* Find Modal */}
       <FindModal

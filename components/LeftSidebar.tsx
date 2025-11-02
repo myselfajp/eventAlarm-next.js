@@ -80,7 +80,14 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isOpen }) => {
         isOpen ? "w-80" : "w-0"
       } h-screen bg-white border-r border-gray-200 transition-all duration-300 overflow-hidden flex-shrink-0`}
     >
-      {isLoggedIn ? (
+      {userLoading ? (
+        <div className="flex items-center justify-center h-full">
+          <div className="flex flex-col items-center gap-3">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
+            <p className="text-sm text-gray-500">Loading...</p>
+          </div>
+        </div>
+      ) : isLoggedIn ? (
         <ProfileSidebar
           onLogout={handleLogout}
           initialFacilities={
