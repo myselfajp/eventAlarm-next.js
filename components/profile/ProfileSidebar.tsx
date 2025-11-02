@@ -66,10 +66,10 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
     setIsParticipantModalOpen(false);
   };
 
-  const handleCreateCoach = (formData: any) => {
-    console.log("Creating coach:", formData);
-    // Here you can add logic to save the coach data
-    // For now, we'll just log it
+  const handleCreateCoach = async (formData: any) => {
+    console.log("Coach profile saved:", formData);
+    await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+    setIsCoachModalOpen(false);
   };
 
   const handleOpenCoachModal = () => {

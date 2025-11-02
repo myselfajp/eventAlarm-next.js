@@ -1,7 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
-import { X, Plus, Upload, FileImage, Trash2, Save } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { X, Plus, Upload, Trash2, ChevronDown } from "lucide-react";
+import { EP } from "@/app/lib/endpoints";
+import { fetchJSON, apiFetch } from "@/app/lib/api";
+import { useMe } from "@/app/hooks/useAuth";
 
 interface CoachModalProps {
   isOpen: boolean;
@@ -9,20 +12,34 @@ interface CoachModalProps {
   onSubmit: (formData: CoachFormData) => void;
 }
 
-interface Certificate {
-  id: string;
+interface SportGroup {
+  _id: string;
   name: string;
-  file: File | null;
-  preview: string | null;
+}
+
+interface Sport {
+  _id: string;
+  name: string;
+  group: string;
+  groupName: string;
 }
 
 interface Branch {
-  id: string;
+  _id?: string;
+  sport: string;
   sportGroup: string;
-  sportName: string;
-  level: string;
-  certificates: Certificate[];
-  isMinimized: boolean;
+  branchOrder: number;
+  level: number;
+  certificate: File | null;
+  certificatePreview: string | null;
+  sportName?: string;
+  sportGroupName?: string;
+  existingCertificate?: {
+    path: string;
+    originalName: string;
+    mimeType: string;
+    size: number;
+  };
 }
 
 interface CoachFormData {
@@ -34,470 +51,695 @@ const CoachModal: React.FC<CoachModalProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { data: user, isLoading: userLoading } = useMe();
+  const coachId = user?.coach;
+
   const [formData, setFormData] = useState<CoachFormData>({
     branches: [],
   });
+
+  const [sportGroups, setSportGroups] = useState<SportGroup[]>([]);
+  const [sports, setSports] = useState<Sport[]>([]);
+  const [activeSportGroupDropdown, setActiveSportGroupDropdown] = useState<
+    number | null
+  >(null);
+  const [activeSportDropdown, setActiveSportDropdown] = useState<number | null>(
+    null
+  );
+
+  const [loading, setLoading] = useState(false);
+  const [initializing, setInitializing] = useState(false);
   const [error, setError] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && !userLoading) {
+      loadData();
+    }
+  }, [isOpen, coachId, userLoading]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest(".dropdown-container")) {
+        setActiveSportGroupDropdown(null);
+        setActiveSportDropdown(null);
+      }
+    };
+
+    if (activeSportGroupDropdown !== null || activeSportDropdown !== null) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [activeSportGroupDropdown, activeSportDropdown]);
+
+  const loadData = async () => {
+    setInitializing(true);
+    try {
+      if (coachId) {
+        await fetchCoachData();
+        setIsEditMode(true);
+      } else {
+        resetForm();
+      }
+    } finally {
+      setInitializing(false);
+    }
+  };
+
+  const fetchCoachData = async () => {
+    if (!coachId) return;
+
+    try {
+      const [branchesRes, sportGroupsRes] = await Promise.all([
+        fetchJSON(`${EP.COACH.getCurrentBranches}`, { method: "GET" }),
+        fetchJSON(EP.REFERENCE.sportGroup, {
+          method: "POST",
+          body: { perPage: 100, pageNumber: 1 },
+        }),
+      ]);
+
+      if (
+        branchesRes.success &&
+        branchesRes.data &&
+        Array.isArray(branchesRes.data)
+      ) {
+        const sportGroupsData = sportGroupsRes.data || [];
+        setSportGroups(sportGroupsData);
+
+        const branches: Branch[] = branchesRes.data.map(
+          (branch: any, index: number) => {
+            const sportGroupId =
+              sportGroupsData.find(
+                (sg: SportGroup) => sg.name === branch.sportGroup
+              )?._id || "";
+
+            return {
+              _id: branch._id,
+              sport: branch.sport || "",
+              sportGroup: sportGroupId,
+              branchOrder: branch.branchOrder || index + 1,
+              level: branch.level || 5,
+              certificate: null,
+              certificatePreview: null,
+              sportName: branch.sportName || "",
+              sportGroupName: branch.sportGroup || "",
+              existingCertificate: branch.certificate
+                ? {
+                    path: branch.certificate.path,
+                    originalName: branch.certificate.originalName,
+                    mimeType: branch.certificate.mimeType,
+                    size: branch.certificate.size,
+                  }
+                : undefined,
+            };
+          }
+        );
+
+        setFormData({ branches });
+
+        const uniqueSportGroups = [
+          ...new Set(branches.map((b) => b.sportGroup).filter(Boolean)),
+        ];
+        if (uniqueSportGroups.length > 0) {
+          const allSports: Sport[] = [];
+          for (const groupId of uniqueSportGroups) {
+            const sportsRes = await fetchJSON(EP.REFERENCE.sport, {
+              method: "POST",
+              body: {
+                perPage: 50,
+                pageNumber: 1,
+                groupId: groupId,
+              },
+            });
+            if (sportsRes.success && sportsRes.data) {
+              allSports.push(...sportsRes.data);
+            }
+          }
+          setSports(allSports);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching coach data:", err);
+    }
+  };
+
+  const fetchSportGroups = async () => {
+    setLoading(true);
+    try {
+      const res = await fetchJSON(EP.REFERENCE.sportGroup, {
+        method: "POST",
+        body: { perPage: 50, pageNumber: 1 },
+      });
+
+      if (res.success && res.data) {
+        setSportGroups(res.data);
+      }
+    } catch (err) {
+      console.error("Error fetching sport groups:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchSportsInGroup = async (groupId: string) => {
+    setLoading(true);
+    try {
+      const res = await fetchJSON(EP.REFERENCE.sport, {
+        method: "POST",
+        body: {
+          perPage: 50,
+          pageNumber: 1,
+          groupId: groupId,
+        },
+      });
+
+      if (res.success && res.data) {
+        setSports(res.data);
+      }
+    } catch (err) {
+      console.error("Error fetching sports:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addBranch = () => {
     const newBranch: Branch = {
-      id: Date.now().toString(),
+      sport: "",
       sportGroup: "",
-      sportName: "",
-      level: "",
-      certificates: [],
-      isMinimized: false,
+      branchOrder: formData.branches.length + 1,
+      level: 5,
+      certificate: null,
+      certificatePreview: null,
     };
     setFormData((prev) => ({
-      ...prev,
       branches: [...prev.branches, newBranch],
     }));
   };
 
-  const removeBranch = (branchId: string) => {
+  const removeBranch = (index: number) => {
     setFormData((prev) => ({
-      ...prev,
-      branches: prev.branches.filter((branch) => branch.id !== branchId),
+      branches: prev.branches.filter((_, i) => i !== index),
     }));
   };
 
-  const updateBranchField = (
-    branchId: string,
-    field: keyof Omit<Branch, "id" | "certificates">,
-    value: string | boolean
+  const updateBranch = (
+    index: number,
+    field: keyof Branch,
+    value: any,
+    displayName?: string
   ) => {
     setFormData((prev) => ({
-      ...prev,
-      branches: prev.branches.map((branch) =>
-        branch.id === branchId ? { ...branch, [field]: value } : branch
-      ),
+      branches: prev.branches.map((branch, i) => {
+        if (i !== index) return branch;
+
+        const updated = { ...branch, [field]: value };
+
+        if (field === "sportGroup") {
+          updated.sport = "";
+          updated.sportName = "";
+          if (displayName) updated.sportGroupName = displayName;
+          if (value) {
+            fetchSportsInGroup(value);
+          }
+        }
+
+        if (field === "sport" && displayName) {
+          updated.sportName = displayName;
+        }
+
+        return updated;
+      }),
     }));
     setError("");
   };
 
-  const toggleBranchMinimize = (branchId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      branches: prev.branches.map((branch) =>
-        branch.id === branchId
-          ? { ...branch, isMinimized: !branch.isMinimized }
-          : branch
-      ),
-    }));
-  };
-
-  const initializeCertificate = (branchId: string) => {
-    const branch = formData.branches.find((b) => b.id === branchId);
-    if (!branch || branch.certificates.length > 0) {
-      return; // Don't add if already exists
-    }
-
-    const newCertificate: Certificate = {
-      id: Date.now().toString(),
-      name: "",
-      file: null,
-      preview: null,
-    };
-    setFormData((prev) => ({
-      ...prev,
-      branches: prev.branches.map((branch) =>
-        branch.id === branchId
-          ? {
-              ...branch,
-              certificates: [newCertificate],
-            }
-          : branch
-      ),
-    }));
-  };
-
-  const removeCertificate = (branchId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      branches: prev.branches.map((branch) =>
-        branch.id === branchId
-          ? {
-              ...branch,
-              certificates: [],
-            }
-          : branch
-      ),
-    }));
-  };
-
-  const isBranchComplete = (branch: Branch) => {
-    return (
-      branch.sportGroup &&
-      branch.sportName &&
-      branch.level &&
-      branch.certificates.length > 0 &&
-      branch.certificates[0].file
-    );
-  };
-
-  const handleFileUpload = (branchId: string, file: File) => {
+  const handleFileUpload = (index: number, file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const preview = e.target?.result as string;
-      setFormData((prev) => ({
-        ...prev,
-        branches: prev.branches.map((branch) =>
-          branch.id === branchId
-            ? {
-                ...branch,
-                certificates: branch.certificates.map((cert) => ({
-                  ...cert,
-                  file,
-                  preview,
-                })),
-              }
-            : branch
-        ),
-      }));
+      updateBranch(index, "certificate", file);
+      updateBranch(index, "certificatePreview", preview);
     };
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    // Validation
     if (formData.branches.length === 0) {
       setError("Please add at least one branch");
       return;
     }
 
-    // Validate each branch
     for (const branch of formData.branches) {
-      if (!branch.sportGroup || !branch.sportName || !branch.level) {
+      if (!branch.sport || !branch.level) {
         setError("Please fill in all required fields for each branch");
         return;
       }
 
-      if (branch.certificates.length === 0) {
-        setError("Please add a certificate for each branch");
-        return;
-      }
-
-      // Validate certificate in each branch
-      const cert = branch.certificates[0];
-      if (!cert.file) {
-        setError("Please upload a certificate file for each branch");
+      if (!isEditMode && !branch.certificate) {
+        setError("Please upload a certificate for each branch");
         return;
       }
     }
 
-    onSubmit(formData);
-    onClose();
-    // Reset form
-    setFormData({
-      branches: [],
-    });
+    setLoading(true);
+    try {
+      const formDataToSend = new FormData();
+      const newCertificates: File[] = [];
+
+      const sportsData = formData.branches.map((branch, index) => {
+        console.log(`Branch ${index + 1} - Sport ID:`, branch.sport);
+
+        const sportData: any = {
+          sport: branch.sport,
+          branchOrder: index + 1,
+          level: branch.level,
+        };
+
+        if (branch.certificate) {
+          const fileExtension = branch.certificate.name.split(".").pop();
+          const fileName = `coach-certificate-sportId=${branch.sport}.${fileExtension}`;
+          console.log(`Branch ${index + 1} - Certificate name:`, fileName);
+          sportData.certificate = {
+            originalName: fileName,
+            mimeType: branch.certificate.type,
+            size: branch.certificate.size,
+          };
+          newCertificates.push(branch.certificate);
+        } else if (branch.existingCertificate) {
+          const oldOriginalName = branch.existingCertificate.originalName;
+          const fileExtension = oldOriginalName.split(".").pop();
+          const newOriginalName = `coach-certificate-sportId=${branch.sport}.${fileExtension}`;
+
+          sportData.certificate = {
+            path: branch.existingCertificate.path,
+            originalName: newOriginalName,
+            mimeType: branch.existingCertificate.mimeType,
+            size: branch.existingCertificate.size,
+          };
+        }
+
+        return sportData;
+      });
+
+      formDataToSend.append("data", JSON.stringify(sportsData));
+      console.log(
+        "Final sportsData being sent:",
+        JSON.stringify(sportsData, null, 2)
+      );
+
+      formData.branches.forEach((branch, index) => {
+        if (branch.certificate) {
+          const fileExtension = branch.certificate.name.split(".").pop();
+          const fileName = `coach-certificate-sportId=${branch.sport}.${fileExtension}`;
+
+          const renamedFile = new File([branch.certificate], fileName, {
+            type: branch.certificate.type,
+            lastModified: branch.certificate.lastModified,
+          });
+
+          formDataToSend.append("coach-certificate", renamedFile);
+        }
+      });
+
+      const res = await apiFetch(EP.COACH.createProfileAndBranch, {
+        method: "POST",
+        body: formDataToSend,
+      });
+
+      const json = await res.json();
+
+      if (json.success) {
+        onSubmit(formData);
+        handleClose();
+      } else {
+        setError(json.message || "Failed to save coach profile");
+      }
+    } catch (err) {
+      console.error("Error saving coach profile:", err);
+      setError("Failed to save coach profile");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({ branches: [] });
+    setIsEditMode(false);
   };
 
   const handleClose = () => {
     onClose();
     setError("");
-    setFormData({
-      branches: [],
-    });
+    resetForm();
+  };
+
+  const getSportGroupName = (branch: Branch) => {
+    if (!branch.sportGroup) return "Select Sport Group";
+    if (branch.sportGroupName) return branch.sportGroupName;
+    const group = sportGroups.find((g) => g._id === branch.sportGroup);
+    return group ? group.name : "Select Sport Group";
+  };
+
+  const getSportName = (branch: Branch) => {
+    if (!branch.sport) return "Select Sport";
+    if (branch.sportName) return branch.sportName;
+    const sport = sports.find((s) => s._id === branch.sport);
+    return sport ? sport.name : "Select Sport";
   };
 
   if (!isOpen) return null;
 
+  if (userLoading || !user) {
+    return null;
+  }
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-auto max-h-[90vh] overflow-y-auto">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl mx-auto max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
           <h2 className="text-xl font-semibold text-gray-800">
-            Create/Edit Coach
+            {isEditMode ? "Edit Coach Profile" : "Create Coach Profile"}
           </h2>
           <button
             onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
+            disabled={loading}
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Modal Body */}
-        <form onSubmit={handleSubmit} className="p-4">
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium text-gray-800">
-                Coach Branches
-              </h3>
-            </div>
-
-            <div className="space-y-6 max-h-96 overflow-y-auto">
-              {formData.branches.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <FileImage className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                  <p className="text-sm">No branches added yet</p>
-                  <p className="text-xs text-gray-400 mt-1 mb-4">
-                    Add your first branch to get started
-                  </p>
-                </div>
-              ) : (
-                formData.branches.map((branch, branchIndex) => (
-                  <div
-                    key={branch.id}
-                    className="border border-gray-200 rounded-lg p-6 bg-gray-50"
-                  >
-                    {/* Branch Header */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <h4 className="text-lg font-medium text-gray-800">
-                          Branch {branchIndex + 1}
-                        </h4>
-                        {isBranchComplete(branch) && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            ✓ Complete
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => removeBranch(branch.id)}
-                          className="text-red-500 hover:text-red-700 transition-colors"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {!branch.isMinimized && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Left Column - Form Fields */}
-                        <div className="space-y-4">
-                          {/* Sport Group */}
-                          <div>
-                            <input
-                              type="text"
-                              value={branch.sportGroup}
-                              onChange={(e) =>
-                                updateBranchField(
-                                  branch.id,
-                                  "sportGroup",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="Enter sport group"
-                              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
-                              required
-                            />
-                          </div>
-
-                          {/* Sport Name */}
-                          <div>
-                            <input
-                              type="text"
-                              value={branch.sportName}
-                              onChange={(e) =>
-                                updateBranchField(
-                                  branch.id,
-                                  "sportName",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="Enter sport name"
-                              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
-                              required
-                            />
-                          </div>
-
-                          {/* Level Input */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Level <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                              type="number"
-                              min="1"
-                              max="10"
-                              value={branch.level || ""}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                if (
-                                  value === "" ||
-                                  (parseInt(value) >= 1 &&
-                                    parseInt(value) <= 10)
-                                ) {
-                                  updateBranchField(branch.id, "level", value);
-                                }
-                              }}
-                              placeholder="1-10"
-                              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
-                              required
-                            />
-                            <p className="text-xs text-gray-500 mt-1">
-                              Enter a number between 1 and 10
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Right Column - Certificate & Save */}
-                        <div className="space-y-4">
-                          <div className="flex flex-col items-center space-y-4">
-                            {/* File Upload Area */}
-                            <div className="w-full max-w-xs">
-                              <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-cyan-400 transition-colors cursor-pointer">
-                                {branch.certificates[0]?.preview ? (
-                                  <div className="flex flex-col items-center space-y-3">
-                                    <img
-                                      src={branch.certificates[0].preview}
-                                      alt="Certificate preview"
-                                      className="h-24 w-32 object-cover rounded-lg"
-                                    />
-                                    <div className="text-center">
-                                      <p className="text-sm text-gray-600 font-medium truncate">
-                                        {branch.certificates[0].file?.name}
-                                      </p>
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          removeCertificate(branch.id)
-                                        }
-                                        className="mt-1 text-red-500 hover:text-red-700 transition-colors text-xs"
-                                      >
-                                        Remove
-                                      </button>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="space-y-3">
-                                    <Upload className="w-10 h-10 mx-auto text-gray-400" />
-                                    <div>
-                                      <p className="text-sm text-gray-600 font-medium">
-                                        Click to upload certificate
-                                      </p>
-                                      <p className="text-xs text-gray-400">
-                                        PNG, JPG, JPEG up to 10MB
-                                      </p>
-                                    </div>
-                                  </div>
-                                )}
-                                <input
-                                  type="file"
-                                  accept="image/png,image/jpg,image/jpeg"
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      // Initialize certificate if it doesn't exist
-                                      if (branch.certificates.length === 0) {
-                                        initializeCertificate(branch.id);
-                                      }
-                                      // Wait a bit for state to update, then upload
-                                      setTimeout(() => {
-                                        handleFileUpload(branch.id, file);
-                                      }, 100);
-                                    }
-                                  }}
-                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                />
-                              </div>
-                            </div>
-
-                            {/* Save Button - Bottom Right */}
-                            {isBranchComplete(branch) && (
-                              <button
-                                type="button"
-                                onClick={() => toggleBranchMinimize(branch.id)}
-                                className="flex items-center px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-medium rounded-lg transition-colors"
-                              >
-                                <Save className="w-4 h-4 mr-2" />
-                                Save
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Minimized View */}
-                    {branch.isMinimized && (
-                      <div className="bg-white rounded-lg p-4 border border-gray-200">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div>
-                              <span className="text-sm font-medium text-gray-600">
-                                Sport Group:
-                              </span>
-                              <span className="ml-2 text-sm text-gray-800">
-                                {branch.sportGroup}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-sm font-medium text-gray-600">
-                                Sport Name:
-                              </span>
-                              <span className="ml-2 text-sm text-gray-800">
-                                {branch.sportName}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-sm font-medium text-gray-600">
-                                Level:
-                              </span>
-                              <span className="ml-2 text-sm text-gray-800">
-                                {branch.level}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {branch.certificates[0]?.preview && (
-                              <img
-                                src={branch.certificates[0].preview}
-                                alt="Certificate preview"
-                                className="w-12 h-12 object-cover rounded-lg"
-                              />
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-
-              {/* Add Branch Button - Always at the bottom */}
-              <div className="flex justify-center pt-4">
-                <button
-                  type="button"
-                  onClick={addBranch}
-                  className="flex items-center px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Branch
-                </button>
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {initializing && (
+            <div className="flex items-center justify-center py-8">
+              <div className="flex flex-col items-center space-y-3">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-500"></div>
+                <p className="text-sm text-gray-600">Loading profile...</p>
               </div>
-            </div>
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mt-6 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg">
-              {error}
             </div>
           )}
 
-          {/* Modal Footer */}
-          <div className="flex gap-3 pt-6 mt-6 border-t border-gray-200">
+          <div
+            className={
+              initializing ? "opacity-0 pointer-events-none" : "space-y-6"
+            }
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium text-gray-800">
+                Coach Branches ({formData.branches.length})
+              </h3>
+              <button
+                type="button"
+                onClick={addBranch}
+                className="flex items-center px-3 py-2 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-medium rounded-lg transition-colors"
+                disabled={loading || initializing}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Branch
+              </button>
+            </div>
+
+            {formData.branches.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <p className="text-sm">No branches added yet</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Add your first branch to get started
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {formData.branches.map((branch, index) => (
+                  <div
+                    key={index}
+                    className="border border-gray-200 rounded-lg p-4 bg-gray-50"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-base font-medium text-gray-800">
+                        Branch {index + 1}
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => removeBranch(index)}
+                        className="text-red-500 hover:text-red-700 transition-colors"
+                        disabled={loading || initializing}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Sport Group <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative dropdown-container">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (sportGroups.length === 0) {
+                                fetchSportGroups();
+                              }
+                              setActiveSportGroupDropdown(
+                                activeSportGroupDropdown === index
+                                  ? null
+                                  : index
+                              );
+                            }}
+                            className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors text-left flex items-center justify-between bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={loading || initializing}
+                          >
+                            <span
+                              className={
+                                branch.sportGroup
+                                  ? "text-gray-800"
+                                  : "text-gray-400"
+                              }
+                            >
+                              {getSportGroupName(branch)}
+                            </span>
+                            <ChevronDown className="w-4 h-4 text-gray-400" />
+                          </button>
+
+                          {activeSportGroupDropdown === index && (
+                            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                              {loading ? (
+                                <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                                  Loading...
+                                </div>
+                              ) : sportGroups.length > 0 ? (
+                                sportGroups.map((group) => (
+                                  <button
+                                    key={group._id}
+                                    type="button"
+                                    onClick={() => {
+                                      updateBranch(
+                                        index,
+                                        "sportGroup",
+                                        group._id,
+                                        group.name
+                                      );
+                                      setActiveSportGroupDropdown(null);
+                                    }}
+                                    className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                                  >
+                                    {group.name}
+                                  </button>
+                                ))
+                              ) : (
+                                <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                                  No sport groups available
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Sport <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative dropdown-container">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (branch.sportGroup) {
+                                setActiveSportDropdown(
+                                  activeSportDropdown === index ? null : index
+                                );
+                              }
+                            }}
+                            className={`w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors text-left flex items-center justify-between bg-white ${
+                              !branch.sportGroup || loading || initializing
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }`}
+                            disabled={
+                              loading || !branch.sportGroup || initializing
+                            }
+                          >
+                            <span
+                              className={
+                                branch.sport ? "text-gray-800" : "text-gray-400"
+                              }
+                            >
+                              {getSportName(branch)}
+                            </span>
+                            <ChevronDown className="w-4 h-4 text-gray-400" />
+                          </button>
+
+                          {activeSportDropdown === index &&
+                            branch.sportGroup && (
+                              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                {loading ? (
+                                  <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                                    Loading...
+                                  </div>
+                                ) : sports.length > 0 ? (
+                                  sports
+                                    .filter(
+                                      (s) => s.group === branch.sportGroup
+                                    )
+                                    .map((sport) => (
+                                      <button
+                                        key={sport._id}
+                                        type="button"
+                                        onClick={() => {
+                                          updateBranch(
+                                            index,
+                                            "sport",
+                                            sport._id,
+                                            sport.name
+                                          );
+                                          setActiveSportDropdown(null);
+                                        }}
+                                        className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                                      >
+                                        {sport.name}
+                                      </button>
+                                    ))
+                                ) : (
+                                  <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                                    No sports in this group
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                        </div>
+                        {!branch.sportGroup && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Please select a sport group first
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Level (1-10) <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={branch.level}
+                          onChange={(e) => {
+                            const value = Number(e.target.value);
+                            if (value >= 1 && value <= 10) {
+                              updateBranch(index, "level", value);
+                            }
+                          }}
+                          className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={loading || initializing}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Certificate{" "}
+                          {!isEditMode && (
+                            <span className="text-red-500">*</span>
+                          )}
+                        </label>
+                        <div className="relative">
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center hover:border-cyan-400 transition-colors cursor-pointer">
+                            {branch.certificatePreview ? (
+                              <div className="space-y-2">
+                                <img
+                                  src={branch.certificatePreview}
+                                  alt="Certificate preview"
+                                  className="h-20 w-full object-cover rounded"
+                                />
+                                <p className="text-xs text-gray-600 truncate">
+                                  {branch.certificate?.name}
+                                </p>
+                              </div>
+                            ) : branch.existingCertificate ? (
+                              <div className="space-y-2">
+                                <Upload className="w-8 h-8 mx-auto text-green-500" />
+                                <p className="text-xs text-green-600">
+                                  {branch.existingCertificate.originalName}
+                                </p>
+                                <p className="text-xs text-gray-400">
+                                  Click to change
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                <Upload className="w-8 h-8 mx-auto text-gray-400" />
+                                <p className="text-xs text-gray-600">
+                                  Upload certificate
+                                </p>
+                              </div>
+                            )}
+                            <input
+                              type="file"
+                              accept="image/png,image/jpg,image/jpeg,application/pdf"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  handleFileUpload(index, file);
+                                }
+                              }}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              disabled={loading || initializing}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-3 py-2 rounded-lg">
+                {error}
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3 pt-4 border-t border-gray-200">
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading || initializing}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-cyan-500 hover:bg-cyan-600 rounded-lg transition-colors"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-cyan-500 hover:bg-cyan-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading || initializing}
             >
-              Submit
+              {loading ? "Saving..." : isEditMode ? "Update" : "Create"}
             </button>
           </div>
         </form>
