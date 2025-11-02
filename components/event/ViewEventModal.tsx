@@ -2,42 +2,66 @@
 
 import React from "react";
 import { X, ImageIcon } from "lucide-react";
+import { EP } from "@/app/lib/endpoints";
+
+interface Event {
+  _id: string;
+  name: string;
+  photo?: {
+    path?: string;
+  };
+  banner?: {
+    path?: string;
+  };
+  sportGroup?: {
+    _id: string;
+    name: string;
+  };
+  sport?: {
+    _id: string;
+    name: string;
+  };
+  club?: {
+    _id: string;
+    name: string;
+  };
+  group?: {
+    _id: string;
+    name: string;
+  };
+  style?: {
+    _id: string;
+    name: string;
+    color?: string;
+  };
+  facility?: {
+    _id: string;
+    name: string;
+    address?: string;
+  };
+  salon?: {
+    _id: string;
+    name: string;
+  };
+  location?: string;
+  startTime: string;
+  endTime: string;
+  createdAt: string;
+  capacity?: number;
+  level?: number;
+  type?: string;
+  priceType?: string;
+  participationFee?: number;
+  equipment?: string;
+  private?: boolean;
+  isRecurring?: boolean;
+  [key: string]: any;
+}
 
 interface ViewEventModalProps {
   isOpen: boolean;
   onClose: () => void;
-  event: EventData | null;
-}
-
-interface EventData {
-  id: number;
-  name: string;
-  image: string;
-  group: string;
-  sport: string;
-  start: string;
-  end: string;
-  created: string;
-  banner?: string;
-  club?: string;
-  eventStyle?: string;
-  sportGroup?: string;
-  sportName?: string;
-  facility?: string;
-  salon?: string;
-  eventLocation?: string;
-  eventStartDate?: string;
-  eventStartTime?: string;
-  eventEndDate?: string;
-  eventEndTime?: string;
-  capacity?: string;
-  level?: string;
-  type?: string;
-  priceType?: string;
-  participantFee?: string;
-  equipment?: string;
-  isPrivate?: boolean;
-  isRecurring?: boolean;
+  event: Event | null;
 }
 
 const ViewEventModal: React.FC<ViewEventModalProps> = ({
@@ -47,10 +71,41 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
 }) => {
   if (!isOpen || !event) return null;
 
+  const getImageUrl = (photo?: { path?: string }) => {
+    if (photo?.path) {
+      return `${EP.API_ASSETS_BASE}/${photo.path}`.replace(/\\/g, "/");
+    }
+    return null;
+  };
+
+  const formatDate = (isoString: string) => {
+    if (!isoString) return "-";
+    const date = new Date(isoString);
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "2-digit",
+    }).format(date);
+  };
+
+  const formatDateTime = (isoString: string) => {
+    if (!isoString) return "-";
+    const date = new Date(isoString);
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
+  };
+
+  const imageUrl = getImageUrl(event.photo);
+  const bannerUrl = getImageUrl(event.banner);
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl mx-auto max-h-[90vh] overflow-y-auto">
-        {/* Modal Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
           <h2 className="text-xl font-semibold text-gray-800">Event Details</h2>
           <button
@@ -61,20 +116,17 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
           </button>
         </div>
 
-        {/* Modal Body */}
         <div className="p-6">
           <div className="space-y-6">
-            {/* Event Banner and Image Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Event Image */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Event Image
                 </label>
                 <div className="relative border-2 border-gray-200 rounded-lg overflow-hidden">
-                  {event.image ? (
+                  {imageUrl ? (
                     <img
-                      src={event.image}
+                      src={imageUrl}
                       alt="Event"
                       className="w-full h-48 object-cover"
                     />
@@ -87,15 +139,14 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
                 </div>
               </div>
 
-              {/* Event Banner */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Event Banner
                 </label>
                 <div className="relative border-2 border-gray-200 rounded-lg overflow-hidden">
-                  {event.banner ? (
+                  {bannerUrl ? (
                     <img
-                      src={event.banner}
+                      src={bannerUrl}
                       alt="Event banner"
                       className="w-full h-48 object-cover"
                     />
@@ -109,7 +160,6 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
               </div>
             </div>
 
-            {/* Event Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Event Name
@@ -119,14 +169,13 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
               </div>
             </div>
 
-            {/* Club, Group, Event Style Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Club
                 </label>
                 <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
-                  {event.club || "-"}
+                  {event.club?.name || "-"}
                 </div>
               </div>
 
@@ -135,7 +184,7 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
                   Group
                 </label>
                 <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
-                  {event.group || "-"}
+                  {event.group?.name || "-"}
                 </div>
               </div>
 
@@ -144,19 +193,18 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
                   Event Style
                 </label>
                 <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
-                  {event.eventStyle || "-"}
+                  {event.style?.name || "-"}
                 </div>
               </div>
             </div>
 
-            {/* Sport Group and Sport Name Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Sport Group
                 </label>
                 <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
-                  {event.sportGroup || event.group || "-"}
+                  {event.sportGroup?.name || "-"}
                 </div>
               </div>
 
@@ -165,19 +213,18 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
                   Sport Name
                 </label>
                 <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
-                  {event.sportName || event.sport || "-"}
+                  {event.sport?.name || "-"}
                 </div>
               </div>
             </div>
 
-            {/* Facility and Salon Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Facility
                 </label>
                 <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
-                  {event.facility || "-"}
+                  {event.facility?.name || "-"}
                 </div>
               </div>
 
@@ -186,64 +233,40 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
                   Salon
                 </label>
                 <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
-                  {event.salon || "-"}
+                  {event.salon?.name || "-"}
                 </div>
               </div>
             </div>
 
-            {/* Event Location */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Event Location
               </label>
               <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700 min-h-[80px]">
-                {event.eventLocation || "-"}
+                {event.location || "-"}
               </div>
             </div>
 
-            {/* Event Start Date and Time */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Event Start Date
+                  Event Start
                 </label>
                 <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
-                  {event.eventStartDate || event.start || "-"}
+                  {formatDateTime(event.startTime)}
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Event Start Time
+                  Event End
                 </label>
                 <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
-                  {event.eventStartTime || "-"}
+                  {formatDateTime(event.endTime)}
                 </div>
               </div>
             </div>
 
-            {/* Event End Date and Time */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Event End Date
-                </label>
-                <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
-                  {event.eventEndDate || event.end || "-"}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Event End Time
-                </label>
-                <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
-                  {event.eventEndTime || "-"}
-                </div>
-              </div>
-            </div>
-
-            {/* Capacity, Level, Type Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -273,7 +296,6 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
               </div>
             </div>
 
-            {/* Price Type and Participant Fee Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -289,12 +311,11 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
                   Participant Fee
                 </label>
                 <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
-                  {event.participantFee || "-"}
+                  {event.participationFee ? `$${event.participationFee}` : "-"}
                 </div>
               </div>
             </div>
 
-            {/* Equipment */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Equipment
@@ -304,9 +325,8 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
               </div>
             </div>
 
-            {/* Status Badges */}
             <div className="flex flex-wrap gap-3">
-              {event.isPrivate && (
+              {event.private && (
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg">
                   <svg
                     className="w-4 h-4"
@@ -340,7 +360,7 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
                 </div>
               )}
 
-              {!event.isPrivate && !event.isRecurring && (
+              {!event.private && !event.isRecurring && (
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg">
                   <svg
                     className="w-4 h-4"
@@ -354,18 +374,16 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
               )}
             </div>
 
-            {/* Created Date */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Created On
               </label>
               <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
-                {event.created || "-"}
+                {formatDate(event.createdAt)}
               </div>
             </div>
           </div>
 
-          {/* Modal Footer */}
           <div className="flex justify-end gap-3 pt-6 mt-6 pb-6 px-6 -mx-6 border-t border-gray-200 sticky bottom-0 bg-white">
             <button
               type="button"
