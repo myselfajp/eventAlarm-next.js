@@ -193,59 +193,64 @@ const UserSearch: React.FC<UserSearchProps> = ({
           </div>
 
           {/* Search and Filter */}
-          <div className="flex gap-2">
-            <div className="flex-1 relative">
+          <div className="space-y-3">
+            {/* Search Bar - Full Width */}
+            <div className="relative">
               <Search className="w-4 h-4 absolute right-3 top-3 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search by first name or last name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-10 pl-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-cyan-500 w-full"
+                className="pr-10 pl-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-cyan-500 w-full text-base"
               />
             </div>
-            <select
-              value={sportGroupFilter}
-              onChange={(e) => {
-                setSportGroupFilter(e.target.value);
-                setSportFilter("");
-              }}
-              disabled={isLoadingSportGroups}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-cyan-500 disabled:opacity-50"
-            >
-              <option value="">
-                {isLoadingSportGroups ? "Loading..." : "All sport groups"}
-              </option>
-              {sportGroups.map((group) => (
-                <option key={group._id} value={group._id}>
-                  {group.name}
+
+            {/* Filters - Side by Side on All Screens */}
+            <div className="flex gap-3">
+              <select
+                value={sportGroupFilter}
+                onChange={(e) => {
+                  setSportGroupFilter(e.target.value);
+                  setSportFilter("");
+                }}
+                disabled={isLoadingSportGroups}
+                className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-cyan-500 disabled:opacity-50 text-base"
+              >
+                <option value="">
+                  {isLoadingSportGroups ? "Loading..." : "All sport groups"}
                 </option>
-              ))}
-            </select>
-            <select
-              value={sportFilter}
-              onChange={(e) => setSportFilter(e.target.value)}
-              disabled={!sportGroupFilter || isLoadingSports}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-cyan-500 disabled:opacity-50"
-            >
-              <option value="">
-                {!sportGroupFilter
-                  ? "Select sport group first"
-                  : isLoadingSports
-                  ? "Loading..."
-                  : "All sports"}
-              </option>
-              {sports
-                .filter(
-                  (sport) =>
-                    !sportGroupFilter || sport.group === sportGroupFilter
-                )
-                .map((sport) => (
-                  <option key={sport._id} value={sport._id}>
-                    {sport.name}
+                {sportGroups.map((group) => (
+                  <option key={group._id} value={group._id}>
+                    {group.name}
                   </option>
                 ))}
-            </select>
+              </select>
+              <select
+                value={sportFilter}
+                onChange={(e) => setSportFilter(e.target.value)}
+                disabled={!sportGroupFilter || isLoadingSports}
+                className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-cyan-500 disabled:opacity-50 text-base"
+              >
+                <option value="">
+                  {!sportGroupFilter
+                    ? "Select sport group first"
+                    : isLoadingSports
+                    ? "Loading..."
+                    : "All sports"}
+                </option>
+                {sports
+                  .filter(
+                    (sport) =>
+                      !sportGroupFilter || sport.group === sportGroupFilter
+                  )
+                  .map((sport) => (
+                    <option key={sport._id} value={sport._id}>
+                      {sport.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
           </div>
         </div>
 
