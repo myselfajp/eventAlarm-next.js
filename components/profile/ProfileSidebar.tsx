@@ -205,7 +205,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
           className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
         >
           <Search className="w-4 h-4 mr-3 text-gray-500" />
-          <div className="text-left flex-1">
+          <div className="flex-1">
             <div>Find</div>
             <div className="text-xs text-gray-400">
               Search coaches, facilities...
@@ -261,7 +261,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                 }`}
               />
             </div>
-            <div className="text-left flex-1">
+            <div className="flex-1">
               <div className="font-medium text-gray-800 text-sm">
                 I'm a Participant
               </div>
@@ -311,7 +311,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                 }`}
               />
             </div>
-            <div className="text-left flex-1">
+            <div className="flex-1">
               <div className="font-medium text-gray-800 text-sm">
                 I'm a Coach
               </div>
@@ -361,7 +361,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             <div className="bg-cyan-50 p-1.5 rounded-md group-hover:bg-cyan-100">
               <Home className="w-4 h-4 text-cyan-600" />
             </div>
-            <div className="text-left">
+            <div>
               <div className="font-medium text-gray-800 text-sm">
                 My Facilities
               </div>
@@ -383,7 +383,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             <div className="bg-cyan-50 p-1.5 rounded-md group-hover:bg-cyan-100">
               <Building className="w-4 h-4 text-cyan-600" />
             </div>
-            <div className="text-left">
+            <div>
               <div className="font-medium text-gray-800 text-sm">
                 My Companies
               </div>

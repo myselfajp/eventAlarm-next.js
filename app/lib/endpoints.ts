@@ -24,11 +24,15 @@ export const EP = {
     signUp: `${AUTH_API}/sign-up`,
     refresh: `${AUTH_API}/refresh`,
     me: `${AUTH_API}/get-current-user`,
+    getUsers: `${AUTH_API}/get-user`,
+    getUserById: (userId: string) => `${AUTH_API}/get-user/${userId}`,
   },
   REFERENCE: {
     sportGroup: `${REFERENCE_DATA_API}/get-sport-group`,
     sport: `${REFERENCE_DATA_API}/get-sport`,
     sportGoal: `${REFERENCE_DATA_API}/get-sport-goal`,
+    sportGoalById: (sportGoalId: string) =>
+      `${REFERENCE_DATA_API}/get-sport-goal/${sportGoalId}`,
   },
   PARTICIPANT: {
     createProfile: `${PARTICIPANT_DATA_API}/create-profile`,
@@ -42,6 +46,8 @@ export const EP = {
     createEvent: `${COACH_DATA_API}/create-event`,
     getCurrentBranches: `${COACH_DATA_API}/current-branches`,
     getCoachDetails: `${COACH_DATA_API}/get-by-detail`,
+    getCoachById: (coachId: string) =>
+      `${COACH_DATA_API}/get-by-detail/${coachId}`,
     getCoachList: `${API_V1_BASE}/get-coach-list`,
   },
   FACILITY: { getFacility: `${API_V1_BASE}/get-facility` },
