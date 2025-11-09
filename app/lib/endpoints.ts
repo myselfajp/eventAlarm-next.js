@@ -51,6 +51,7 @@ export const EP = {
     getCoachList: `${API_V1_BASE}/get-coach-list`,
   },
   FACILITY: { getFacility: `${API_V1_BASE}/get-facility` },
+  COMPANY: { getCompany: `${API_V1_BASE}/get-company` },
   SALON: { getSalon: `${API_V1_BASE}/get-salon` },
   CLUB: { getClub: `${API_V1_BASE}/get-club` },
   CLUB_GROUPS: { getClubGroups: `${API_V1_BASE}/get-group` },

@@ -268,3 +268,61 @@ export interface CoachDetailsResponse {
   data: CoachDetails;
   message?: string;
 }
+
+export interface Facility {
+  _id: string;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  photo: {
+    path: string;
+    originalName: string;
+    mimeType: string;
+    size: number;
+  };
+  mainSport: string;
+  membershipLevel: string | null;
+  private: boolean;
+  point: number | null;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+}
+
+export interface FacilitySearchResponse {
+  success: boolean;
+  data: Facility[];
+  total: number;
+  perPage: number;
+  pageNumber: number;
+  totalPages: number;
+  message?: string;
+}
+
+export interface Company {
+  _id: string;
+  name: string;
+  address: string;
+  phone?: string;
+  email?: string;
+  photo: {
+    path: string;
+    originalName: string;
+    mimeType: string;
+    size: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+}
+
+export interface CompanySearchResponse {
+  success: boolean;
+  data: Company[];
+  total: number;
+  perPage: number;
+  pageNumber: number;
+  totalPages: number;
+  message?: string;
+}

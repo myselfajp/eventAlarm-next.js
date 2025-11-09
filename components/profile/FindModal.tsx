@@ -1,7 +1,33 @@
 "use client";
 
-import React, { useState } from "react";
-import { X, Search, User, Users, Home, Building } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import {
+  X,
+  Search,
+  User,
+  Users,
+  Home,
+  Building,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { fetchJSON } from "@/app/lib/api";
+import { EP } from "@/app/lib/endpoints";
+import {
+  User as UserType,
+  UserSearchFilters,
+  UserSearchResponse,
+  Facility,
+  FacilitySearchResponse,
+  Company,
+  CompanySearchResponse,
+  SportGroup,
+  Sport,
+  SportResponse,
+} from "@/app/lib/types";
+import UserProfileModal from "../UserProfileModal";
+import FacilityDetailsModal from "./FacilityDetailsModal";
+import CompanyDetailsModal from "./CompanyDetailsModal";
 
 interface FindModalProps {
   isOpen: boolean;
@@ -13,12 +39,355 @@ type SearchType = "coach" | "participant" | "facility" | "company";
 const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
   const [selectedType, setSelectedType] = useState<SearchType>("coach");
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<
+    UserType[] | Facility[] | Company[]
+  >([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    total: 0,
+    perPage: 10,
+  });
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [showProfile, setShowProfile] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(
+    null
+  );
+  const [showFacilityDetails, setShowFacilityDetails] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [showCompanyDetails, setShowCompanyDetails] = useState(false);
+  const [sportGroupFilter, setSportGroupFilter] = useState("");
+  const [sportFilter, setSportFilter] = useState("");
+  const [sportGroups, setSportGroups] = useState<SportGroup[]>([]);
+  const [sports, setSports] = useState<Sport[]>([]);
+  const [isLoadingSportGroups, setIsLoadingSportGroups] = useState(false);
+  const [isLoadingSports, setIsLoadingSports] = useState(false);
+
+  const fetchSportsAndGroups = async () => {
+    setIsLoadingSports(true);
+    setIsLoadingSportGroups(true);
+    try {
+      const response: SportResponse = await fetchJSON(EP.REFERENCE.sport, {
+        method: "POST",
+        body: {},
+      });
+
+      if (response?.success && response?.data) {
+        // Extract unique sport groups from sports data
+        const uniqueGroups = response.data.reduce(
+          (groups: SportGroup[], sport) => {
+            if (!groups.find((g) => g._id === sport.group)) {
+              groups.push({
+                _id: sport.group,
+                name: sport.groupName,
+              });
+            }
+            return groups;
+          },
+          []
+        );
+
+        setSportGroups(uniqueGroups);
+        setSports(response.data);
+      }
+    } catch (err) {
+      console.error("Error fetching sports and groups:", err);
+    } finally {
+      setIsLoadingSports(false);
+      setIsLoadingSportGroups(false);
+    }
+  };
+
+  const searchUsers = async (
+    filters: UserSearchFilters & { userType?: "coach" | "participant" }
+  ) => {
+    setIsLoading(true);
+    setError(null);
+    setHasSearched(true);
+
+    try {
+      const payload: any = {
+        perPage: filters.perPage || 10,
+        pageNumber: filters.pageNumber || 1,
+      };
+
+      if (filters.search && filters.search.trim().length >= 2) {
+        payload.search = filters.search.trim();
+      }
+
+      if (sportGroupFilter) {
+        payload.sportGroup = sportGroupFilter;
+      }
+
+      if (sportFilter) {
+        // For coaches, use 'sport' field instead of 'mainSport'
+        if (filters.userType === "coach") {
+          payload.sport = sportFilter;
+        } else {
+          payload.mainSport = sportFilter;
+        }
+      } else if (filters.mainSport) {
+        // If sportFilter is not set but filters.mainSport exists (from other sources)
+        payload.mainSport = filters.mainSport;
+      }
+
+      // Note: API doesn't seem to support filtering by coach/participant status
+      // We'll filter the results after receiving them
+
+      const response: UserSearchResponse = await fetchJSON(EP.AUTH.getUsers, {
+        method: "POST",
+        body: payload,
+      });
+
+      if (response?.success && response?.data) {
+        // Filter results based on selected user type
+        let filteredData = response.data;
+        if (filters.userType === "coach") {
+          filteredData = response.data.filter((user) => user.coach !== null);
+        } else if (filters.userType === "participant") {
+          filteredData = response.data.filter(
+            (user) => user.participant !== null
+          );
+        }
+
+        setSearchResults(filteredData);
+        setPagination({
+          currentPage: response.pageNumber || 1,
+          totalPages: response.totalPages || 1,
+          total: response.total || 0, // Note: This total is for unfiltered results, but we're showing filtered
+          perPage: response.perPage || 10,
+        });
+      } else {
+        setError(response?.message || "Failed to search users");
+        setSearchResults([]);
+      }
+    } catch (err) {
+      setError("An error occurred while searching users");
+      setSearchResults([]);
+      console.error("Error searching users:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const searchFacilities = async (filters: {
+    search?: string;
+    pageNumber?: number;
+    perPage?: number;
+  }) => {
+    setIsLoading(true);
+    setError(null);
+    setHasSearched(true);
+
+    try {
+      const payload: any = {
+        perPage: filters.perPage || 10,
+        pageNumber: filters.pageNumber || 1,
+      };
+
+      if (filters.search && filters.search.trim().length >= 2) {
+        payload.search = filters.search.trim();
+      }
+
+      const response: FacilitySearchResponse = await fetchJSON(
+        EP.FACILITY.getFacility,
+        {
+          method: "POST",
+          body: payload,
+        }
+      );
+
+      if (response?.success && response?.data) {
+        setSearchResults(response.data);
+        setPagination({
+          currentPage: response.pageNumber || 1,
+          totalPages: response.totalPages || 1,
+          total: response.total || 0,
+          perPage: response.perPage || 10,
+        });
+      } else {
+        setError(response?.message || "Failed to search facilities");
+        setSearchResults([]);
+      }
+    } catch (err) {
+      setError("An error occurred while searching facilities");
+      setSearchResults([]);
+      console.error("Error searching facilities:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const searchCompanies = async (filters: {
+    search?: string;
+    pageNumber?: number;
+    perPage?: number;
+  }) => {
+    setIsLoading(true);
+    setError(null);
+    setHasSearched(true);
+
+    try {
+      const payload: any = {
+        perPage: filters.perPage || 10,
+        pageNumber: filters.pageNumber || 1,
+      };
+
+      if (filters.search && filters.search.trim().length >= 2) {
+        payload.search = filters.search.trim();
+      }
+
+      const response: CompanySearchResponse = await fetchJSON(
+        EP.COMPANY.getCompany,
+        {
+          method: "POST",
+          body: payload,
+        }
+      );
+
+      if (response?.success && response?.data) {
+        setSearchResults(response.data);
+        setPagination({
+          currentPage: response.pageNumber || 1,
+          totalPages: response.totalPages || 1,
+          total: response.total || 0,
+          perPage: response.perPage || 10,
+        });
+      } else {
+        setError(response?.message || "Failed to search companies");
+        setSearchResults([]);
+      }
+    } catch (err) {
+      setError("An error occurred while searching companies");
+      setSearchResults([]);
+      console.error("Error searching companies:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(`Searching for ${selectedType}: ${searchQuery}`);
+    if (searchQuery.trim().length < 2) {
+      setError("Please enter at least 2 characters to search");
+      return;
+    }
+
+    if (selectedType === "coach" || selectedType === "participant") {
+      searchUsers({
+        search: searchQuery,
+        pageNumber: 1,
+        perPage: pagination.perPage,
+        userType: selectedType,
+        mainSport: sportFilter || undefined,
+      });
+    } else if (selectedType === "facility") {
+      searchFacilities({
+        search: searchQuery,
+        pageNumber: 1,
+        perPage: pagination.perPage,
+      });
+    } else if (selectedType === "company") {
+      searchCompanies({
+        search: searchQuery,
+        pageNumber: 1,
+        perPage: pagination.perPage,
+      });
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    if (selectedType === "coach" || selectedType === "participant") {
+      searchUsers({
+        search: searchQuery,
+        pageNumber: page,
+        perPage: pagination.perPage,
+        userType: selectedType,
+        mainSport: sportFilter || undefined,
+      });
+    } else if (selectedType === "facility") {
+      searchFacilities({
+        search: searchQuery,
+        pageNumber: page,
+        perPage: pagination.perPage,
+      });
+    } else if (selectedType === "company") {
+      searchCompanies({
+        search: searchQuery,
+        pageNumber: page,
+        perPage: pagination.perPage,
+      });
+    }
+  };
+
+  // Fetch sports and groups when modal opens
+  useEffect(() => {
+    if (
+      isOpen &&
+      (selectedType === "coach" || selectedType === "participant")
+    ) {
+      fetchSportsAndGroups();
+    }
+  }, [isOpen, selectedType]);
+
+  // Filter sports based on selected sport group
+  useEffect(() => {
+    if (sportGroupFilter) {
+      setSportFilter("");
+    } else {
+      setSportFilter("");
+    }
+  }, [sportGroupFilter]);
+
+  // Clear results when type changes to ensure proper filtering
+  useEffect(() => {
     setSearchResults([]);
+    setPagination({
+      currentPage: 1,
+      totalPages: 1,
+      total: 0,
+      perPage: 10,
+    });
+    setError(null);
+    setHasSearched(false);
+    // Clear sport filters when changing type
+    if (selectedType === "facility" || selectedType === "company") {
+      setSportGroupFilter("");
+      setSportFilter("");
+    }
+  }, [selectedType]);
+
+  const handleUserSelect = (user: UserType) => {
+    setSelectedUserId(user._id);
+    setShowProfile(true);
+  };
+
+  const handleFacilitySelect = (facility: Facility) => {
+    setSelectedFacility(facility);
+    setShowFacilityDetails(true);
+  };
+
+  const handleCompanySelect = (company: Company) => {
+    setSelectedCompany(company);
+    setShowCompanyDetails(true);
+  };
+
+  const handleCloseUserProfile = () => {
+    setShowProfile(false);
+    setSelectedUserId(null);
+  };
+
+  const handleCloseFacilityDetails = () => {
+    setShowFacilityDetails(false);
+    setSelectedFacility(null);
+  };
+
+  const handleCloseCompanyDetails = () => {
+    setShowCompanyDetails(false);
+    setSelectedCompany(null);
   };
 
   const handleClose = () => {
@@ -26,6 +395,22 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
     setSearchQuery("");
     setSearchResults([]);
     setSelectedType("coach");
+    setError(null);
+    setPagination({
+      currentPage: 1,
+      totalPages: 1,
+      total: 0,
+      perPage: 10,
+    });
+    setShowProfile(false);
+    setSelectedUserId(null);
+    setHasSearched(false);
+    setSportGroupFilter("");
+    setSportFilter("");
+    setShowFacilityDetails(false);
+    setSelectedFacility(null);
+    setShowCompanyDetails(false);
+    setSelectedCompany(null);
   };
 
   if (!isOpen) return null;
@@ -183,36 +568,243 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
             </div>
           </form>
 
-          {/* Search Results */}
-          <div>
-            {searchResults.length === 0 && searchQuery === "" ? (
-              <div className="text-center py-12 text-gray-500">
-                <Search className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-sm">Enter a search term to find results</p>
+          {/* Filters - Only show for coach and participant */}
+          {(selectedType === "coach" || selectedType === "participant") && (
+            <div className="mb-6">
+              <div className="flex gap-3">
+                <select
+                  value={sportGroupFilter}
+                  onChange={(e) => {
+                    setSportGroupFilter(e.target.value);
+                    setSportFilter("");
+                  }}
+                  disabled={isLoadingSportGroups}
+                  className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-cyan-500 disabled:opacity-50 text-base"
+                >
+                  <option value="">
+                    {isLoadingSportGroups ? "Loading..." : "All sport groups"}
+                  </option>
+                  {sportGroups.map((group) => (
+                    <option key={group._id} value={group._id}>
+                      {group.name}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={sportFilter}
+                  onChange={(e) => setSportFilter(e.target.value)}
+                  disabled={!sportGroupFilter || isLoadingSports}
+                  className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-cyan-500 disabled:opacity-50 text-base"
+                >
+                  <option value="">
+                    {!sportGroupFilter
+                      ? "Select sport group first"
+                      : isLoadingSports
+                      ? "Loading..."
+                      : "Select sport"}
+                  </option>
+                  {sports
+                    .filter(
+                      (sport) =>
+                        !sportGroupFilter || sport.group === sportGroupFilter
+                    )
+                    .map((sport) => (
+                      <option key={sport._id} value={sport._id}>
+                        {sport.name}
+                      </option>
+                    ))}
+                </select>
               </div>
-            ) : searchResults.length === 0 && searchQuery !== "" ? (
+            </div>
+          )}
+
+          {/* Search Results */}
+          <div className="flex-1 overflow-auto max-h-96">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
+              </div>
+            ) : error ? (
+              <div className="p-4 text-center text-red-500">{error}</div>
+            ) : searchResults.length === 0 && hasSearched && !isLoading ? (
               <div className="text-center py-12 text-gray-500">
                 <Search className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-sm">No results found for "{searchQuery}"</p>
+                <p className="text-sm">
+                  No {selectedType}s found for "{searchQuery}"
+                </p>
+              </div>
+            ) : searchResults.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <Search className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <p className="text-sm">
+                  {searchQuery.trim().length < 2
+                    ? `Enter at least 2 characters to search for ${selectedType}s`
+                    : `Enter a search term to find ${selectedType}s`}
+                </p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {searchResults.map((result, index) => (
-                  <div
-                    key={index}
-                    className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
-                  >
-                    <h3 className="font-semibold text-gray-800">
-                      {result.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {result.description}
-                    </p>
-                  </div>
-                ))}
+              <div className="divide-y divide-gray-100">
+                {searchResults.map((result, index) => {
+                  if (
+                    selectedType === "coach" ||
+                    selectedType === "participant"
+                  ) {
+                    const user = result as UserType;
+                    return (
+                      <div
+                        key={user._id}
+                        onClick={() => handleUserSelect(user)}
+                        className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center">
+                            {user.photo ? (
+                              <img
+                                src={user.photo}
+                                alt={`${user.firstName} ${user.lastName}`}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                            ) : (
+                              <User className="w-5 h-5 text-cyan-600" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900">
+                              {user.firstName} {user.lastName}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {user.email}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  } else if (selectedType === "facility") {
+                    const facility = result as Facility;
+                    return (
+                      <div
+                        key={facility._id}
+                        onClick={() => handleFacilitySelect(facility)}
+                        className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                            {facility.photo ? (
+                              <img
+                                src={
+                                  typeof facility.photo === "string"
+                                    ? facility.photo
+                                    : `${EP.API_ASSETS_BASE}${
+                                        (facility.photo as any).path
+                                      }`
+                                }
+                                alt={facility.name}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                            ) : (
+                              <Home className="w-5 h-5 text-green-600" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900">
+                              {facility.name}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {facility.address}
+                            </div>
+                            {facility.membershipLevel && (
+                              <div className="flex gap-1 mt-1">
+                                <span className="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs rounded-full">
+                                  {facility.membershipLevel}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  } else if (selectedType === "company") {
+                    const company = result as Company;
+                    return (
+                      <div
+                        key={company._id}
+                        onClick={() => handleCompanySelect(company)}
+                        className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                            {company.photo ? (
+                              <img
+                                src={
+                                  typeof company.photo === "string"
+                                    ? company.photo
+                                    : `${EP.API_ASSETS_BASE}${
+                                        (company.photo as any).path
+                                      }`
+                                }
+                                alt={company.name}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                            ) : (
+                              <Building className="w-5 h-5 text-orange-600" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900">
+                              {company.name}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {company.address}
+                            </div>
+                            {company.email && (
+                              <div className="text-xs text-gray-400 mt-1">
+                                {company.email}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })}
               </div>
             )}
           </div>
+
+          {/* Pagination */}
+          {searchResults.length > 0 && pagination.totalPages > 1 && (
+            <div className="p-4 border-t border-gray-200 flex items-center justify-between">
+              <div className="text-sm text-gray-500">
+                Showing {(pagination.currentPage - 1) * pagination.perPage + 1}{" "}
+                to{" "}
+                {Math.min(
+                  pagination.currentPage * pagination.perPage,
+                  pagination.total
+                )}{" "}
+                of {pagination.total} results
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handlePageChange(pagination.currentPage - 1)}
+                  disabled={pagination.currentPage === 1}
+                  className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+                <span className="text-sm text-gray-600">
+                  Page {pagination.currentPage} of {pagination.totalPages}
+                </span>
+                <button
+                  onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  disabled={pagination.currentPage === pagination.totalPages}
+                  className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Modal Footer */}
@@ -225,6 +817,27 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
       </div>
+
+      {/* User Profile Modal */}
+      <UserProfileModal
+        isOpen={showProfile}
+        onClose={handleCloseUserProfile}
+        userId={selectedUserId}
+      />
+
+      {/* Facility Details Modal */}
+      <FacilityDetailsModal
+        isOpen={showFacilityDetails}
+        onClose={handleCloseFacilityDetails}
+        facility={selectedFacility}
+      />
+
+      {/* Company Details Modal */}
+      <CompanyDetailsModal
+        isOpen={showCompanyDetails}
+        onClose={handleCloseCompanyDetails}
+        company={selectedCompany}
+      />
     </div>
   );
 };
