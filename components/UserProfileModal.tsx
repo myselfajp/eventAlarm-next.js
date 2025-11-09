@@ -33,14 +33,12 @@ import {
 interface UserProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onBack?: () => void;
   userId: string | null;
 }
 
 const UserProfileModal: React.FC<UserProfileModalProps> = ({
   isOpen,
   onClose,
-  onBack,
   userId,
 }) => {
   const [user, setUser] = useState<UserType | null>(null);
@@ -49,6 +47,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const [coachDetails, setCoachDetails] = useState<CoachDetails | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingExtras, setIsLoadingExtras] = useState(false);
+  const [isFullyLoaded, setIsFullyLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,6 +59,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
       setMainSport("");
       setSportGoal(null);
       setCoachDetails(null);
+      setIsFullyLoaded(false);
     }
   }, [isOpen, userId]);
 
@@ -95,6 +95,17 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
     if (!user) return;
 
     setIsLoadingExtras(true);
+
+    // Check if we need to load any extra data
+    const needsSportData = user.participant?.mainSport || user.participant?.sportGoal;
+    const needsCoachData = user.coach?._id;
+
+    if (!needsSportData && !needsCoachData) {
+      // No extra data to load, mark as fully loaded
+      setIsLoadingExtras(false);
+      setIsFullyLoaded(true);
+      return;
+    }
 
     try {
       // Fetch main sport name if participant exists
@@ -143,6 +154,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
       console.error("Error loading extra data:", err);
     } finally {
       setIsLoadingExtras(false);
+      setIsFullyLoaded(true);
     }
   };
 
@@ -172,14 +184,6 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
         <div className="flex-shrink-0 p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {onBack && (
-                <button
-                  onClick={onBack}
-                  className="text-gray-400 hover:text-gray-600 p-1"
-                >
-                  ←
-                </button>
-              )}
               <h2 className="text-xl font-semibold text-gray-800">
                 User Profile
               </h2>
@@ -195,7 +199,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {isLoading ? (
+          {!isFullyLoaded ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
             </div>
