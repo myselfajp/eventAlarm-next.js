@@ -268,3 +268,56 @@ export interface CoachDetailsResponse {
   data: CoachDetails;
   message?: string;
 }
+
+export interface CoachListResponse {
+  success: boolean;
+  data: Array<{
+    _id: string;
+    user: {
+      _id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone: string;
+      photo?: string;
+    };
+    branches: Array<{
+      _id: string;
+      sport: {
+        _id: string;
+        name: string;
+      };
+      level: number;
+      branchOrder: number;
+    }>;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+  total: number;
+  perPage: number;
+  pageNumber: number;
+  totalPages: number;
+  message?: string;
+}
+
+export interface FacilityResponse {
+  success: boolean;
+  data: Array<{
+    _id: string;
+    name: string;
+    address: string;
+    phone: string;
+    email: string;
+    mainSport: string;
+    membershipLevel?: string;
+    private?: boolean;
+    photo?: string;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+  total: number;
+  perPage: number;
+  pageNumber: number;
+  totalPages: number;
+  message?: string;
+}

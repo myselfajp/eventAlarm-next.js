@@ -116,6 +116,7 @@ const Header: React.FC<HeaderProps> = ({
         onClose={handleCloseUserSearch}
         onBack={handleBackToSearch}
         userId={selectedUserId}
+        context={undefined}
       />
     </>
   );

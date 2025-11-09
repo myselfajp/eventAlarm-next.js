@@ -35,6 +35,7 @@ interface UserProfileModalProps {
   onClose: () => void;
   onBack?: () => void;
   userId: string | null;
+  context?: "coach" | "participant" | "facility" | "company";
 }
 
 const UserProfileModal: React.FC<UserProfileModalProps> = ({
@@ -42,6 +43,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
   onClose,
   onBack,
   userId,
+  context,
 }) => {
   const [user, setUser] = useState<UserType | null>(null);
   const [mainSport, setMainSport] = useState<string>("");
@@ -97,8 +99,8 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
     setIsLoadingExtras(true);
 
     try {
-      // Fetch main sport name if participant exists
-      if (user.participant?.mainSport) {
+      // Fetch main sport name if participant exists and context allows it
+      if (user.participant?.mainSport && (!context || context === "participant")) {
         const sportResponse = await fetchJSON(EP.REFERENCE.sportGroup, {
           method: "POST",
           body: { sport: user.participant.mainSport },
@@ -109,8 +111,8 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
         }
       }
 
-      // Fetch sport goal details if participant exists
-      if (user.participant?.sportGoal) {
+      // Fetch sport goal details if participant exists and context allows it
+      if (user.participant?.sportGoal && (!context || context === "participant")) {
         const sportGoalResponse: SportGoalResponse = await fetchJSON(
           EP.REFERENCE.sportGoal,
           {
@@ -129,8 +131,8 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
         }
       }
 
-      // Fetch coach details if coach exists
-      if (user.coach?._id) {
+      // Fetch coach details if coach exists and context allows it
+      if (user.coach?._id && (!context || context === "coach")) {
         const coachResponse: CoachDetailsResponse = await fetchJSON(
           EP.COACH.getCoachById(user.coach._id)
         );
@@ -265,7 +267,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
               </div>
 
               {/* Participant Details */}
-              {user.participant && (
+              {user.participant && (!context || context === "participant") && (
                 <div className="border-t pt-6">
                   <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                     <Trophy className="w-5 h-5 text-cyan-600" />
@@ -328,7 +330,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
               )}
 
               {/* Coach Information */}
-              {(user.coach || coachDetails) && (
+              {(user.coach || coachDetails) && (!context || context === "coach") && (
                 <div className="border-t pt-6">
                   <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                     <Award className="w-5 h-5 text-green-600" />
@@ -519,12 +521,12 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
               )}
 
               {/* Facilities and Companies */}
-              {(user.facility.length > 0 || user.company.length > 0) && (
+              {((user.facility.length > 0 && context !== "participant") || (user.company.length > 0 && context !== "coach" && context !== "participant")) && (
                 <div className="border-t pt-6">
                   <h4 className="text-lg font-semibold text-gray-800 mb-4">
                     Associated with
                   </h4>
-                  {user.facility.length > 0 && (
+                  {user.facility.length > 0 && context !== "participant" && (
                     <div className="mb-4">
                       <h5 className="text-md font-medium text-gray-800 mb-2">
                         Sports Facilities ({user.facility.length})
@@ -555,7 +557,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       </div>
                     </div>
                   )}
-                  {user.company.length > 0 && (
+                  {user.company.length > 0 && context !== "coach" && context !== "participant" && (
                     <div>
                       <h5 className="text-md font-medium text-gray-800 mb-2">
                         Companies ({user.company.length})
