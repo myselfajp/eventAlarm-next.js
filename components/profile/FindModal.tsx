@@ -51,6 +51,9 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
     perPage: 10,
   });
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedUserContext, setSelectedUserContext] = useState<
+    "coach" | "participant"
+  >("coach");
   const [showProfile, setShowProfile] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(
@@ -101,12 +104,16 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const searchUsers = async (
-    filters: UserSearchFilters & { userType?: "coach" | "participant" }
-  ) => {
+  const searchCoaches = async (filters: {
+    search?: string;
+    sport?: string;
+    pageNumber?: number;
+    perPage?: number;
+    isVerified?: boolean;
+  }) => {
     setIsLoading(true);
     setError(null);
-    setHasSearched(true);
+    setHasSearched(!!filters.search);
 
     try {
       const payload: any = {
@@ -118,56 +125,87 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
         payload.search = filters.search.trim();
       }
 
-      if (sportGroupFilter) {
-        payload.sportGroup = sportGroupFilter;
+      if (filters.sport) {
+        payload.sport = filters.sport;
       }
 
-      if (sportFilter) {
-        // For coaches, use 'sport' field instead of 'mainSport'
-        if (filters.userType === "coach") {
-          payload.sport = sportFilter;
-        } else {
-          payload.mainSport = sportFilter;
-        }
-      } else if (filters.mainSport) {
-        // If sportFilter is not set but filters.mainSport exists (from other sources)
-        payload.mainSport = filters.mainSport;
+      if (filters.isVerified !== undefined) {
+        payload.isVerified = filters.isVerified;
       }
 
-      // Note: API doesn't seem to support filtering by coach/participant status
-      // We'll filter the results after receiving them
-
-      const response: UserSearchResponse = await fetchJSON(EP.AUTH.getUsers, {
+      const response = await fetchJSON(EP.COACH.getCoachList, {
         method: "POST",
         body: payload,
       });
 
       if (response?.success && response?.data) {
-        // Filter results based on selected user type
-        let filteredData = response.data;
-        if (filters.userType === "coach") {
-          filteredData = response.data.filter((user) => user.coach !== null);
-        } else if (filters.userType === "participant") {
-          filteredData = response.data.filter(
-            (user) => user.participant !== null
-          );
-        }
-
-        setSearchResults(filteredData);
+        setSearchResults(response.data);
         setPagination({
-          currentPage: response.pageNumber || 1,
-          totalPages: response.totalPages || 1,
-          total: response.total || 0, // Note: This total is for unfiltered results, but we're showing filtered
-          perPage: response.perPage || 10,
+          currentPage: response.pagination?.page || response.pageNumber || 1,
+          totalPages:
+            response.pagination?.totalPages || response.totalPages || 1,
+          total: response.pagination?.total || response.total || 0,
+          perPage: response.pagination?.perPage || response.perPage || 10,
         });
       } else {
-        setError(response?.message || "Failed to search users");
+        setError(response?.message || "Failed to search coaches");
         setSearchResults([]);
       }
     } catch (err) {
-      setError("An error occurred while searching users");
+      setError("An error occurred while searching coaches");
       setSearchResults([]);
-      console.error("Error searching users:", err);
+      console.error("Error searching coaches:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const searchParticipants = async (filters: {
+    search?: string;
+    sport?: string;
+    pageNumber?: number;
+    perPage?: number;
+  }) => {
+    setIsLoading(true);
+    setError(null);
+    setHasSearched(!!filters.search);
+
+    try {
+      const payload: any = {
+        perPage: filters.perPage || 10,
+        pageNumber: filters.pageNumber || 1,
+      };
+
+      if (filters.search && filters.search.trim().length >= 2) {
+        payload.search = filters.search.trim();
+      }
+
+      if (filters.sport) {
+        payload.sport = filters.sport;
+      }
+
+      const response = await fetchJSON(EP.PARTICIPANT_LIST.getParticipantList, {
+        method: "POST",
+        body: payload,
+      });
+
+      if (response?.success && response?.data) {
+        setSearchResults(response.data);
+        setPagination({
+          currentPage: response.pagination?.page || response.pageNumber || 1,
+          totalPages:
+            response.pagination?.totalPages || response.totalPages || 1,
+          total: response.pagination?.total || response.total || 0,
+          perPage: response.pagination?.perPage || response.perPage || 10,
+        });
+      } else {
+        setError(response?.message || "Failed to search participants");
+        setSearchResults([]);
+      }
+    } catch (err) {
+      setError("An error occurred while searching participants");
+      setSearchResults([]);
+      console.error("Error searching participants:", err);
     } finally {
       setIsLoading(false);
     }
@@ -271,28 +309,38 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim().length < 2) {
+    if (searchQuery.trim().length < 2 && searchQuery.trim().length > 0) {
       setError("Please enter at least 2 characters to search");
       return;
     }
 
-    if (selectedType === "coach" || selectedType === "participant") {
-      searchUsers({
-        search: searchQuery,
+    setError(null);
+    setHasSearched(searchQuery.trim().length >= 2);
+
+    if (selectedType === "coach") {
+      searchCoaches({
+        search: searchQuery.trim().length >= 2 ? searchQuery : "",
+        sport: sportFilter || undefined,
         pageNumber: 1,
         perPage: pagination.perPage,
-        userType: selectedType,
-        mainSport: sportFilter || undefined,
+        isVerified: true,
+      });
+    } else if (selectedType === "participant") {
+      searchParticipants({
+        search: searchQuery.trim().length >= 2 ? searchQuery : "",
+        sport: sportFilter || undefined,
+        pageNumber: 1,
+        perPage: pagination.perPage,
       });
     } else if (selectedType === "facility") {
       searchFacilities({
-        search: searchQuery,
+        search: searchQuery.trim().length >= 2 ? searchQuery : "",
         pageNumber: 1,
         perPage: pagination.perPage,
       });
     } else if (selectedType === "company") {
       searchCompanies({
-        search: searchQuery,
+        search: searchQuery.trim().length >= 2 ? searchQuery : "",
         pageNumber: 1,
         perPage: pagination.perPage,
       });
@@ -300,36 +348,65 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handlePageChange = (page: number) => {
-    if (selectedType === "coach" || selectedType === "participant") {
-      searchUsers({
-        search: searchQuery,
+    if (selectedType === "coach") {
+      searchCoaches({
+        search: hasSearched ? searchQuery : "",
+        sport: sportFilter || undefined,
         pageNumber: page,
         perPage: pagination.perPage,
-        userType: selectedType,
-        mainSport: sportFilter || undefined,
+        isVerified: true,
+      });
+    } else if (selectedType === "participant") {
+      searchParticipants({
+        search: hasSearched ? searchQuery : "",
+        sport: sportFilter || undefined,
+        pageNumber: page,
+        perPage: pagination.perPage,
       });
     } else if (selectedType === "facility") {
       searchFacilities({
-        search: searchQuery,
+        search: hasSearched ? searchQuery : "",
         pageNumber: page,
         perPage: pagination.perPage,
       });
     } else if (selectedType === "company") {
       searchCompanies({
-        search: searchQuery,
+        search: hasSearched ? searchQuery : "",
         pageNumber: page,
         perPage: pagination.perPage,
       });
     }
   };
 
-  // Fetch sports and groups when modal opens
+  // Load initial data when modal opens
   useEffect(() => {
-    if (
-      isOpen &&
-      (selectedType === "coach" || selectedType === "participant")
-    ) {
-      fetchSportsAndGroups();
+    if (isOpen) {
+      if (selectedType === "coach") {
+        fetchSportsAndGroups();
+        // Load initial coaches - only verified ones
+        searchCoaches({
+          pageNumber: 1,
+          perPage: pagination.perPage,
+          isVerified: true,
+        });
+      } else if (selectedType === "participant") {
+        fetchSportsAndGroups();
+        // Load initial participants
+        searchParticipants({
+          pageNumber: 1,
+          perPage: pagination.perPage,
+        });
+      } else if (selectedType === "facility") {
+        searchFacilities({
+          pageNumber: 1,
+          perPage: pagination.perPage,
+        });
+      } else if (selectedType === "company") {
+        searchCompanies({
+          pageNumber: 1,
+          perPage: pagination.perPage,
+        });
+      }
     }
   }, [isOpen, selectedType]);
 
@@ -341,6 +418,28 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
       setSportFilter("");
     }
   }, [sportGroupFilter]);
+
+  // Handle sport filter changes - make API call
+  useEffect(() => {
+    if (sportFilter) {
+      if (selectedType === "coach") {
+        searchCoaches({
+          search: hasSearched ? searchQuery : "",
+          sport: sportFilter,
+          pageNumber: 1,
+          perPage: pagination.perPage,
+          isVerified: true,
+        });
+      } else if (selectedType === "participant") {
+        searchParticipants({
+          search: hasSearched ? searchQuery : "",
+          sport: sportFilter,
+          pageNumber: 1,
+          perPage: pagination.perPage,
+        });
+      }
+    }
+  }, [sportFilter]);
 
   // Clear results when type changes to ensure proper filtering
   useEffect(() => {
@@ -360,8 +459,12 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
     }
   }, [selectedType]);
 
-  const handleUserSelect = (user: UserType) => {
-    setSelectedUserId(user._id);
+  const handleUserSelect = (
+    userId: string,
+    context?: "coach" | "participant"
+  ) => {
+    setSelectedUserId(userId);
+    setSelectedUserContext(context || "coach");
     setShowProfile(true);
   };
 
@@ -378,6 +481,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
   const handleCloseUserProfile = () => {
     setShowProfile(false);
     setSelectedUserId(null);
+    setSelectedUserContext("coach");
   };
 
   const handleCloseFacilityDetails = () => {
@@ -404,6 +508,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
     });
     setShowProfile(false);
     setSelectedUserId(null);
+    setSelectedUserContext("coach");
     setHasSearched(false);
     setSportGroupFilter("");
     setSportFilter("");
@@ -637,43 +742,77 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
               <div className="text-center py-12 text-gray-500">
                 <Search className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                 <p className="text-sm">
-                  {searchQuery.trim().length < 2
-                    ? `Enter at least 2 characters to search for ${selectedType}s`
-                    : `Enter a search term to find ${selectedType}s`}
+                  {hasSearched
+                    ? `No ${selectedType}s found for your search`
+                    : `Loading ${selectedType}s...`}
                 </p>
               </div>
             ) : (
               <div className="divide-y divide-gray-100">
                 {searchResults.map((result, index) => {
-                  if (
-                    selectedType === "coach" ||
-                    selectedType === "participant"
-                  ) {
-                    const user = result as UserType;
+                  if (selectedType === "coach") {
+                    const coach = result as any;
                     return (
                       <div
-                        key={user._id}
-                        onClick={() => handleUserSelect(user)}
+                        key={coach._id}
+                        onClick={() => handleUserSelect(coach._id, "coach")}
                         className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center">
-                            {user.photo ? (
-                              <img
-                                src={user.photo}
-                                alt={`${user.firstName} ${user.lastName}`}
-                                className="w-10 h-10 rounded-full object-cover"
-                              />
-                            ) : (
-                              <User className="w-5 h-5 text-cyan-600" />
-                            )}
+                            <Users className="w-5 h-5 text-cyan-600" />
                           </div>
                           <div className="flex-1">
                             <div className="font-medium text-gray-900">
-                              {user.firstName} {user.lastName}
+                              {coach.firstName} {coach.lastName}
                             </div>
                             <div className="text-sm text-gray-500">
-                              {user.email}
+                              Coach •{" "}
+                              {coach.coach?.membershipLevel || "Standard"}
+                            </div>
+                            <div className="flex gap-1 mt-1">
+                              <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                                Coach
+                              </span>
+                              {coach.coach?.isVerified && (
+                                <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                  Verified
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  } else if (selectedType === "participant") {
+                    const participant = result as any;
+                    return (
+                      <div
+                        key={participant._id}
+                        onClick={() =>
+                          handleUserSelect(participant._id, "participant")
+                        }
+                        className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-cyan-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900">
+                              {participant.name}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {participant.mainSport?.name} • Level{" "}
+                              {participant.skillLevel}
+                            </div>
+                            <div className="flex gap-1 mt-1">
+                              <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                Participant
+                              </span>
+                              <span className="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs rounded-full">
+                                {participant.membershipLevel}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -773,7 +912,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Pagination */}
-          {searchResults.length > 0 && pagination.totalPages > 1 && (
+          {pagination.total > pagination.perPage && (
             <div className="p-4 border-t border-gray-200 flex items-center justify-between">
               <div className="text-sm text-gray-500">
                 Showing {(pagination.currentPage - 1) * pagination.perPage + 1}{" "}
@@ -823,6 +962,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
         isOpen={showProfile}
         onClose={handleCloseUserProfile}
         userId={selectedUserId}
+        context={selectedUserContext}
       />
 
       {/* Facility Details Modal */}

@@ -28,6 +28,10 @@ interface Event {
     _id: string;
     name: string;
   };
+  eventStyle?: {
+    name: string;
+    color: string;
+  };
   startTime: string;
   endTime: string;
   createdAt: string;
@@ -527,9 +531,12 @@ const EventsTable: React.FC<EventsTableProps> = ({
                   <tr
                     key={event._id}
                     onClick={() => handleEventClick(event)}
-                    className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors relative"
+                    style={{
+                      borderLeft: event.eventStyle?.color ? `6px solid ${event.eventStyle.color}` : undefined
+                    }}
                   >
-                    <td className="py-4">
+                    <td className="py-4 pl-3">
                       <div className="flex items-center gap-3">
                         <img
                           src={getImageUrl(event.photo)}
