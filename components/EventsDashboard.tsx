@@ -6,6 +6,7 @@ import LeftSidebar from "./LeftSidebar";
 import RightSidebar from "./RightSidebar";
 import Header from "./Header";
 import EventsTable from "./event/EventsTable";
+import CoachCalendar from "./CoachCalendar";
 import { fetchJSON } from "@/app/lib/api";
 import { EP } from "@/app/lib/endpoints";
 
@@ -15,6 +16,7 @@ const EventsDashboard = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2025, 9, 1));
   const [activeTab, setActiveTab] = useState("all");
   const [calendarView, setCalendarView] = useState("month");
+  const [showCoachCalendar, setShowCoachCalendar] = useState(false);
 
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -141,7 +143,10 @@ const EventsDashboard = () => {
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <LeftSidebar isOpen={leftSidebarOpen} />
+      <LeftSidebar 
+        isOpen={leftSidebarOpen} 
+        onShowCalendar={() => setShowCoachCalendar(true)}
+      />
 
       <div className="flex-1 overflow-auto">
         <Header
@@ -169,20 +174,24 @@ const EventsDashboard = () => {
             </div>
           </div>
 
-          <EventsTable
-            events={events}
-            isLoading={isLoading}
-            error={error}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            pagination={pagination}
-            onPageChange={handlePageChange}
-            onSearchChange={handleSearchChange}
-            onSortChange={handleSortChange}
-            onFilterChange={handleFilterChange}
-            onPrivateToggle={handlePrivateToggle}
-            isPrivateFilter={filters.private}
-          />
+          {showCoachCalendar ? (
+            <CoachCalendar onBack={() => setShowCoachCalendar(false)} />
+          ) : (
+            <EventsTable
+              events={events}
+              isLoading={isLoading}
+              error={error}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              pagination={pagination}
+              onPageChange={handlePageChange}
+              onSearchChange={handleSearchChange}
+              onSortChange={handleSortChange}
+              onFilterChange={handleFilterChange}
+              onPrivateToggle={handlePrivateToggle}
+              isPrivateFilter={filters.private}
+            />
+          )}
         </div>
       </div>
 

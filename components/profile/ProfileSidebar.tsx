@@ -15,6 +15,7 @@ import {
   Trash2,
   Edit,
   Check,
+  Calendar,
 } from "lucide-react";
 import { useMe } from "@/app/hooks/useAuth";
 import { useQueryClient } from "@tanstack/react-query";
@@ -28,12 +29,14 @@ import FindModal from "./FindModal";
 
 interface ProfileSidebarProps {
   onLogout: () => void;
+  onShowCalendar?: () => void;
   initialFacilities?: any[];
   initialCompanies?: any[];
 }
 
 const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   onLogout,
+  onShowCalendar,
   initialFacilities = [],
   initialCompanies = [],
 }) => {
@@ -368,6 +371,21 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             </div>
           </div>
         </button>
+
+        {hasCoachProfile && onShowCalendar && (
+          <button
+            onClick={onShowCalendar}
+            className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <Calendar className="w-4 h-4 mr-3 text-gray-500" />
+            <div className="flex-1 text-left">
+              <div>My Calendar</div>
+              <div className="text-xs text-gray-400">
+                View events & schedules
+              </div>
+            </div>
+          </button>
+        )}
 
         <a
           href="#"
