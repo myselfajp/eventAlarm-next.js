@@ -76,8 +76,8 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isOpen }) => {
 
   return (
     <div
-      className={`${isOpen ? "w-80" : "w-0"} lg:${
-        isOpen ? "w-80" : "w-0"
+      className={`${
+        isOpen ? "w-full sm:w-96 md:w-[400px]" : "w-0"
       } h-screen bg-white border-r border-gray-200 transition-all duration-300 overflow-hidden flex-shrink-0`}
     >
       {userLoading ? (

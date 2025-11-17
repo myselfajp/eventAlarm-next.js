@@ -48,7 +48,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
     currentPage: 1,
     totalPages: 1,
     total: 0,
-    perPage: 10,
+    perPage: 5,
   });
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedUserContext, setSelectedUserContext] = useState<
@@ -117,7 +117,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
 
     try {
       const payload: any = {
-        perPage: filters.perPage || 10,
+        perPage: filters.perPage || 5,
         pageNumber: filters.pageNumber || 1,
       };
 
@@ -145,7 +145,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
           totalPages:
             response.pagination?.totalPages || response.totalPages || 1,
           total: response.pagination?.total || response.total || 0,
-          perPage: response.pagination?.perPage || response.perPage || 10,
+          perPage: response.pagination?.perPage || response.perPage || 5,
         });
       } else {
         setError(response?.message || "Failed to search coaches");
@@ -172,7 +172,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
 
     try {
       const payload: any = {
-        perPage: filters.perPage || 10,
+        perPage: filters.perPage || 5,
         pageNumber: filters.pageNumber || 1,
       };
 
@@ -196,7 +196,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
           totalPages:
             response.pagination?.totalPages || response.totalPages || 1,
           total: response.pagination?.total || response.total || 0,
-          perPage: response.pagination?.perPage || response.perPage || 10,
+          perPage: response.pagination?.perPage || response.perPage || 5,
         });
       } else {
         setError(response?.message || "Failed to search participants");
@@ -222,7 +222,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
 
     try {
       const payload: any = {
-        perPage: filters.perPage || 10,
+        perPage: filters.perPage || 5,
         pageNumber: filters.pageNumber || 1,
       };
 
@@ -244,7 +244,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
           currentPage: response.pageNumber || 1,
           totalPages: response.totalPages || 1,
           total: response.total || 0,
-          perPage: response.perPage || 10,
+          perPage: response.perPage || 5,
         });
       } else {
         setError(response?.message || "Failed to search facilities");
@@ -270,7 +270,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
 
     try {
       const payload: any = {
-        perPage: filters.perPage || 10,
+        perPage: filters.perPage || 5,
         pageNumber: filters.pageNumber || 1,
       };
 
@@ -292,7 +292,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
           currentPage: response.pageNumber || 1,
           totalPages: response.totalPages || 1,
           total: response.total || 0,
-          perPage: response.perPage || 10,
+          perPage: response.perPage || 5,
         });
       } else {
         setError(response?.message || "Failed to search companies");
@@ -448,7 +448,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
       currentPage: 1,
       totalPages: 1,
       total: 0,
-      perPage: 10,
+      perPage: 5,
     });
     setError(null);
     setHasSearched(false);
@@ -504,7 +504,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
       currentPage: 1,
       totalPages: 1,
       total: 0,
-      perPage: 10,
+      perPage: 5,
     });
     setShowProfile(false);
     setSelectedUserId(null);
@@ -755,7 +755,9 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                     return (
                       <div
                         key={coach._id}
-                        onClick={() => handleUserSelect(coach._id, "coach")}
+                        onClick={() =>
+                          handleUserSelect(coach.coach._id, "coach")
+                        }
                         className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
                       >
                         <div className="flex items-center gap-3">
@@ -929,7 +931,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                   disabled={pagination.currentPage === 1}
                   className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
                 <span className="text-sm text-gray-600">
                   Page {pagination.currentPage} of {pagination.totalPages}
@@ -939,7 +941,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                   disabled={pagination.currentPage === pagination.totalPages}
                   className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
