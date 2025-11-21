@@ -52,6 +52,19 @@ export const EP = {
       `${COACH_DATA_API}/get-by-detail/${coachId}`,
     getCoachList: `${API_V1_BASE}/get-coach-list`,
   },
+  FACILITY: {
+    base: `${API_V1_BASE}/facility`,
+    getFacility: `${API_V1_BASE}/get-facility`,
+    createFacility: `${API_V1_BASE}/facility/create-facility`,
+    editFacility: (id: string) => `${API_V1_BASE}/facility/${id}`,
+    deleteFacility: (id: string) => `${API_V1_BASE}/facility/${id}`,
+  },
+  COMPANY: { getCompany: `${API_V1_BASE}/get-company` },
+  SALON: {
+    getSalon: `${API_V1_BASE}/get-salon`,
+    getSalonsByFacility: (facilityId: string) =>
+      `${API_V1_BASE}/get-salon/${facilityId}`,
+  },
   PARTICIPANT_LIST: {
     getParticipantList: `${API_V1_BASE}/get-participant-list`,
   },

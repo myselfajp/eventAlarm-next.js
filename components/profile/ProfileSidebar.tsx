@@ -18,6 +18,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { useMe } from "@/app/hooks/useAuth";
+import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { fetchJSON } from "@/app/lib/api";
 import { EP } from "@/app/lib/endpoints";
@@ -26,6 +27,18 @@ import CoachModal from "./CoachModal";
 import FacilityModal from "./FacilityModal";
 import CompanyModal from "./CompanyModal";
 import FindModal from "./FindModal";
+import {
+  getFacilities,
+  getSports,
+  createFacility,
+  updateFacility,
+  deleteFacility,
+  getSalons,
+  deleteSalon,
+  Facility,
+} from "@/app/lib/facility-api";
+import DeleteConfirmationModal from "./DeleteConfirmationModal";
+import { EP } from "@/app/lib/endpoints";
 
 interface ProfileSidebarProps {
   onLogout: () => void;
@@ -49,7 +62,83 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   const [isCoachModalOpen, setIsCoachModalOpen] = useState(false);
   const [isFacilityModalOpen, setIsFacilityModalOpen] = useState(false);
   const [isFacilitiesListOpen, setIsFacilitiesListOpen] = useState(false);
-  const [facilities, setFacilities] = useState<any[]>(initialFacilities);
+  
+  const { data: allFacilities = [] } = useQuery({
+    queryKey: ["facilities"],
+    queryFn: () => getFacilities(),
+    enabled: !!user,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  const { data: sports = [] } = useQuery({
+    queryKey: ["reference", "sports"],
+    queryFn: () => getSports(1, 100),
+    staleTime: 1000 * 60 * 60, // 1 hour
+  });
+
+  const facilities = React.useMemo(() => {
+    if (!user?.facility || !Array.isArray(user.facility)) return [];
+    return allFacilities.filter((facility: Facility) => 
+      user.facility.includes(facility._id)
+    );
+  }, [allFacilities, user?.facility]);
+
+  const createFacilityMutation = useMutation({
+    mutationFn: createFacility,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["facilities"] });
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+    },
+  });
+
+  const updateFacilityMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: FormData }) =>
+      updateFacility(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["facilities"] });
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+    },
+  });
+
+  const [deleteModalState, setDeleteModalState] = useState({
+    isOpen: false,
+    facilityId: "",
+    isLoading: false,
+    isSuccess: false,
+    error: "",
+  });
+
+  const deleteFacilityMutation = useMutation({
+    mutationFn: deleteFacility,
+    onMutate: () => {
+      setDeleteModalState((prev) => ({ ...prev, isLoading: true, error: "" }));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["facilities"] });
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      setDeleteModalState((prev) => ({
+        ...prev,
+        isLoading: false,
+        isSuccess: true,
+      }));
+      setTimeout(() => {
+        setDeleteModalState((prev) => ({
+          ...prev,
+          isOpen: false,
+          isSuccess: false,
+          facilityId: "",
+        }));
+      }, 1500);
+    },
+    onError: () => {
+      setDeleteModalState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: "Failed to delete facility. Please try again.",
+      }));
+    },
+  });
+
   const [editingFacility, setEditingFacility] = useState<any | null>(null);
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
   const [isCompaniesListOpen, setIsCompaniesListOpen] = useState(false);
@@ -99,6 +188,15 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
     setIsCoachModalOpen(false);
   };
 
+  const handleCreateFacility = async (formData: FormData) => {
+    try {
+      if (editingFacility) {
+        return await updateFacilityMutation.mutateAsync({ id: editingFacility._id, data: formData });
+      } else {
+        return await createFacilityMutation.mutateAsync(formData);
+      }
+    } catch (error) {
+      throw error;
   const handleCreateFacility = async (formData: any) => {
     setIsLoadingFacilities(true);
     setFacilityError(null);
@@ -179,6 +277,39 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
     setIsFacilityModalOpen(true);
   };
 
+  const handleDeleteFacility = (facilityId: string) => {
+    setDeleteModalState({
+      isOpen: true,
+      facilityId,
+      isLoading: false,
+      isSuccess: false,
+      error: "",
+    });
+  };
+
+  const confirmDeleteFacility = async () => {
+    if (deleteModalState.facilityId) {
+      try {
+        setDeleteModalState((prev) => ({ ...prev, isLoading: true, error: "" }));
+        
+        // 1. Fetch all salons for this facility
+        const salons = await getSalons(deleteModalState.facilityId, 1, 100);
+        
+        // 2. Delete all salons
+        if (salons.length > 0) {
+          await Promise.all(salons.map((salon: any) => deleteSalon(salon._id)));
+        }
+        
+        // 3. Delete the facility
+        deleteFacilityMutation.mutate(deleteModalState.facilityId);
+      } catch (error) {
+        console.error("Error deleting facility and salons:", error);
+        setDeleteModalState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: "Failed to delete facility and its salons. Please try again.",
+        }));
+      }
   const handleDeleteFacility = async (facilityId: string) => {
     if (!confirm('Are you sure you want to delete this facility?')) return;
 
@@ -593,6 +724,19 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
         initialData={editingFacility}
       />
 
+      <DeleteConfirmationModal
+        isOpen={deleteModalState.isOpen}
+        onClose={() =>
+          setDeleteModalState((prev) => ({ ...prev, isOpen: false }))
+        }
+        onConfirm={confirmDeleteFacility}
+        isLoading={deleteModalState.isLoading}
+        isSuccess={deleteModalState.isSuccess}
+        error={deleteModalState.error}
+        title="Delete Facility"
+        message="Are you sure you want to delete this facility? This action cannot be undone."
+      />
+
       {/* Facilities List Modal */}
       {isFacilitiesListOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -640,25 +784,30 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                  {facilities.map((facility) => (
+                  {facilities.map((facility: Facility) => (
                     <div
-                      key={facility.id}
-                      className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow relative"
+                      key={facility._id}
+                      onClick={() => {
+                        // Transform API data to form data structure
+                        const editData = {
+                          ...facility,
+                          isPrivate: facility.private || false,
+                          photo: facility.photo
+                            ? `${EP.API_ASSETS_BASE}/${facility.photo.path}`
+                            : "",
+                        };
+                        handleEditFacility(editData);
+                        setIsFacilitiesListOpen(false);
+                      }}
+                      className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow relative cursor-pointer hover:border-cyan-300"
                     >
-                      {/* Edit and Delete Buttons */}
+                      {/* Delete Button */}
                       <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex gap-1.5 sm:gap-2">
                         <button
-                          onClick={() => {
-                            handleEditFacility(facility);
-                            setIsFacilitiesListOpen(false);
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteFacility(facility._id);
                           }}
-                          className="p-1.5 sm:p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteFacility(facility.id)}
                           className="p-1.5 sm:p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
                           title="Delete"
                         >
@@ -668,14 +817,14 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
 
                       {facility.photo && (
                         <img
-                          src={facility.photo}
+                          src={`${EP.API_ASSETS_BASE}/${facility.photo.path}`}
                           alt={facility.name}
                           className="w-full h-40 object-cover rounded-lg mb-3"
                         />
                       )}
                       <h3 className="font-semibold text-gray-800 text-base sm:text-lg mb-2 pr-16 sm:pr-20">
                         {facility.name}
-                        {facility.isPrivate && (
+                        {facility.private && (
                           <span className="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
                             Private
                           </span>
@@ -711,7 +860,15 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                             Main Sport:
                           </span>
                           <span className="text-cyan-600 font-medium">
-                            {facility.mainSport}
+                            {/* We might need to fetch sport name if mainSport is just ID */}
+                            {/* For now displaying ID or if populated name */}
+                            {(() => {
+                              const sportId = typeof facility.mainSport === 'object' 
+                                ? (facility.mainSport as any)._id 
+                                : facility.mainSport;
+                              const sport = sports.find((s: any) => s._id === sportId);
+                              return sport ? sport.name : (typeof facility.mainSport === 'object' ? (facility.mainSport as any).name : facility.mainSport);
+                            })()}
                           </span>
                         </div>
                       </div>
