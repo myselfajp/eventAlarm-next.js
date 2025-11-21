@@ -106,59 +106,47 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl mx-auto max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-          <h2 className="text-xl font-semibold text-gray-800">Event Details</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="p-6">
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Event Image
-                </label>
-                <div className="relative border-2 border-gray-200 rounded-lg overflow-hidden">
-                  {imageUrl ? (
-                    <img
-                      src={imageUrl}
-                      alt="Event"
-                      className="w-full h-48 object-cover"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-48 bg-gray-50">
-                      <ImageIcon className="w-12 h-12 text-gray-300" />
-                      <p className="text-xs text-gray-400 mt-2">No Image</p>
-                    </div>
-                  )}
-                </div>
+        <div className="relative">
+          <div className="relative h-48 bg-gray-200 overflow-visible">
+            {bannerUrl ? (
+              <img
+                src={bannerUrl}
+                alt="Event banner"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full bg-gray-100">
+                <ImageIcon className="w-12 h-12 text-gray-400" />
               </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Event Banner
-                </label>
-                <div className="relative border-2 border-gray-200 rounded-lg overflow-hidden">
-                  {bannerUrl ? (
-                    <img
-                      src={bannerUrl}
-                      alt="Event banner"
-                      className="w-full h-48 object-cover"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-48 bg-gray-50">
-                      <ImageIcon className="w-12 h-12 text-gray-300" />
-                      <p className="text-xs text-gray-400 mt-2">No Banner</p>
-                    </div>
-                  )}
-                </div>
+            )}
+            <div className="absolute bottom-0 left-6 transform translate-y-1/2 z-10">
+              <div className="w-40 h-40 bg-white p-2 rounded-full shadow-xl">
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt="Event"
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center w-full h-full bg-gray-50 rounded-full">
+                    <ImageIcon className="w-16 h-16 text-gray-400" />
+                  </div>
+                )}
               </div>
             </div>
+          </div>
+          <div className="absolute top-4 right-4 z-20">
+            <button
+              onClick={onClose}
+              className="text-white hover:text-gray-200 transition-colors bg-black bg-opacity-50 rounded-full p-2"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6 pt-20">
+          <div className="space-y-6">
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

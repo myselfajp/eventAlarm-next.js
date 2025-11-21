@@ -321,17 +321,9 @@ const CoachModal: React.FC<CoachModalProps> = ({
           level: branch.level,
         };
 
-        if (branch.certificate) {
-          const fileExtension = branch.certificate.name.split(".").pop();
-          const fileName = `coach-certificate-sportId=${branch.sport}.${fileExtension}`;
-          console.log(`Branch ${index + 1} - Certificate name:`, fileName);
-          sportData.certificate = {
-            originalName: fileName,
-            mimeType: branch.certificate.type,
-            size: branch.certificate.size,
-          };
-          newCertificates.push(branch.certificate);
-        } else if (branch.existingCertificate) {
+        // Handle certificate data based on type
+        if (branch.existingCertificate && !branch.certificate) {
+          // EXISTING certificate (update mode) - include full certificate data in JSON
           const oldOriginalName = branch.existingCertificate.originalName;
           const fileExtension = oldOriginalName.split(".").pop();
           const newOriginalName = `coach-certificate-sportId=${branch.sport}.${fileExtension}`;
@@ -342,6 +334,11 @@ const CoachModal: React.FC<CoachModalProps> = ({
             mimeType: branch.existingCertificate.mimeType,
             size: branch.existingCertificate.size,
           };
+        } else if (branch.certificate) {
+          // NEW certificate upload - don't include certificate in JSON, upload file instead
+          // Backend will create certificate from uploaded file
+          newCertificates.push(branch.certificate);
+          // Note: NO certificate in JSON - backend will use uploaded file
         }
 
         return sportData;
@@ -353,8 +350,9 @@ const CoachModal: React.FC<CoachModalProps> = ({
         JSON.stringify(sportsData, null, 2)
       );
 
+      // Upload new certificate files
       formData.branches.forEach((branch, index) => {
-        if (branch.certificate) {
+        if (branch.certificate && !branch.existingCertificate) {
           const fileExtension = branch.certificate.name.split(".").pop();
           const fileName = `coach-certificate-sportId=${branch.sport}.${fileExtension}`;
 

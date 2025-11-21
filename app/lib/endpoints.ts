@@ -15,6 +15,8 @@ const AUTH_API = `${API_V1_BASE}/auth`;
 const REFERENCE_DATA_API = `${API_V1_BASE}/reference-data`;
 const PARTICIPANT_DATA_API = `${API_V1_BASE}/participant`;
 const COACH_DATA_API = `${API_V1_BASE}/coach`;
+const FACILITY_API = `${API_V1_BASE}/facility`;
+const COMPANY_API = `${API_V1_BASE}/company`;
 
 export const EP = {
   API_BASE: API_V1_BASE,
@@ -50,6 +52,9 @@ export const EP = {
       `${COACH_DATA_API}/get-by-detail/${coachId}`,
     getCoachList: `${API_V1_BASE}/get-coach-list`,
   },
+   PARTICIPANT_LIST: {
+    getParticipantList: `${API_V1_BASE}/get-participant-list`,
+  }, 
   FACILITY: {
     base: `${API_V1_BASE}/facility`,
     getFacility: `${API_V1_BASE}/get-facility`,

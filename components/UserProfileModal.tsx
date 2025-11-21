@@ -34,12 +34,14 @@ interface UserProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
   userId: string | null;
+  context?: "coach" | "participant" | "facility" | "company";
 }
 
 const UserProfileModal: React.FC<UserProfileModalProps> = ({
   isOpen,
   onClose,
   userId,
+  context,
 }) => {
   const [user, setUser] = useState<UserType | null>(null);
   const [mainSport, setMainSport] = useState<string>("");
@@ -74,14 +76,72 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
     setError(null);
 
     try {
-      const response: UserDetailsResponse = await fetchJSON(
-        EP.AUTH.getUserById(id)
-      );
+      let response;
 
-      if (response?.success && response?.data) {
-        setUser(response.data);
+      // Use different endpoints based on context
+      if (context === "participant") {
+        // For participants, use participant details endpoint
+        response = await fetchJSON(EP.PARTICIPANT.getDetails(id));
+        if (response?.success && response?.data) {
+          // The participant details endpoint returns { user: [...], participant: {...} }
+          const userData = response.data.user[0];
+          const participantData = response.data.participant;
+
+          if (userData && participantData) {
+            // Merge user and participant data for display
+            const mergedUser = {
+              ...userData,
+              participant: {
+                _id: participantData._id,
+                mainSport: participantData.mainSport?._id,
+                skillLevel: participantData.skillLevel,
+                membershipLevel: participantData.membershipLevel || "Standard",
+                point: participantData.point || 0,
+                sportGoal: participantData.sportGoal?._id,
+              },
+            };
+            setUser(mergedUser);
+            // Set main sport name for display
+            setMainSport(participantData.mainSport?.name || "Unknown Sport");
+            // Set sport goal for display
+            if (participantData.sportGoal) {
+              setSportGoal(participantData.sportGoal);
+            }
+          } else {
+            throw new Error("User or participant data not found");
+          }
+        }
       } else {
-        setError(response?.message || "Failed to load user details");
+        // For coaches, use the coach details endpoint (includes user data)
+        response = await fetchJSON(EP.COACH.getCoachById(id));
+        if (response?.success && response?.data) {
+          // The coach details endpoint returns comprehensive data
+          const coachData = response.data.coach;
+          const userData = response.data.user;
+
+          if (userData && coachData) {
+            // Merge user and coach data for display
+            const mergedUser = {
+              ...userData,
+              coach: coachData,
+            };
+            setUser(mergedUser);
+
+            // Set coach details for additional display
+            setCoachDetails({
+              coach: coachData,
+              user: [userData], // Array format as expected by interface
+              club: response.data.club || [],
+              clubGroup: response.data.clubGroup || [],
+              branch: response.data.branch || [],
+              event: response.data.event || [],
+            });
+          } else {
+            throw new Error("Coach or user data not found");
+          }
+        } else {
+          setError(response?.message || "Failed to load coach details");
+        }
       }
     } catch (err) {
       setError("An error occurred while loading user details");
@@ -97,7 +157,8 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
     setIsLoadingExtras(true);
 
     // Check if we need to load any extra data
-    const needsSportData = user.participant?.mainSport || user.participant?.sportGoal;
+    const needsSportData =
+      user.participant?.mainSport || user.participant?.sportGoal;
     const needsCoachData = user.coach?._id;
 
     if (!needsSportData && !needsCoachData) {
@@ -108,8 +169,11 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
     }
 
     try {
-      // Fetch main sport name if participant exists
-      if (user.participant?.mainSport) {
+      // Fetch main sport name if participant exists and context allows it
+      if (
+        user.participant?.mainSport &&
+        (!context || context === "participant")
+      ) {
         const sportResponse = await fetchJSON(EP.REFERENCE.sportGroup, {
           method: "POST",
           body: { sport: user.participant.mainSport },
@@ -120,8 +184,11 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
         }
       }
 
-      // Fetch sport goal details if participant exists
-      if (user.participant?.sportGoal) {
+      // Fetch sport goal details if participant exists and context allows it
+      if (
+        user.participant?.sportGoal &&
+        (!context || context === "participant")
+      ) {
         const sportGoalResponse: SportGoalResponse = await fetchJSON(
           EP.REFERENCE.sportGoal,
           {
@@ -140,8 +207,8 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
         }
       }
 
-      // Fetch coach details if coach exists
-      if (user.coach?._id) {
+      // Fetch coach details if coach exists and context allows it
+      if (user.coach?._id && (!context || context === "coach")) {
         const coachResponse: CoachDetailsResponse = await fetchJSON(
           EP.COACH.getCoachById(user.coach._id)
         );
@@ -231,45 +298,17 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 </div>
               </div>
 
-              {/* Contact Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Mail className="w-5 h-5 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-500">Email</p>
-                    <p className="font-medium">{user.email}</p>
-                    {user.isEmailVerified && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <CheckCircle className="w-3 h-3 text-green-500" />
-                        <span className="text-xs text-green-600">Verified</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Phone className="w-5 h-5 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-500">Phone</p>
-                    <p className="font-medium">{user.phone}</p>
-                    {user.isPhoneVerified && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <CheckCircle className="w-3 h-3 text-green-500" />
-                        <span className="text-xs text-green-600">Verified</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Calendar className="w-5 h-5 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-500">Date of Birth</p>
-                    <p className="font-medium">{formatDate(user.age)}</p>
-                  </div>
+              {/* Basic Information */}
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <Calendar className="w-5 h-5 text-gray-500" />
+                <div>
+                  <p className="text-sm text-gray-500">Date of Birth</p>
+                  <p className="font-medium">{formatDate(user.age)}</p>
                 </div>
               </div>
 
               {/* Participant Details */}
-              {user.participant && (
+              {user.participant && (!context || context === "participant") && (
                 <div className="border-t pt-6">
                   <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                     <Trophy className="w-5 h-5 text-cyan-600" />
@@ -294,30 +333,26 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                         </p>
                       </div>
                     </div>
-                    {user.participant.point !== null && (
-                      <div className="flex items-center gap-3 p-3 bg-cyan-50 rounded-lg">
-                        <Trophy className="w-5 h-5 text-cyan-600" />
-                        <div>
-                          <p className="text-sm text-gray-600">Points</p>
-                          <p className="font-medium">
-                            {user.participant.point}
-                          </p>
-                        </div>
+                    <div className="flex items-center gap-3 p-3 bg-cyan-50 rounded-lg">
+                      <Trophy className="w-5 h-5 text-cyan-600" />
+                      <div>
+                        <p className="text-sm text-gray-600">Points</p>
+                        <p className="font-medium">
+                          {user.participant.point || 0}
+                        </p>
                       </div>
-                    )}
-                    {user.participant.membershipLevel !== null && (
-                      <div className="flex items-center gap-3 p-3 bg-cyan-50 rounded-lg">
-                        <Award className="w-5 h-5 text-cyan-600" />
-                        <div>
-                          <p className="text-sm text-gray-600">
-                            Membership Level
-                          </p>
-                          <p className="font-medium">
-                            {user.participant.membershipLevel}
-                          </p>
-                        </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-cyan-50 rounded-lg">
+                      <Award className="w-5 h-5 text-cyan-600" />
+                      <div>
+                        <p className="text-sm text-gray-600">
+                          Membership Level
+                        </p>
+                        <p className="font-medium">
+                          {user.participant.membershipLevel || "Standard"}
+                        </p>
                       </div>
-                    )}
+                    </div>
                     {sportGoal && (
                       <div className="flex items-center gap-3 p-3 bg-cyan-50 rounded-lg">
                         <Target className="w-5 h-5 text-cyan-600" />
@@ -332,30 +367,30 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
               )}
 
               {/* Coach Information */}
-              {(user.coach || coachDetails) && (
-                <div className="border-t pt-6">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <Award className="w-5 h-5 text-green-600" />
-                    Coach Information
-                  </h4>
+              {(user.coach || coachDetails) &&
+                (!context || context === "coach") && (
+                  <div className="border-t pt-6">
+                    <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                      <Award className="w-5 h-5 text-green-600" />
+                      Coach Information
+                    </h4>
 
-                  {/* Basic Coach Info */}
-                  {user.coach && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                        <div>
-                          <p className="text-sm text-gray-600">
-                            Verification Status
-                          </p>
-                          <p className="font-medium">
-                            {user.coach.isVerified
-                              ? "Verified"
-                              : "Pending Verification"}
-                          </p>
+                    {/* Basic Coach Info */}
+                    {user.coach && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <div>
+                            <p className="text-sm text-gray-600">
+                              Verification Status
+                            </p>
+                            <p className="font-medium">
+                              {user.coach.isVerified
+                                ? "Verified"
+                                : "Pending Verification"}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      {user.coach.membershipLevel !== null && (
                         <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
                           <Award className="w-5 h-5 text-green-600" />
                           <div>
@@ -363,154 +398,65 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                               Membership Level
                             </p>
                             <p className="font-medium">
-                              {user.coach.membershipLevel}
+                              {user.coach.membershipLevel || "Standard"}
                             </p>
                           </div>
                         </div>
-                      )}
-                      {user.coach.point !== null && (
                         <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
                           <Trophy className="w-5 h-5 text-green-600" />
                           <div>
                             <p className="text-sm text-gray-600">Points</p>
-                            <p className="font-medium">{user.coach.point}</p>
+                            <p className="font-medium">
+                              {user.coach.point || 0}
+                            </p>
                           </div>
                         </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Coach Branches */}
-                  {coachDetails?.branch && coachDetails.branch.length > 0 && (
-                    <div className="mb-4">
-                      <h5 className="text-md font-medium text-gray-800 mb-2">
-                        Coach Branches ({coachDetails.branch.length})
-                      </h5>
-                      <div className="space-y-2">
-                        {coachDetails.branch.map((branch) => (
-                          <div
-                            key={branch._id}
-                            className="flex items-center gap-3 p-3 bg-green-50 rounded-lg"
-                          >
-                            {branch.certificate ? (
-                              <img
-                                src={`${EP.API_ASSETS_BASE}${branch.certificate.path}`}
-                                alt="Branch Certificate"
-                                className="w-16 h-16 object-cover rounded-lg border"
-                              />
-                            ) : (
-                              <Target className="w-5 h-5 text-green-600" />
-                            )}
-                            <div className="flex-1">
-                              <p className="font-medium">
-                                {branch.sport.name} - {branch.sport.groupName}
-                              </p>
-                              <p className="text-sm text-gray-600">
-                                Level: {branch.level}
-                              </p>
-                              <div className="mt-1">
-                                <span
-                                  className={`px-2 py-0.5 text-xs rounded-full ${
-                                    branch.isApproved
-                                      ? "bg-green-100 text-green-800"
-                                      : branch.status === "Pending"
-                                      ? "bg-blue-100 text-blue-800"
-                                      : "bg-red-100 text-red-800"
-                                  }`}
-                                >
-                                  {branch.isApproved
-                                    ? "Approved"
-                                    : branch.status}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Coach Events */}
-                  {coachDetails?.event && coachDetails.event.length > 0 && (
-                    <div className="mb-4">
-                      <h5 className="text-md font-medium text-gray-800 mb-2">
-                        Coach Events ({coachDetails.event.length})
-                      </h5>
-                      <div className="space-y-2 max-h-60 overflow-y-auto">
-                        {coachDetails.event.map((event) => (
-                          <div
-                            key={event._id}
-                            className="flex items-center gap-3 p-3 bg-green-50 rounded-lg"
-                          >
-                            {event.photo ? (
-                              <img
-                                src={`${EP.API_ASSETS_BASE}${event.photo.path}`}
-                                alt={event.name}
-                                className="w-12 h-12 object-cover rounded-lg border"
-                              />
-                            ) : (
-                              <CalendarIcon className="w-5 h-5 text-green-600" />
-                            )}
-                            <div className="flex-1">
-                              <p className="font-medium">{event.name}</p>
-                              <p className="text-sm text-gray-600">
-                                {event.sportGroup.name} - {event.sport.name}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {formatDate(event.startTime)} • {event.capacity}{" "}
-                                participants
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs text-gray-500">Price</p>
-                              <p className="text-xs font-medium">
-                                {event.priceType === "Free"
-                                  ? "Free"
-                                  : `$${event.participationFee}`}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Coach Club Groups */}
-                  {coachDetails?.clubGroup &&
-                    coachDetails.clubGroup.length > 0 && (
-                      <div className="mb-4">
-                        <h5 className="text-md font-medium text-gray-800 mb-2">
-                          Club Groups ({coachDetails.clubGroup.length})
+                    {/* Coach Branches */}
+                    {coachDetails?.branch && coachDetails.branch.length > 0 && (
+                      <div className="mb-6">
+                        <h5 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
+                          <Target className="w-4 h-4 text-green-600" />
+                          Coaching Specialties ({coachDetails.branch.length})
                         </h5>
-                        <div className="space-y-2">
-                          {coachDetails.clubGroup.map((group) => (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {coachDetails.branch.map((branch) => (
                             <div
-                              key={group._id}
+                              key={branch._id}
                               className="flex items-center gap-3 p-3 bg-green-50 rounded-lg"
                             >
-                              {group.photo ? (
+                              {branch.certificate ? (
                                 <img
-                                  src={`${EP.API_ASSETS_BASE}${group.photo.path}`}
-                                  alt={group.name}
+                                  src={`${EP.API_ASSETS_BASE}${branch.certificate.path}`}
+                                  alt="Branch Certificate"
                                   className="w-12 h-12 object-cover rounded-lg border"
                                 />
                               ) : (
-                                <Users className="w-5 h-5 text-green-600" />
+                                <Target className="w-4 h-4 text-green-600" />
                               )}
                               <div className="flex-1">
-                                <p className="font-medium">{group.name}</p>
-                                <p className="text-sm text-gray-600">
-                                  {group.clubName}
+                                <p className="font-medium text-sm">
+                                  {branch.sport.name} - {branch.sport.groupName}
+                                </p>
+                                <p className="text-xs text-gray-600">
+                                  Level: {branch.level} • Order:{" "}
+                                  {branch.branchOrder}
                                 </p>
                                 <div className="mt-1">
                                   <span
                                     className={`px-2 py-0.5 text-xs rounded-full ${
-                                      group.isApproved
+                                      branch.isApproved
                                         ? "bg-green-100 text-green-800"
-                                        : "bg-blue-100 text-blue-800"
+                                        : branch.status === "Pending"
+                                        ? "bg-blue-100 text-blue-800"
+                                        : "bg-red-100 text-red-800"
                                     }`}
                                   >
-                                    {group.isApproved ? "Approved" : "Pending"}
+                                    {branch.isApproved
+                                      ? "Approved"
+                                      : branch.status}
                                   </span>
                                 </div>
                               </div>
@@ -519,16 +465,175 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                         </div>
                       </div>
                     )}
-                </div>
-              )}
+
+                    {/* Clubs Owned */}
+                    {coachDetails?.club && coachDetails.club.length > 0 && (
+                      <div className="mb-6">
+                        <h5 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
+                          <Building className="w-4 h-4 text-green-600" />
+                          Owned Clubs ({coachDetails.club.length})
+                        </h5>
+                        <div className="space-y-2">
+                          {coachDetails.club.map((club) => (
+                            <div
+                              key={club._id}
+                              className="flex items-center gap-3 p-3 bg-green-50 rounded-lg"
+                            >
+                              <Building className="w-5 h-5 text-green-600" />
+                              <div>
+                                <p className="font-medium">{club.name}</p>
+                                {club.vision && (
+                                  <p className="text-sm text-gray-600">
+                                    {club.vision}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Club Groups Owned */}
+                    {coachDetails?.clubGroup &&
+                      coachDetails.clubGroup.length > 0 && (
+                        <div className="mb-6">
+                          <h5 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
+                            <Users className="w-4 h-4 text-green-600" />
+                            Owned Club Groups ({coachDetails.clubGroup.length})
+                          </h5>
+                          <div className="space-y-2">
+                            {coachDetails.clubGroup.map((group) => (
+                              <div
+                                key={group._id}
+                                className="flex items-center gap-3 p-3 bg-green-50 rounded-lg"
+                              >
+                                {group.photo ? (
+                                  <img
+                                    src={`${EP.API_ASSETS_BASE}${group.photo.path}`}
+                                    alt="Group Photo"
+                                    className="w-12 h-12 object-cover rounded-lg border"
+                                  />
+                                ) : (
+                                  <Users className="w-5 h-5 text-green-600" />
+                                )}
+                                <div className="flex-1">
+                                  <p className="font-medium">{group.name}</p>
+                                  <p className="text-sm text-gray-600">
+                                    Club: {group.clubName}
+                                  </p>
+                                  {group.description && (
+                                    <p className="text-sm text-gray-500 mt-1">
+                                      {group.description}
+                                    </p>
+                                  )}
+                                  <div className="mt-1">
+                                    <span
+                                      className={`px-2 py-0.5 text-xs rounded-full ${
+                                        group.isApproved
+                                          ? "bg-green-100 text-green-800"
+                                          : "bg-blue-100 text-blue-800"
+                                      }`}
+                                    >
+                                      {group.isApproved
+                                        ? "Approved"
+                                        : "Pending"}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* Events Created */}
+                    {coachDetails?.event && coachDetails.event.length > 0 && (
+                      <div className="mb-6">
+                        <h5 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
+                          <CalendarIcon className="w-4 h-4 text-green-600" />
+                          Created Events ({coachDetails.event.length})
+                        </h5>
+                        <div className="space-y-2">
+                          {coachDetails.event.slice(0, 5).map((event) => (
+                            <div
+                              key={event._id}
+                              className="flex items-center gap-3 p-3 bg-green-50 rounded-lg"
+                            >
+                              <CalendarIcon className="w-5 h-5 text-green-600" />
+                              <div className="flex-1">
+                                <p className="font-medium">{event.name}</p>
+                                <p className="text-sm text-gray-600">
+                                  {new Date(
+                                    event.startTime
+                                  ).toLocaleDateString()}
+                                </p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                                    {event.capacity} capacity
+                                  </span>
+                                  <span
+                                    className={`text-xs px-2 py-0.5 rounded-full ${
+                                      event.private
+                                        ? "bg-red-100 text-red-800"
+                                        : "bg-green-100 text-green-800"
+                                    }`}
+                                  >
+                                    {event.private ? "Private" : "Public"}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          {coachDetails.event.length > 5 && (
+                            <p className="text-sm text-gray-500 text-center py-2">
+                              And {coachDetails.event.length - 5} more events...
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Associated Companies */}
+                    {user?.company && user.company.length > 0 && (
+                      <div className="mb-6">
+                        <h5 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
+                          <Building className="w-4 h-4 text-green-600" />
+                          Associated Companies ({user.company.length})
+                        </h5>
+                        <div className="space-y-2">
+                          {user.company.map((company, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center gap-3 p-3 bg-green-50 rounded-lg"
+                            >
+                              <Building className="w-5 h-5 text-green-600" />
+                              <div>
+                                <p className="font-medium">
+                                  Company {index + 1}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  ID: {company}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
               {/* Facilities and Companies */}
-              {(user.facility.length > 0 || user.company.length > 0) && (
+              {((user.facility.length > 0 && context !== "participant") ||
+                (user.company.length > 0 &&
+                  context !== "coach" &&
+                  context !== "participant")) && (
                 <div className="border-t pt-6">
                   <h4 className="text-lg font-semibold text-gray-800 mb-4">
                     Associated with
                   </h4>
-                  {user.facility.length > 0 && (
+                  {user.facility.length > 0 && context !== "participant" && (
                     <div className="mb-4">
                       <h5 className="text-md font-medium text-gray-800 mb-2">
                         Sports Facilities ({user.facility.length})
@@ -559,50 +664,52 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       </div>
                     </div>
                   )}
-                  {user.company.length > 0 && (
-                    <div>
-                      <h5 className="text-md font-medium text-gray-800 mb-2">
-                        Companies ({user.company.length})
-                      </h5>
-                      <div className="space-y-2">
-                        {user.company.map((company) => (
-                          <div
-                            key={company._id}
-                            className="flex items-center gap-3 p-3 bg-green-50 rounded-lg"
-                          >
-                            {company.photo ? (
-                              <img
-                                src={`${EP.API_ASSETS_BASE}${company.photo.path}`}
-                                alt={company.name}
-                                className="w-16 h-16 object-cover rounded-lg border"
-                              />
-                            ) : (
-                              <Building className="w-5 h-5 text-green-600" />
-                            )}
-                            <div className="flex-1">
-                              <p className="font-medium">{company.name}</p>
-                              <p className="text-sm text-gray-600">
-                                <MapPin className="w-4 h-4 inline mr-1" />
-                                {company.address}
-                              </p>
-                              {company.phone && (
-                                <p className="text-sm text-gray-600">
-                                  <Phone className="w-4 h-4 inline mr-1" />
-                                  {company.phone}
-                                </p>
+                  {user.company.length > 0 &&
+                    context !== "coach" &&
+                    context !== "participant" && (
+                      <div>
+                        <h5 className="text-md font-medium text-gray-800 mb-2">
+                          Companies ({user.company.length})
+                        </h5>
+                        <div className="space-y-2">
+                          {user.company.map((company) => (
+                            <div
+                              key={company._id}
+                              className="flex items-center gap-3 p-3 bg-green-50 rounded-lg"
+                            >
+                              {company.photo ? (
+                                <img
+                                  src={`${EP.API_ASSETS_BASE}${company.photo.path}`}
+                                  alt={company.name}
+                                  className="w-16 h-16 object-cover rounded-lg border"
+                                />
+                              ) : (
+                                <Building className="w-5 h-5 text-green-600" />
                               )}
-                              {company.email && (
+                              <div className="flex-1">
+                                <p className="font-medium">{company.name}</p>
                                 <p className="text-sm text-gray-600">
-                                  <Mail className="w-4 h-4 inline mr-1" />
-                                  {company.email}
+                                  <MapPin className="w-4 h-4 inline mr-1" />
+                                  {company.address}
                                 </p>
-                              )}
+                                {company.phone && (
+                                  <p className="text-sm text-gray-600">
+                                    <Phone className="w-4 h-4 inline mr-1" />
+                                    {company.phone}
+                                  </p>
+                                )}
+                                {company.email && (
+                                  <p className="text-sm text-gray-600">
+                                    <Mail className="w-4 h-4 inline mr-1" />
+                                    {company.email}
+                                  </p>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </div>
               )}
             </div>
