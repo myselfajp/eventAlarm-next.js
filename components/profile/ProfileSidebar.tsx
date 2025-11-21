@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   Activity,
@@ -15,9 +15,13 @@ import {
   Trash2,
   Edit,
   Check,
+  Calendar,
 } from "lucide-react";
 import { useMe } from "@/app/hooks/useAuth";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { fetchJSON } from "@/app/lib/api";
+import { EP } from "@/app/lib/endpoints";
 import ParticipantModal from "./ParticipantModal";
 import CoachModal from "./CoachModal";
 import FacilityModal from "./FacilityModal";
@@ -38,12 +42,14 @@ import { EP } from "@/app/lib/endpoints";
 
 interface ProfileSidebarProps {
   onLogout: () => void;
+  onShowCalendar?: () => void;
   initialFacilities?: any[];
   initialCompanies?: any[];
 }
 
 const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   onLogout,
+  onShowCalendar,
   initialFacilities = [],
   initialCompanies = [],
 }) => {
@@ -139,6 +145,20 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   const [companies, setCompanies] = useState<any[]>(initialCompanies);
   const [editingCompany, setEditingCompany] = useState<any | null>(null);
   const [isFindModalOpen, setIsFindModalOpen] = useState(false);
+  const [isLoadingFacilities, setIsLoadingFacilities] = useState(false);
+  const [isLoadingCompanies, setIsLoadingCompanies] = useState(false);
+  const [facilityError, setFacilityError] = useState<string | null>(null);
+  const [companyError, setCompanyError] = useState<string | null>(null);
+
+  // Load facilities and companies from user data
+  useEffect(() => {
+    if (user?.facility) {
+      setFacilities(user.facility);
+    }
+    if (user?.company) {
+      setCompanies(user.company);
+    }
+  }, [user]);
 
   const handleCreateParticipant = async (formData: any) => {
     console.log("Participant profile saved:", formData);
@@ -177,6 +197,64 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
       }
     } catch (error) {
       throw error;
+  const handleCreateFacility = async (formData: any) => {
+    setIsLoadingFacilities(true);
+    setFacilityError(null);
+
+    try {
+      const formDataToSend = new FormData();
+
+      // Convert base64 image to File if photo exists
+      if (formData.photo && formData.photo.startsWith('data:image')) {
+        const response = await fetch(formData.photo);
+        const blob = await response.blob();
+        const file = new File([blob], 'facility-photo.jpg', { type: 'image/jpeg' });
+        formDataToSend.append('facility-photo', file);
+      }
+
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('address', formData.address);
+      if (formData.phone) formDataToSend.append('phone', formData.phone);
+      if (formData.email) formDataToSend.append('email', formData.email);
+      formDataToSend.append('mainSport', formData.mainSport);
+      if (formData.isPrivate !== undefined) formDataToSend.append('private', formData.isPrivate.toString());
+
+      let response;
+      if (editingFacility) {
+        // Edit existing facility
+        response = await fetch(EP.FACILITY.editFacility(editingFacility._id), {
+          method: 'PUT',
+          body: formDataToSend,
+          credentials: 'include',
+        });
+      } else {
+        // Create new facility
+        response = await fetch(EP.FACILITY.createFacility, {
+          method: 'POST',
+          body: formDataToSend,
+          credentials: 'include',
+        });
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save facility');
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Refresh user data to get updated facilities
+        await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+        setEditingFacility(null);
+      } else {
+        throw new Error(result.message || 'Failed to save facility');
+      }
+    } catch (error) {
+      console.error('Error saving facility:', error);
+      setFacilityError(error instanceof Error ? error.message : 'Failed to save facility');
+    } finally {
+      setIsLoadingFacilities(false);
     }
   };
 
@@ -232,24 +310,95 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
           error: "Failed to delete facility and its salons. Please try again.",
         }));
       }
+  const handleDeleteFacility = async (facilityId: string) => {
+    if (!confirm('Are you sure you want to delete this facility?')) return;
+
+    setIsLoadingFacilities(true);
+    setFacilityError(null);
+
+    try {
+      const response = await fetch(EP.FACILITY.deleteFacility(facilityId), {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete facility');
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Refresh user data to get updated facilities
+        await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      } else {
+        throw new Error(result.message || 'Failed to delete facility');
+      }
+    } catch (error) {
+      console.error('Error deleting facility:', error);
+      setFacilityError(error instanceof Error ? error.message : 'Failed to delete facility');
+    } finally {
+      setIsLoadingFacilities(false);
     }
   };
 
-  const handleCreateCompany = (formData: any) => {
-    if (editingCompany) {
-      setCompanies((prev) =>
-        prev.map((company) =>
-          company.id === editingCompany.id
-            ? { ...company, ...formData }
-            : company
-        )
-      );
-      setEditingCompany(null);
-    } else {
-      setCompanies((prev) => [
-        ...prev,
-        { id: Date.now().toString(), ...formData },
-      ]);
+  const handleCreateCompany = async (formData: any) => {
+    setIsLoadingCompanies(true);
+    setCompanyError(null);
+
+    try {
+      const formDataToSend = new FormData();
+
+      // Convert base64 image to File if photo exists
+      if (formData.photo && formData.photo.startsWith('data:image')) {
+        const response = await fetch(formData.photo);
+        const blob = await response.blob();
+        const file = new File([blob], 'company-photo.jpg', { type: 'image/jpeg' });
+        formDataToSend.append('company-photo', file);
+      }
+
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('address', formData.address);
+      if (formData.phone) formDataToSend.append('phone', formData.phone);
+      if (formData.email) formDataToSend.append('email', formData.email);
+
+      let response;
+      if (editingCompany) {
+        // Edit existing company
+        response = await fetch(EP.COMPANY.editCompany(editingCompany._id), {
+          method: 'PUT',
+          body: formDataToSend,
+          credentials: 'include',
+        });
+      } else {
+        // Create new company
+        response = await fetch(EP.COMPANY.createCompany, {
+          method: 'POST',
+          body: formDataToSend,
+          credentials: 'include',
+        });
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save company');
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Refresh user data to get updated companies
+        await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+        setEditingCompany(null);
+      } else {
+        throw new Error(result.message || 'Failed to save company');
+      }
+    } catch (error) {
+      console.error('Error saving company:', error);
+      setCompanyError(error instanceof Error ? error.message : 'Failed to save company');
+    } finally {
+      setIsLoadingCompanies(false);
     }
   };
 
@@ -272,8 +421,37 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
     setIsCompanyModalOpen(true);
   };
 
-  const handleDeleteCompany = (companyId: string) => {
-    setCompanies((prev) => prev.filter((company) => company.id !== companyId));
+  const handleDeleteCompany = async (companyId: string) => {
+    if (!confirm('Are you sure you want to delete this company?')) return;
+
+    setIsLoadingCompanies(true);
+    setCompanyError(null);
+
+    try {
+      const response = await fetch(EP.COMPANY.deleteCompany(companyId), {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete company');
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Refresh user data to get updated companies
+        await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      } else {
+        throw new Error(result.message || 'Failed to delete company');
+      }
+    } catch (error) {
+      console.error('Error deleting company:', error);
+      setCompanyError(error instanceof Error ? error.message : 'Failed to delete company');
+    } finally {
+      setIsLoadingCompanies(false);
+    }
   };
 
   return (
@@ -324,6 +502,21 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             </div>
           </div>
         </button>
+
+        {hasCoachProfile && onShowCalendar && (
+          <button
+            onClick={onShowCalendar}
+            className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <Calendar className="w-4 h-4 mr-3 text-gray-500" />
+            <div className="flex-1 text-left">
+              <div>My Calendar</div>
+              <div className="text-xs text-gray-400">
+                View events & schedules
+              </div>
+            </div>
+          </button>
+        )}
 
         <a
           href="#"
@@ -576,6 +769,11 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
 
             {/* Modal Body */}
             <div className="p-4 sm:p-6">
+              {facilityError && (
+                <div className="mb-4 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg">
+                  {facilityError}
+                </div>
+              )}
               {facilities.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <Home className="w-16 h-16 mx-auto mb-4 text-gray-300" />
@@ -733,6 +931,11 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
 
             {/* Modal Body */}
             <div className="p-4 sm:p-6">
+              {companyError && (
+                <div className="mb-4 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg">
+                  {companyError}
+                </div>
+              )}
               {companies.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <Building className="w-16 h-16 mx-auto mb-4 text-gray-300" />

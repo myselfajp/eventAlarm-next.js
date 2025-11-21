@@ -330,7 +330,7 @@ const UserSearch: React.FC<UserSearchProps> = ({
                 disabled={pagination.currentPage === 1}
                 className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronLeft className="w-4 h-4" />
               </button>
               <span className="text-sm text-gray-600">
                 Page {pagination.currentPage} of {pagination.totalPages}
@@ -340,7 +340,7 @@ const UserSearch: React.FC<UserSearchProps> = ({
                 disabled={pagination.currentPage === pagination.totalPages}
                 className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>

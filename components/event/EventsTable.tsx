@@ -28,6 +28,10 @@ interface Event {
     _id: string;
     name: string;
   };
+  eventStyle?: {
+    name: string;
+    color: string;
+  };
   startTime: string;
   endTime: string;
   createdAt: string;
@@ -312,15 +316,15 @@ const EventsTable: React.FC<EventsTableProps> = ({
   const endIndex = Math.min(startIndex + pagination.perPage, pagination.total);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
       <div className="flex items-center justify-between mb-6 border-b border-gray-200 pb-4">
         <div className="flex gap-4">
           <button
             onClick={() => setActiveTab("all")}
-            className={`pb-2 font-medium ${
+            className={`pb-2 font-semibold transition-colors ${
               activeTab === "all"
-                ? "text-gray-800 border-b-2 border-gray-800"
-                : "text-gray-500"
+                ? "text-cyan-600 border-b-2 border-cyan-600"
+                : "text-gray-500 hover:text-gray-700"
             }`}
           >
             All Events ({pagination.total})
@@ -473,93 +477,102 @@ const EventsTable: React.FC<EventsTableProps> = ({
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200 text-left">
-                  <th className="pb-3 text-sm font-medium text-gray-600">
+                <tr className="border-b-2 border-gray-200 bg-gray-50 text-left">
+                  <th className="pb-4 pt-4 px-4 text-sm font-semibold text-gray-700">
                     <button
                       onClick={() => handleSort("name")}
-                      className="flex items-center hover:text-gray-900 transition-colors"
+                      className="flex items-center hover:text-cyan-600 transition-colors"
                     >
-                      Event-Name
+                      Event Name
                       {getSortIcon("name")}
                     </button>
                   </th>
-                  <th className="pb-3 text-sm font-medium text-gray-600">
+                  <th className="pb-4 pt-4 px-4 text-sm font-semibold text-gray-700">
                     <button
                       onClick={() => handleSort("sportGroup")}
-                      className="flex items-center hover:text-gray-900 transition-colors"
+                      className="flex items-center hover:text-cyan-600 transition-colors"
                     >
                       Group
                       {getSortIcon("sportGroup")}
                     </button>
                   </th>
-                  <th className="pb-3 text-sm font-medium text-gray-600">
+                  <th className="pb-4 pt-4 px-4 text-sm font-semibold text-gray-700">
                     <button
                       onClick={() => handleSort("sport")}
-                      className="flex items-center hover:text-gray-900 transition-colors"
+                      className="flex items-center hover:text-cyan-600 transition-colors"
                     >
                       Sport
                       {getSortIcon("sport")}
                     </button>
                   </th>
-                  <th className="pb-3 text-sm font-medium text-gray-600">
+                  <th className="pb-4 pt-4 px-4 text-sm font-semibold text-gray-700">
                     <button
                       onClick={() => handleSort("startTime")}
-                      className="flex items-center hover:text-gray-900 transition-colors"
+                      className="flex items-center hover:text-cyan-600 transition-colors"
                     >
-                      Start
+                      Start Time
                       {getSortIcon("startTime")}
                     </button>
                   </th>
-                  <th className="pb-3 text-sm font-medium text-gray-600">
+                  <th className="pb-4 pt-4 px-4 text-sm font-semibold text-gray-700">
                     <button
                       onClick={() => handleSort("endTime")}
-                      className="flex items-center hover:text-gray-900 transition-colors"
+                      className="flex items-center hover:text-cyan-600 transition-colors"
                     >
-                      End
+                      End Time
                       {getSortIcon("endTime")}
                     </button>
                   </th>
-                  <th className="pb-3"></th>
+                  <th className="pb-4 pt-4 px-4"></th>
                 </tr>
               </thead>
               <tbody>
-                {events.map((event) => (
+                {events.map((event, index) => (
                   <tr
                     key={event._id}
                     onClick={() => handleEventClick(event)}
-                    className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+                    className={`border-b border-gray-100 hover:bg-cyan-50 cursor-pointer transition-all duration-200 relative group ${
+                      index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+                    }`}
+                    style={{
+                      borderLeft: event.eventStyle?.color ? `4px solid ${event.eventStyle.color}` : "4px solid transparent"
+                    }}
                   >
-                    <td className="py-4">
-                      <div className="flex items-center gap-3">
+                    <td className="py-5 px-4">
+                      <div className="flex items-center gap-4">
                         <img
                           src={getImageUrl(event.photo)}
                           alt={event.name}
-                          className="w-12 h-12 rounded-lg object-cover"
+                          className="w-14 h-14 rounded-xl object-cover shadow-sm border border-gray-200"
                         />
                         <div>
-                          <div className="font-medium text-gray-800">
+                          <div className="font-semibold text-gray-800 mb-1">
                             {event.name || "NO-NAME"}
                           </div>
                           <div className="text-xs text-gray-500">
-                            Create on {formatDate(event.createdAt)}
+                            Created {formatDate(event.createdAt)}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 text-gray-700">
-                      {event.sportGroup?.name || "Unknown"}
+                    <td className="py-5 px-4">
+                      <span className="inline-block px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium">
+                        {event.sportGroup?.name || "Unknown"}
+                      </span>
                     </td>
-                    <td className="py-4 text-gray-700">
-                      {event.sport?.name || "Unknown"}
+                    <td className="py-5 px-4">
+                      <span className="inline-block px-3 py-1 bg-green-50 text-green-700 rounded-lg text-sm font-medium">
+                        {event.sport?.name || "Unknown"}
+                      </span>
                     </td>
-                    <td className="py-4 text-gray-700">
+                    <td className="py-5 px-4 text-gray-700 font-medium">
                       {formatDate(event.startTime)}
                     </td>
-                    <td className="py-4 text-gray-700">
+                    <td className="py-5 px-4 text-gray-700 font-medium">
                       {formatDate(event.endTime)}
                     </td>
-                    <td className="py-4">
-                      <button className="text-gray-400 hover:text-gray-600">
+                    <td className="py-5 px-4">
+                      <button className="text-gray-400 group-hover:text-cyan-600 transition-colors text-lg font-bold">
                         →
                       </button>
                     </td>
@@ -570,22 +583,21 @@ const EventsTable: React.FC<EventsTableProps> = ({
           </div>
 
           {pagination.total > 0 && (
-            <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-4">
-              <div className="text-sm text-gray-600">
-                Showing {startIndex + 1}-{endIndex} of {pagination.total}{" "}
-                entries
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 pt-5">
+              <div className="text-sm text-gray-600 font-medium">
+                Showing <span className="text-cyan-600 font-semibold">{startIndex + 1}</span> to <span className="text-cyan-600 font-semibold">{endIndex}</span> of <span className="text-cyan-600 font-semibold">{pagination.total}</span> entries
               </div>
 
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => goToPage(pagination.currentPage - 1)}
                   disabled={pagination.currentPage === 1}
-                  className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="p-2.5 rounded-lg border border-gray-300 hover:bg-cyan-50 hover:border-cyan-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
 
-                <div className="hidden sm:flex items-center gap-1">
+                <div className="hidden sm:flex items-center gap-1.5">
                   {getPageNumbers().map((page, index) => (
                     <React.Fragment key={index}>
                       {page === "..." ? (
@@ -593,10 +605,10 @@ const EventsTable: React.FC<EventsTableProps> = ({
                       ) : (
                         <button
                           onClick={() => goToPage(page as number)}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                             pagination.currentPage === page
-                              ? "bg-cyan-500 text-white"
-                              : "border border-gray-300 hover:bg-gray-50 text-gray-700"
+                              ? "bg-cyan-500 text-white shadow-md"
+                              : "border border-gray-300 hover:bg-cyan-50 hover:border-cyan-300 text-gray-700"
                           }`}
                         >
                           {page}
@@ -606,14 +618,14 @@ const EventsTable: React.FC<EventsTableProps> = ({
                   ))}
                 </div>
 
-                <div className="sm:hidden flex items-center gap-2 text-sm font-medium text-gray-700">
+                <div className="sm:hidden flex items-center gap-2 text-sm font-semibold text-gray-700">
                   Page {pagination.currentPage} of {pagination.totalPages}
                 </div>
 
                 <button
                   onClick={() => goToPage(pagination.currentPage + 1)}
                   disabled={pagination.currentPage === pagination.totalPages}
-                  className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="p-2.5 rounded-lg border border-gray-300 hover:bg-cyan-50 hover:border-cyan-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
