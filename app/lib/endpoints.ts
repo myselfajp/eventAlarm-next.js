@@ -51,13 +51,18 @@ export const EP = {
     getCoachList: `${API_V1_BASE}/get-coach-list`,
   },
   FACILITY: {
+    base: `${API_V1_BASE}/facility`,
     getFacility: `${API_V1_BASE}/get-facility`,
     createFacility: `${API_V1_BASE}/facility/create-facility`,
     editFacility: (id: string) => `${API_V1_BASE}/facility/${id}`,
     deleteFacility: (id: string) => `${API_V1_BASE}/facility/${id}`,
   },
   COMPANY: { getCompany: `${API_V1_BASE}/get-company` },
-  SALON: { getSalon: `${API_V1_BASE}/get-salon` },
+  SALON: {
+    getSalon: `${API_V1_BASE}/get-salon`,
+    getSalonsByFacility: (facilityId: string) =>
+      `${API_V1_BASE}/get-salon/${facilityId}`,
+  },
   CLUB: { getClub: `${API_V1_BASE}/get-club` },
   CLUB_GROUPS: { getClubGroups: `${API_V1_BASE}/get-group` },
   EVENT_STYLE: { getEventStyle: `${API_V1_BASE}/get-event-style` },

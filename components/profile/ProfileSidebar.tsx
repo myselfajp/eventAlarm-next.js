@@ -29,6 +29,8 @@ import {
   createFacility,
   updateFacility,
   deleteFacility,
+  getSalons,
+  deleteSalon,
   Facility,
 } from "@/app/lib/facility-api";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
@@ -169,9 +171,9 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   const handleCreateFacility = async (formData: FormData) => {
     try {
       if (editingFacility) {
-        await updateFacilityMutation.mutateAsync({ id: editingFacility._id, data: formData });
+        return await updateFacilityMutation.mutateAsync({ id: editingFacility._id, data: formData });
       } else {
-        await createFacilityMutation.mutateAsync(formData);
+        return await createFacilityMutation.mutateAsync(formData);
       }
     } catch (error) {
       throw error;
@@ -207,9 +209,29 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
     });
   };
 
-  const confirmDeleteFacility = () => {
+  const confirmDeleteFacility = async () => {
     if (deleteModalState.facilityId) {
-      deleteFacilityMutation.mutate(deleteModalState.facilityId);
+      try {
+        setDeleteModalState((prev) => ({ ...prev, isLoading: true, error: "" }));
+        
+        // 1. Fetch all salons for this facility
+        const salons = await getSalons(deleteModalState.facilityId, 1, 100);
+        
+        // 2. Delete all salons
+        if (salons.length > 0) {
+          await Promise.all(salons.map((salon: any) => deleteSalon(salon._id)));
+        }
+        
+        // 3. Delete the facility
+        deleteFacilityMutation.mutate(deleteModalState.facilityId);
+      } catch (error) {
+        console.error("Error deleting facility and salons:", error);
+        setDeleteModalState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: "Failed to delete facility and its salons. Please try again.",
+        }));
+      }
     }
   };
 
@@ -567,30 +589,27 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                   {facilities.map((facility: Facility) => (
                     <div
                       key={facility._id}
-                      className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow relative"
+                      onClick={() => {
+                        // Transform API data to form data structure
+                        const editData = {
+                          ...facility,
+                          isPrivate: facility.private || false,
+                          photo: facility.photo
+                            ? `${EP.API_ASSETS_BASE}/${facility.photo.path}`
+                            : "",
+                        };
+                        handleEditFacility(editData);
+                        setIsFacilitiesListOpen(false);
+                      }}
+                      className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow relative cursor-pointer hover:border-cyan-300"
                     >
-                      {/* Edit and Delete Buttons */}
+                      {/* Delete Button */}
                       <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex gap-1.5 sm:gap-2">
                         <button
-                          onClick={() => {
-                            // Transform API data to form data structure
-                            const editData = {
-                              ...facility,
-                              isPrivate: facility.private || false,
-                              photo: facility.photo
-                                ? `${EP.API_ASSETS_BASE}/${facility.photo.path}`
-                                : "",
-                            };
-                            handleEditFacility(editData);
-                            setIsFacilitiesListOpen(false);
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteFacility(facility._id);
                           }}
-                          className="p-1.5 sm:p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteFacility(facility._id)}
                           className="p-1.5 sm:p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
                           title="Delete"
                         >
