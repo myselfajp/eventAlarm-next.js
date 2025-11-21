@@ -20,7 +20,7 @@ import {
 import { useMe } from "@/app/hooks/useAuth";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { fetchJSON } from "@/app/lib/api";
-import { EP } from "@/app/lib/endpoints";
+// import { EP } from "@/app/lib/endpoints";
 import ParticipantModal from "./ParticipantModal";
 import CoachModal from "./CoachModal";
 import FacilityModal from "./FacilityModal";
@@ -152,7 +152,6 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   // Load facilities and companies from user data
   useEffect(() => {
     if (user?.facility) {
-      setFacilities(user.facility);
     }
     if (user?.company) {
       setCompanies(user.company);

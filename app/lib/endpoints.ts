@@ -62,7 +62,12 @@ export const EP = {
     editFacility: (id: string) => `${API_V1_BASE}/facility/${id}`,
     deleteFacility: (id: string) => `${API_V1_BASE}/facility/${id}`,
   },
-  COMPANY: { getCompany: `${API_V1_BASE}/get-company` },
+  COMPANY: {
+    getCompany: `${API_V1_BASE}/get-company`,
+    createCompany: `${COMPANY_API}/create-company`,
+    editCompany: (id: string) => `${COMPANY_API}/${id}`,
+    deleteCompany: (id: string) => `${COMPANY_API}/${id}`,
+  },
   SALON: {
     getSalon: `${API_V1_BASE}/get-salon`,
     getSalonsByFacility: (facilityId: string) =>
