@@ -76,7 +76,7 @@ export const EP = {
       `${API_V1_BASE}/get-salon/${facilityId}`,
   },
   CLUB: { getClub: `${API_V1_BASE}/get-club` },
-  CLUB_GROUPS: { getClubGroups: `${API_V1_BASE}/get-group` },
+  CLUB_GROUPS: { getClubGroups: `${API_V1_BASE}/get-group-by-coach` },
   EVENT_STYLE: { getEventStyle: `${API_V1_BASE}/get-event-style` },
   EVENTS: { getEvents: `${API_V1_BASE}/get-event` },
 };
