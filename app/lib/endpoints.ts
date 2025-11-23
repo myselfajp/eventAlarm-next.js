@@ -26,6 +26,7 @@ export const EP = {
     signUp: `${AUTH_API}/sign-up`,
     refresh: `${AUTH_API}/refresh`,
     me: `${AUTH_API}/get-current-user`,
+    editUserPhoto: `${AUTH_API}/edit-user-photo`,
     getUsers: `${AUTH_API}/get-user`,
     getUserById: (userId: string) => `${AUTH_API}/get-user/${userId}`,
   },
