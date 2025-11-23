@@ -131,16 +131,6 @@ const EventsDashboard = () => {
     setPagination((prev) => ({ ...prev, currentPage: 1 }));
   };
 
-  const calendarEvents = [
-    { day: 1, label: "H13", color: "bg-green-400" },
-    { day: 2, label: "Con", color: "bg-blue-600" },
-    { day: 3, label: "ICT Expo 2", color: "bg-cyan-400" },
-    { day: 13, label: "Dim", color: "bg-cyan-400" },
-    { day: 14, label: "A1", color: "bg-yellow-400" },
-    { day: 16, label: "Conf", color: "bg-teal-500" },
-    { day: 29, label: "Sum", color: "bg-cyan-400" },
-  ];
-
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       <LeftSidebar 
@@ -201,7 +191,7 @@ const EventsDashboard = () => {
         setCurrentDate={setCurrentDate}
         calendarView={calendarView}
         setCalendarView={setCalendarView}
-        calendarEvents={calendarEvents}
+        events={events}
         onEventCreated={fetchEvents}
       />
 

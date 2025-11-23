@@ -16,6 +16,8 @@ import {
   Edit,
   Check,
   Calendar,
+  Camera,
+  Loader2,
 } from "lucide-react";
 import { useMe } from "@/app/hooks/useAuth";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
@@ -36,6 +38,7 @@ import {
   deleteSalon,
   Facility,
 } from "@/app/lib/facility-api";
+import { editUserPhoto } from "@/app/lib/auth-api";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import { EP } from "@/app/lib/endpoints";
 
@@ -148,6 +151,14 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   const [isLoadingCompanies, setIsLoadingCompanies] = useState(false);
   const [facilityError, setFacilityError] = useState<string | null>(null);
   const [companyError, setCompanyError] = useState<string | null>(null);
+  const [isPhotoLoading, setIsPhotoLoading] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [photoDeleteModalState, setPhotoDeleteModalState] = useState({
+    isOpen: false,
+    isLoading: false,
+    isSuccess: false,
+    error: "",
+  });
 
   // Load facilities and companies from user data
   useEffect(() => {
@@ -364,6 +375,83 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
     }
   };
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsPhotoLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("user-photo", file);
+      const result = await editUserPhoto(formData);
+      
+      // Optimistically update cache with new photo data
+      if (result && result.photo) {
+        queryClient.setQueryData(["auth", "me"], (oldUser: any) => {
+          if (!oldUser) return oldUser;
+          return { ...oldUser, photo: result.photo };
+        });
+      } else {
+        // Fallback if no data returned (though expected)
+        await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      }
+    } catch (error) {
+      console.error("Failed to upload photo:", error);
+      alert("Failed to upload photo. Please try again.");
+    } finally {
+      setIsPhotoLoading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handlePhotoDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPhotoDeleteModalState({
+      isOpen: true,
+      isLoading: false,
+      isSuccess: false,
+      error: "",
+    });
+  };
+
+  const confirmDeletePhoto = async () => {
+    setPhotoDeleteModalState((prev) => ({ ...prev, isLoading: true, error: "" }));
+    try {
+      const formData = new FormData();
+      await editUserPhoto(formData);
+      
+      // Optimistically update cache to remove photo
+      queryClient.setQueryData(["auth", "me"], (oldUser: any) => {
+        if (!oldUser) return oldUser;
+        return { ...oldUser, photo: null };
+      });
+      
+      setPhotoDeleteModalState((prev) => ({
+        ...prev,
+        isLoading: false,
+        isSuccess: true,
+      }));
+      
+      setTimeout(() => {
+        setPhotoDeleteModalState((prev) => ({
+          ...prev,
+          isOpen: false,
+          isSuccess: false,
+        }));
+      }, 1500);
+    } catch (error) {
+      console.error("Failed to delete photo:", error);
+      setPhotoDeleteModalState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: "Failed to delete photo. Please try again.",
+      }));
+    }
+  };
+
   return (
     <div className="h-full overflow-y-auto p-4 sm:p-6 flex flex-col">
       <div className="flex items-center justify-between mb-6 sm:mb-8">
@@ -373,8 +461,66 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
       </div>
 
       <div className="flex flex-col items-center mb-6 sm:mb-8">
-        <div className="w-20 h-20 sm:w-24 sm:h-24 bg-green-500 rounded-2xl flex items-center justify-center mb-3">
-          <div className="text-white text-3xl sm:text-4xl">😊</div>
+        <div className="relative group">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center mb-3 overflow-hidden bg-gray-100">
+            {isPhotoLoading ? (
+              <Loader2 className="w-8 h-8 text-cyan-500 animate-spin" />
+            ) : user?.photo ? (
+              <img
+                src={`${EP.API_ASSETS_BASE}/${user.photo.path}`}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-green-500 flex items-center justify-center">
+                <div className="text-white text-3xl sm:text-4xl">😊</div>
+              </div>
+            )}
+          </div>
+          
+          {/* Coach Badge */}
+          {hasCoachProfile && (
+            <div className="absolute -top-2 -right-2 z-20 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100" title="Coach">
+              <img 
+                src="/assets/coach-badge.png" 
+                alt="Coach Badge" 
+                className="w-8 h-8 object-contain"
+              />
+            </div>
+          )}
+          
+          {/* Edit/Delete Overlay */}
+          {!isPhotoLoading && (
+            <div className="absolute bottom-0 -right-2 flex gap-1 z-10">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  fileInputRef.current?.click();
+                }}
+                className="p-1.5 bg-white rounded-full shadow-md border border-gray-200 hover:bg-gray-50 text-gray-600 transition-colors"
+                title="Change Photo"
+              >
+                <Edit className="w-3.5 h-3.5" />
+              </button>
+              {user?.photo && (
+                <button
+                  onClick={handlePhotoDelete}
+                  className="p-1.5 bg-white rounded-full shadow-md border border-gray-200 hover:bg-red-50 text-red-500 transition-colors"
+                  title="Remove Photo"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          )}
+          
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept="image/*"
+            onChange={handlePhotoUpload}
+          />
         </div>
         <h2 className="font-semibold text-gray-800">
           {user?.firstName && user?.lastName
@@ -645,6 +791,19 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
         error={deleteModalState.error}
         title="Delete Facility"
         message="Are you sure you want to delete this facility? This action cannot be undone."
+      />
+
+      <DeleteConfirmationModal
+        isOpen={photoDeleteModalState.isOpen}
+        onClose={() =>
+          setPhotoDeleteModalState((prev) => ({ ...prev, isOpen: false }))
+        }
+        onConfirm={confirmDeletePhoto}
+        isLoading={photoDeleteModalState.isLoading}
+        isSuccess={photoDeleteModalState.isSuccess}
+        error={photoDeleteModalState.error}
+        title="Delete Profile Photo"
+        message="Are you sure you want to delete your profile photo? This action cannot be undone."
       />
 
       {/* Facilities List Modal */}

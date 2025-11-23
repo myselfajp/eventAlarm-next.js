@@ -11,6 +11,7 @@ import {
   ArrowUpDown,
 } from "lucide-react";
 import ViewEventModal from "./ViewEventModal";
+import CoachDetailModal from "../CoachDetailModal";
 import { EP } from "@/app/lib/endpoints";
 import { fetchJSON } from "@/app/lib/api";
 
@@ -31,6 +32,24 @@ interface Event {
   eventStyle?: {
     name: string;
     color: string;
+  };
+  owner?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    coach: string;
+  };
+  backupCoach?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    coach: string;
+  };
+  backuoCoach?: { // Handling potential typo from backend
+    _id: string;
+    firstName: string;
+    lastName: string;
+    coach: string;
   };
   startTime: string;
   endTime: string;
@@ -90,6 +109,9 @@ const EventsTable: React.FC<EventsTableProps> = ({
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
+
+  const [selectedCoachId, setSelectedCoachId] = useState<string | null>(null);
+  const [isCoachModalOpen, setIsCoachModalOpen] = useState(false);
 
   const [sportGroups, setSportGroups] = useState<SportGroup[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
@@ -196,6 +218,17 @@ const EventsTable: React.FC<EventsTableProps> = ({
   const handleCloseViewModal = () => {
     setIsViewModalOpen(false);
     setSelectedEvent(null);
+  };
+
+  const handleCoachClick = (e: React.MouseEvent, coachId: string) => {
+    e.stopPropagation(); // Prevent row click
+    setSelectedCoachId(coachId);
+    setIsCoachModalOpen(true);
+  };
+
+  const handleCloseCoachModal = () => {
+    setIsCoachModalOpen(false);
+    setSelectedCoachId(null);
   };
 
   const goToPage = (page: number) => {
@@ -639,6 +672,16 @@ const EventsTable: React.FC<EventsTableProps> = ({
         isOpen={isViewModalOpen}
         onClose={handleCloseViewModal}
         event={selectedEvent}
+        onCoachClick={(coachId) => {
+          setSelectedCoachId(coachId);
+          setIsCoachModalOpen(true);
+        }}
+      />
+
+      <CoachDetailModal
+        isOpen={isCoachModalOpen}
+        onClose={handleCloseCoachModal}
+        coachId={selectedCoachId}
       />
     </div>
   );

@@ -26,6 +26,7 @@ export const EP = {
     signUp: `${AUTH_API}/sign-up`,
     refresh: `${AUTH_API}/refresh`,
     me: `${AUTH_API}/get-current-user`,
+    editUserPhoto: `${AUTH_API}/edit-user-photo`,
     getUsers: `${AUTH_API}/get-user`,
     getUserById: (userId: string) => `${AUTH_API}/get-user/${userId}`,
   },
@@ -45,6 +46,7 @@ export const EP = {
   COACH: {
     createProfileAndBranch: `${COACH_DATA_API}/create-branch`,
     editProfileAndBranch: `${COACH_DATA_API}/edit-branch`,
+    editCoach: `${COACH_DATA_API}/edit-coach`,
     createEvent: `${COACH_DATA_API}/create-event`,
     getCurrentBranches: `${COACH_DATA_API}/current-branches`,
     getCoachDetails: `${COACH_DATA_API}/get-by-detail`,

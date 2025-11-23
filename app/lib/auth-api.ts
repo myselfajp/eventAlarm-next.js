@@ -65,6 +65,24 @@ export async function signUp(payload: Record<string, any>) {
   return body?.data ?? body?.user ?? null;
 }
 
+export async function editUserPhoto(formData?: FormData) {
+  const res = await apiFetch(
+    EP.AUTH.editUserPhoto,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+  if (res.status === 204) {
+    return null;
+  }
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok || body?.success === false) {
+    throw new Error(body?.message || `HTTP ${res.status}`);
+  }
+  return body?.data ?? null;
+}
+
 export async function signOut() {
   tokenStore.clear();
 }

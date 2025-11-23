@@ -1,15 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Calendar, X, Clock } from "lucide-react";
 import AddEventModal from "./event/AddEventModal";
 import { useMe } from "@/app/hooks/useAuth";
-
-interface CalendarEvent {
-  day: number;
-  label: string;
-  color: string;
-}
 
 interface RightSidebarProps {
   isOpen: boolean;
@@ -17,7 +11,7 @@ interface RightSidebarProps {
   setCurrentDate: (date: Date) => void;
   calendarView: string;
   setCalendarView: (view: string) => void;
-  calendarEvents: CalendarEvent[];
+  events: any[];
   onEventCreated?: () => void;
 }
 
@@ -27,12 +21,14 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   setCurrentDate,
   calendarView,
   setCalendarView,
-  calendarEvents,
+  events,
   onEventCreated,
 }) => {
   const { data: user, isLoading: userLoading } = useMe();
   const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
   const isCoach = user?.coach != null;
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [showEventModal, setShowEventModal] = useState(false);
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
 
   const upcomingEvents = [
@@ -85,11 +81,6 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   const renderCalendar = () => {
     const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentDate);
     const days = [];
-    const prevMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth() - 1,
-      1
-    );
     const prevMonthDays = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
@@ -108,18 +99,34 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
-      const event = calendarEvents.find((e) => e.day === day);
+      const dayEvents = events.filter((event) => {
+        const eventDate = new Date(event.startTime);
+        return (
+          eventDate.getDate() === day &&
+          eventDate.getMonth() === currentDate.getMonth() &&
+          eventDate.getFullYear() === currentDate.getFullYear()
+        );
+      });
+
       days.push(
         <div
           key={day}
+          onClick={() => {
+            setSelectedDay(day);
+            setShowEventModal(true);
+          }}
           className="relative text-center py-1.5 hover:bg-gray-50 rounded cursor-pointer transition-colors"
         >
           <div className="text-xs font-medium text-gray-700">{day}</div>
-          {event && (
-            <div
-              className={`${event.color} text-white text-[9px] rounded px-0.5 py-0.5 mt-0.5 mx-auto w-fit`}
-            >
-              {event.label}
+          {dayEvents.length > 0 && (
+            <div className="flex justify-center gap-0.5 mt-0.5">
+              {dayEvents.slice(0, 3).map((event, idx) => (
+                <div
+                  key={idx}
+                  className="w-1 h-1 rounded-full"
+                  style={{ backgroundColor: event.eventStyle?.color || "#3b82f6" }}
+                />
+              ))}
             </div>
           )}
         </div>
@@ -155,6 +162,21 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
     "November",
     "December",
   ];
+
+  const selectedDayEvents = selectedDay 
+    ? events.filter((event) => {
+        const eventDate = new Date(event.startTime);
+        return (
+          eventDate.getDate() === selectedDay &&
+          eventDate.getMonth() === currentDate.getMonth() &&
+          eventDate.getFullYear() === currentDate.getFullYear()
+        );
+      })
+    : [];
+
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
   return (
     <div
@@ -417,6 +439,76 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
           }
         }}
       />
+
+      {/* Detail View Modal */}
+      {showEventModal && selectedDay && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-auto max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  {monthNames[currentDate.getMonth()]} {selectedDay}, {currentDate.getFullYear()}
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  {selectedDayEvents.length} event{selectedDayEvents.length !== 1 ? "s" : ""} scheduled
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowEventModal(false);
+                  setSelectedDay(null);
+                }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {selectedDayEvents.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-gray-300 mb-4">
+                    <Calendar className="w-16 h-16 mx-auto" />
+                  </div>
+                  <p className="text-gray-500 text-lg">No events scheduled for this day</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {selectedDayEvents.map((event, idx) => (
+                    <div
+                      key={event._id || idx}
+                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div 
+                          className="w-4 h-4 rounded-full mt-2 flex-shrink-0"
+                          style={{ backgroundColor: event.eventStyle?.color || "#3b82f6" }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h4 className="font-semibold text-gray-800 text-lg mb-1">{event.name}</h4>
+                              <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                                <Clock className="w-4 h-4 text-gray-400" />
+                                <span className="font-medium">
+                                  {formatTime(event.startTime)} - {formatTime(event.endTime)}
+                                </span>
+                              </div>
+                            </div>
+                            <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                              {event.sport?.name || "Event"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
