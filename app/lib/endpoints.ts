@@ -52,22 +52,27 @@ export const EP = {
       `${COACH_DATA_API}/get-by-detail/${coachId}`,
     getCoachList: `${API_V1_BASE}/get-coach-list`,
   },
-  PARTICIPANT_LIST: {
+   PARTICIPANT_LIST: {
     getParticipantList: `${API_V1_BASE}/get-participant-list`,
-  },
+  }, 
   FACILITY: {
+    base: `${API_V1_BASE}/facility`,
     getFacility: `${API_V1_BASE}/get-facility`,
-    createFacility: `${FACILITY_API}/create-facility`,
-    editFacility: (facilityId: string) => `${FACILITY_API}/${facilityId}`,
-    deleteFacility: (facilityId: string) => `${FACILITY_API}/${facilityId}`,
+    createFacility: `${API_V1_BASE}/facility/create-facility`,
+    editFacility: (id: string) => `${API_V1_BASE}/facility/${id}`,
+    deleteFacility: (id: string) => `${API_V1_BASE}/facility/${id}`,
   },
   COMPANY: {
     getCompany: `${API_V1_BASE}/get-company`,
     createCompany: `${COMPANY_API}/create-company`,
-    editCompany: (companyId: string) => `${COMPANY_API}/${companyId}`,
-    deleteCompany: (companyId: string) => `${COMPANY_API}/${companyId}`,
+    editCompany: (id: string) => `${COMPANY_API}/${id}`,
+    deleteCompany: (id: string) => `${COMPANY_API}/${id}`,
   },
-  SALON: { getSalon: `${API_V1_BASE}/get-salon` },
+  SALON: {
+    getSalon: `${API_V1_BASE}/get-salon`,
+    getSalonsByFacility: (facilityId: string) =>
+      `${API_V1_BASE}/get-salon/${facilityId}`,
+  },
   CLUB: { getClub: `${API_V1_BASE}/get-club` },
   CLUB_GROUPS: { getClubGroups: `${API_V1_BASE}/get-group` },
   EVENT_STYLE: { getEventStyle: `${API_V1_BASE}/get-event-style` },
