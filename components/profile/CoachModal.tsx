@@ -44,6 +44,7 @@ interface Branch {
 
 interface CoachFormData {
   branches: Branch[];
+  about: string;
 }
 
 const CoachModal: React.FC<CoachModalProps> = ({
@@ -56,6 +57,7 @@ const CoachModal: React.FC<CoachModalProps> = ({
 
   const [formData, setFormData] = useState<CoachFormData>({
     branches: [],
+    about: "",
   });
 
   const [sportGroups, setSportGroups] = useState<SportGroup[]>([]);
@@ -112,12 +114,13 @@ const CoachModal: React.FC<CoachModalProps> = ({
     if (!coachId) return;
 
     try {
-      const [branchesRes, sportGroupsRes] = await Promise.all([
+      const [branchesRes, sportGroupsRes, coachDetailsRes] = await Promise.all([
         fetchJSON(`${EP.COACH.getCurrentBranches}`, { method: "GET" }),
         fetchJSON(EP.REFERENCE.sportGroup, {
           method: "POST",
           body: { perPage: 100, pageNumber: 1 },
         }),
+        fetchJSON(EP.COACH.getCoachById(coachId), { method: "GET" }),
       ]);
 
       if (
@@ -157,7 +160,12 @@ const CoachModal: React.FC<CoachModalProps> = ({
           }
         );
 
-        setFormData({ branches });
+        const about =
+          coachDetailsRes.success && coachDetailsRes.data?.coach?.about
+            ? coachDetailsRes.data.coach.about
+            : "";
+
+        setFormData({ branches, about });
 
         const uniqueSportGroups = [
           ...new Set(branches.map((b) => b.sportGroup).filter(Boolean)),
@@ -235,12 +243,14 @@ const CoachModal: React.FC<CoachModalProps> = ({
       certificatePreview: null,
     };
     setFormData((prev) => ({
+      ...prev,
       branches: [...prev.branches, newBranch],
     }));
   };
 
   const removeBranch = (index: number) => {
     setFormData((prev) => ({
+      ...prev,
       branches: prev.branches.filter((_, i) => i !== index),
     }));
   };
@@ -252,6 +262,7 @@ const CoachModal: React.FC<CoachModalProps> = ({
     displayName?: string
   ) => {
     setFormData((prev) => ({
+      ...prev,
       branches: prev.branches.map((branch, i) => {
         if (i !== index) return branch;
 
@@ -373,6 +384,17 @@ const CoachModal: React.FC<CoachModalProps> = ({
       const json = await res.json();
 
       if (json.success) {
+        // Also update the 'about' field if it has changed
+        if (formData.about) {
+          await apiFetch(EP.COACH.editCoach, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ about: formData.about }),
+          });
+        }
+
         onSubmit(formData);
         handleClose();
       } else {
@@ -387,7 +409,7 @@ const CoachModal: React.FC<CoachModalProps> = ({
   };
 
   const resetForm = () => {
-    setFormData({ branches: [] });
+    setFormData({ branches: [], about: "" });
     setIsEditMode(false);
   };
 
@@ -448,6 +470,27 @@ const CoachModal: React.FC<CoachModalProps> = ({
               initializing ? "opacity-0 pointer-events-none" : "space-y-6"
             }
           >
+            {/* About Section */}
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h3 className="text-lg font-medium text-gray-800 mb-4">
+                About Me
+              </h3>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Bio / Description
+                </label>
+                <textarea
+                  value={formData.about}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, about: e.target.value }))
+                  }
+                  placeholder="Tell us about your coaching experience, philosophy, etc..."
+                  className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors min-h-[120px] resize-y"
+                  disabled={loading || initializing}
+                />
+              </div>
+            </div>
+
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium text-gray-800">
                 Coach Branches ({formData.branches.length})

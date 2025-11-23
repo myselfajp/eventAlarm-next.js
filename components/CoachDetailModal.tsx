@@ -40,6 +40,7 @@ interface CoachResponseData {
     _id: string;
     isVerified: boolean;
     createdAt: string;
+    about?: string;
   };
   user: {
     _id: string;
@@ -138,7 +139,7 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
@@ -152,7 +153,7 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto bg-gray-50/50">
+        <div className="flex-1 overflow-y-auto bg-gray-50 overscroll-contain">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mb-4"></div>
@@ -241,6 +242,19 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
                     </div>
                   </div>
                 </div>
+
+                {/* About Section (Moved inside Profile Card) */}
+                {data.coach.about && (
+                  <div className="mt-6 pt-6 border-t border-gray-100">
+                    <h4 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                      <User className="w-4 h-4 text-cyan-500" />
+                      About
+                    </h4>
+                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                      {data.coach.about}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Branches Section */}

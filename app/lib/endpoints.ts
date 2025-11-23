@@ -46,6 +46,7 @@ export const EP = {
   COACH: {
     createProfileAndBranch: `${COACH_DATA_API}/create-branch`,
     editProfileAndBranch: `${COACH_DATA_API}/edit-branch`,
+    editCoach: `${COACH_DATA_API}/edit-coach`,
     createEvent: `${COACH_DATA_API}/create-event`,
     getCurrentBranches: `${COACH_DATA_API}/current-branches`,
     getCoachDetails: `${COACH_DATA_API}/get-by-detail`,
