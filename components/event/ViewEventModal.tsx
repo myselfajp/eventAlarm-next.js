@@ -55,6 +55,24 @@ interface Event {
   equipment?: string;
   private?: boolean;
   isRecurring?: boolean;
+  owner?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    coach: string;
+  };
+  backupCoach?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    coach: string;
+  };
+  backuoCoach?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    coach: string;
+  };
   [key: string]: any;
 }
 
@@ -62,12 +80,14 @@ interface ViewEventModalProps {
   isOpen: boolean;
   onClose: () => void;
   event: Event | null;
+  onCoachClick: (coachId: string) => void;
 }
 
 const ViewEventModal: React.FC<ViewEventModalProps> = ({
   isOpen,
   onClose,
   event,
+  onCoachClick,
 }) => {
   if (!isOpen || !event) return null;
 
@@ -154,6 +174,49 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
               </label>
               <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
                 {event.name || "-"}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Coach
+                </label>
+                <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
+                  {event.owner ? (
+                    <button
+                      onClick={() => onCoachClick(event.owner!.coach)}
+                      className="text-cyan-600 hover:text-cyan-800 hover:underline font-medium"
+                    >
+                      {event.owner.firstName} {event.owner.lastName}
+                    </button>
+                  ) : (
+                    "-"
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Backup Coach
+                </label>
+                <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
+                  {event.backupCoach || event.backuoCoach ? (
+                    <button
+                      onClick={() =>
+                        onCoachClick(
+                          (event.backupCoach || event.backuoCoach)!.coach
+                        )
+                      }
+                      className="text-cyan-600 hover:text-cyan-800 hover:underline font-medium"
+                    >
+                      {(event.backupCoach || event.backuoCoach)!.firstName}{" "}
+                      {(event.backupCoach || event.backuoCoach)!.lastName}
+                    </button>
+                  ) : (
+                    "-"
+                  )}
+                </div>
               </div>
             </div>
 
