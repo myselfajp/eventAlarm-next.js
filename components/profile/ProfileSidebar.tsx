@@ -478,6 +478,17 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             )}
           </div>
           
+          {/* Coach Badge */}
+          {hasCoachProfile && (
+            <div className="absolute -top-2 -right-2 z-20 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100" title="Coach">
+              <img 
+                src="/assets/coach-badge.png" 
+                alt="Coach Badge" 
+                className="w-8 h-8 object-contain"
+              />
+            </div>
+          )}
+          
           {/* Edit/Delete Overlay */}
           {!isPhotoLoading && (
             <div className="absolute bottom-0 -right-2 flex gap-1 z-10">
