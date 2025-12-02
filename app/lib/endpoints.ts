@@ -75,11 +75,14 @@ export const EP = {
     getSalonsByFacility: (facilityId: string) =>
       `${API_V1_BASE}/get-salon/${facilityId}`,
   },
-  CLUB: { 
+  CLUB: {
     getClub: `${API_V1_BASE}/get-club`,
     createClub: `${COACH_DATA_API}/create-club`,
     editClub: (clubId: string) => `${COACH_DATA_API}/edit-club/${clubId}`,
     deleteClub: (clubId: string) => `${COACH_DATA_API}/delete-club/${clubId}`,
+  },
+  GROUP: {
+    getGroup: `${API_V1_BASE}/get-group`,
   },
   CLUB_GROUPS: { 
     getClubGroups: `${API_V1_BASE}/get-group-by-coach`,

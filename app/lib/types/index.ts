@@ -326,3 +326,66 @@ export interface CompanySearchResponse {
   totalPages: number;
   message?: string;
 }
+
+export interface Club {
+  _id: string;
+  creator: string;
+  name: string;
+  vision?: string;
+  conditions?: string;
+  president?: string;
+  coaches: string[];
+  photo?: {
+    path: string;
+    originalName: string;
+    mimeType: string;
+    size: number;
+  };
+  isApproved: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+}
+
+export interface ClubSearchResponse {
+  success: boolean;
+  data: Club[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    perPage: number;
+    total: number;
+  };
+  message?: string;
+}
+
+export interface Group {
+  _id: string;
+  owner: string;
+  clubId: string;
+  clubName: string;
+  name: string;
+  description?: string;
+  photo?: {
+    path: string;
+    originalName: string;
+    mimeType: string;
+    size: number;
+  };
+  isApproved: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+}
+
+export interface GroupSearchResponse {
+  success: boolean;
+  data: Group[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    perPage: number;
+    total: number;
+  };
+  message?: string;
+}
