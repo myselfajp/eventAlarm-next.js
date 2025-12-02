@@ -42,15 +42,15 @@ import {
   deleteSalon,
   Facility,
 } from "@/app/lib/facility-api";
-import { 
-  getCreatedClubs, 
-  getCreatedGroups, 
-  createClub, 
-  updateClub, 
+import {
+  getCreatedClubs,
+  getCreatedGroups,
+  createClub,
+  updateClub,
   deleteClub,
   createGroup,
   updateGroup,
-  deleteGroup
+  deleteGroup,
 } from "@/app/lib/club-api";
 import { editUserPhoto } from "@/app/lib/auth-api";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
@@ -83,7 +83,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   const [isClubsListOpen, setIsClubsListOpen] = useState(false);
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [isGroupsListOpen, setIsGroupsListOpen] = useState(false);
-  
+
   const { data: allFacilities = [] } = useQuery({
     queryKey: ["facilities"],
     queryFn: () => getFacilities(),
@@ -104,8 +104,9 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   });
 
   // For groups, we need the coach._id
-  const coachId = user?.coach?._id || (typeof user?.coach === 'string' ? user?.coach : null);
-  
+  const coachId =
+    user?.coach?._id || (typeof user?.coach === "string" ? user?.coach : null);
+
   const { data: myGroupsData } = useQuery({
     queryKey: ["my-groups", coachId],
     queryFn: () => {
@@ -120,7 +121,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
 
   const facilities = React.useMemo(() => {
     if (!user?.facility || !Array.isArray(user.facility)) return [];
-    return allFacilities.filter((facility: Facility) => 
+    return allFacilities.filter((facility: Facility) =>
       user.facility.includes(facility._id)
     );
   }, [allFacilities, user?.facility]);
@@ -242,7 +243,10 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   const handleCreateFacility = async (formData: FormData) => {
     try {
       if (editingFacility) {
-        return await updateFacilityMutation.mutateAsync({ id: editingFacility._id, data: formData });
+        return await updateFacilityMutation.mutateAsync({
+          id: editingFacility._id,
+          data: formData,
+        });
       } else {
         return await createFacilityMutation.mutateAsync(formData);
       }
@@ -283,16 +287,20 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   const confirmDeleteFacility = async () => {
     if (deleteModalState.facilityId) {
       try {
-        setDeleteModalState((prev) => ({ ...prev, isLoading: true, error: "" }));
-        
+        setDeleteModalState((prev) => ({
+          ...prev,
+          isLoading: true,
+          error: "",
+        }));
+
         // 1. Fetch all salons for this facility
         const salons = await getSalons(deleteModalState.facilityId, 1, 100);
-        
+
         // 2. Delete all salons
         if (salons.length > 0) {
           await Promise.all(salons.map((salon: any) => deleteSalon(salon._id)));
         }
-        
+
         // 3. Delete the facility
         deleteFacilityMutation.mutate(deleteModalState.facilityId);
       } catch (error) {
@@ -333,7 +341,11 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   const deleteClubMutation = useMutation({
     mutationFn: deleteClub,
     onMutate: () => {
-      setDeleteClubModalState((prev) => ({ ...prev, isLoading: true, error: "" }));
+      setDeleteClubModalState((prev) => ({
+        ...prev,
+        isLoading: true,
+        error: "",
+      }));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-clubs"] });
@@ -362,8 +374,13 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
 
   // Group mutations and handlers
   const createGroupMutation = useMutation({
-    mutationFn: ({ clubId, formData }: { clubId: string; formData: FormData }) =>
-      createGroup(clubId, formData),
+    mutationFn: ({
+      clubId,
+      formData,
+    }: {
+      clubId: string;
+      formData: FormData;
+    }) => createGroup(clubId, formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-groups"] });
     },
@@ -388,7 +405,11 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   const deleteGroupMutation = useMutation({
     mutationFn: deleteGroup,
     onMutate: () => {
-      setDeleteGroupModalState((prev) => ({ ...prev, isLoading: true, error: "" }));
+      setDeleteGroupModalState((prev) => ({
+        ...prev,
+        isLoading: true,
+        error: "",
+      }));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-groups"] });
@@ -418,7 +439,10 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   const handleCreateClub = async (formData: FormData) => {
     try {
       if (editingClub) {
-        return await updateClubMutation.mutateAsync({ id: editingClub._id, data: formData });
+        return await updateClubMutation.mutateAsync({
+          id: editingClub._id,
+          data: formData,
+        });
       } else {
         return await createClubMutation.mutateAsync(formData);
       }
@@ -466,7 +490,10 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   const handleCreateGroup = async (clubId: string, formData: FormData) => {
     try {
       if (editingGroup) {
-        return await updateGroupMutation.mutateAsync({ id: editingGroup._id, data: formData });
+        return await updateGroupMutation.mutateAsync({
+          id: editingGroup._id,
+          data: formData,
+        });
       } else {
         return await createGroupMutation.mutateAsync({ clubId, formData });
       }
@@ -518,38 +545,40 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
       const formDataToSend = new FormData();
 
       // Convert base64 image to File if photo exists
-      if (formData.photo && formData.photo.startsWith('data:image')) {
+      if (formData.photo && formData.photo.startsWith("data:image")) {
         const response = await fetch(formData.photo);
         const blob = await response.blob();
-        const file = new File([blob], 'company-photo.jpg', { type: 'image/jpeg' });
-        formDataToSend.append('company-photo', file);
+        const file = new File([blob], "company-photo.jpg", {
+          type: "image/jpeg",
+        });
+        formDataToSend.append("company-photo", file);
       }
 
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('address', formData.address);
-      if (formData.phone) formDataToSend.append('phone', formData.phone);
-      if (formData.email) formDataToSend.append('email', formData.email);
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("address", formData.address);
+      if (formData.phone) formDataToSend.append("phone", formData.phone);
+      if (formData.email) formDataToSend.append("email", formData.email);
 
       let response;
       if (editingCompany) {
         // Edit existing company
         response = await fetch(EP.COMPANY.editCompany(editingCompany._id), {
-          method: 'PUT',
+          method: "PUT",
           body: formDataToSend,
-          credentials: 'include',
+          credentials: "include",
         });
       } else {
         // Create new company
         response = await fetch(EP.COMPANY.createCompany, {
-          method: 'POST',
+          method: "POST",
           body: formDataToSend,
-          credentials: 'include',
+          credentials: "include",
         });
       }
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to save company');
+        throw new Error(errorData.message || "Failed to save company");
       }
 
       const result = await response.json();
@@ -559,11 +588,13 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
         await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
         setEditingCompany(null);
       } else {
-        throw new Error(result.message || 'Failed to save company');
+        throw new Error(result.message || "Failed to save company");
       }
     } catch (error) {
-      console.error('Error saving company:', error);
-      setCompanyError(error instanceof Error ? error.message : 'Failed to save company');
+      console.error("Error saving company:", error);
+      setCompanyError(
+        error instanceof Error ? error.message : "Failed to save company"
+      );
     } finally {
       setIsLoadingCompanies(false);
     }
@@ -589,20 +620,20 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   };
 
   const handleDeleteCompany = async (companyId: string) => {
-    if (!confirm('Are you sure you want to delete this company?')) return;
+    if (!confirm("Are you sure you want to delete this company?")) return;
 
     setIsLoadingCompanies(true);
     setCompanyError(null);
 
     try {
       const response = await fetch(EP.COMPANY.deleteCompany(companyId), {
-        method: 'DELETE',
-        credentials: 'include',
+        method: "DELETE",
+        credentials: "include",
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete company');
+        throw new Error(errorData.message || "Failed to delete company");
       }
 
       const result = await response.json();
@@ -611,11 +642,13 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
         // Refresh user data to get updated companies
         await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
       } else {
-        throw new Error(result.message || 'Failed to delete company');
+        throw new Error(result.message || "Failed to delete company");
       }
     } catch (error) {
-      console.error('Error deleting company:', error);
-      setCompanyError(error instanceof Error ? error.message : 'Failed to delete company');
+      console.error("Error deleting company:", error);
+      setCompanyError(
+        error instanceof Error ? error.message : "Failed to delete company"
+      );
     } finally {
       setIsLoadingCompanies(false);
     }
@@ -630,7 +663,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
       const formData = new FormData();
       formData.append("user-photo", file);
       const result = await editUserPhoto(formData);
-      
+
       // Optimistically update cache with new photo data
       if (result && result.photo) {
         queryClient.setQueryData(["auth", "me"], (oldUser: any) => {
@@ -664,23 +697,27 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   };
 
   const confirmDeletePhoto = async () => {
-    setPhotoDeleteModalState((prev) => ({ ...prev, isLoading: true, error: "" }));
+    setPhotoDeleteModalState((prev) => ({
+      ...prev,
+      isLoading: true,
+      error: "",
+    }));
     try {
       const formData = new FormData();
       await editUserPhoto(formData);
-      
+
       // Optimistically update cache to remove photo
       queryClient.setQueryData(["auth", "me"], (oldUser: any) => {
         if (!oldUser) return oldUser;
         return { ...oldUser, photo: null };
       });
-      
+
       setPhotoDeleteModalState((prev) => ({
         ...prev,
         isLoading: false,
         isSuccess: true,
       }));
-      
+
       setTimeout(() => {
         setPhotoDeleteModalState((prev) => ({
           ...prev,
@@ -723,18 +760,21 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
               </div>
             )}
           </div>
-          
+
           {/* Coach Badge */}
           {hasCoachProfile && (
-            <div className="absolute -top-2 -right-2 z-20 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100" title="Coach">
-              <img 
-                src="/assets/coach-badge.png" 
-                alt="Coach Badge" 
+            <div
+              className="absolute -top-2 -right-2 z-20 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100"
+              title="Coach"
+            >
+              <img
+                src="/assets/coach-badge.png"
+                alt="Coach Badge"
                 className="w-8 h-8 object-contain"
               />
             </div>
           )}
-          
+
           {/* Edit/Delete Overlay */}
           {!isPhotoLoading && (
             <div className="absolute bottom-0 -right-2 flex gap-1 z-10">
@@ -759,7 +799,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
               )}
             </div>
           )}
-          
+
           <input
             type="file"
             ref={fileInputRef}
@@ -870,7 +910,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             </div>
             <div className="flex-1">
               <div className="font-medium text-gray-800 text-sm">
-                I'm a Participant
+                Edit Profile
               </div>
               <div className="text-xs text-gray-500 flex items-center gap-1.5">
                 {hasParticipantProfile ? (
@@ -897,30 +937,30 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
           </div>
         </button>
 
-        {/* Coach Profile */}
+        {/* Coach Profile / Apply for Coaching */}
         <button
           onClick={handleOpenCoachModal}
           className={`w-full bg-white border rounded-lg p-3 transition-all group ${
             hasCoachProfile
               ? "border-green-300 bg-green-50"
-              : "border-purple-200 hover:border-purple-400 hover:bg-purple-50"
+              : "border-orange-200 hover:border-orange-400 hover:bg-orange-50"
           }`}
         >
           <div className="flex items-center gap-2.5">
             <div
               className={`p-1.5 rounded-md ${
-                hasCoachProfile ? "bg-green-100" : "bg-purple-100"
+                hasCoachProfile ? "bg-green-100" : "bg-orange-100"
               }`}
             >
               <Users
                 className={`w-4 h-4 ${
-                  hasCoachProfile ? "text-green-600" : "text-purple-600"
+                  hasCoachProfile ? "text-green-600" : "text-orange-600"
                 }`}
               />
             </div>
             <div className="flex-1">
               <div className="font-medium text-gray-800 text-sm">
-                I'm a Coach
+                {hasCoachProfile ? "Edit Coach Profile" : "Apply for Coaching"}
               </div>
               <div className="text-xs text-gray-500 flex items-center gap-1.5">
                 {hasCoachProfile ? (
@@ -933,7 +973,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                     <span>Edit your credentials</span>
                   </>
                 ) : (
-                  "Enter your coaching credentials"
+                  "Become a coach and share your expertise"
                 )}
               </div>
             </div>
@@ -941,7 +981,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
               className={`w-4 h-4 text-gray-400 ${
                 hasCoachProfile
                   ? "group-hover:text-green-600"
-                  : "group-hover:text-purple-600"
+                  : "group-hover:text-orange-600"
               }`}
             />
           </div>
@@ -1013,12 +1053,9 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
               <Shield className="w-4 h-4 text-cyan-600" />
             </div>
             <div>
-              <div className="font-medium text-gray-800 text-sm">
-                My Clubs
-              </div>
+              <div className="font-medium text-gray-800 text-sm">My Clubs</div>
               <div className="text-xs text-gray-500">
-                {myClubs.length}{" "}
-                {myClubs.length === 1 ? "club" : "clubs"}
+                {myClubs.length} {myClubs.length === 1 ? "club" : "clubs"}
               </div>
             </div>
           </div>
@@ -1040,8 +1077,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                   My Groups
                 </div>
                 <div className="text-xs text-gray-500">
-                  {myGroups.length}{" "}
-                  {myGroups.length === 1 ? "group" : "groups"}
+                  {myGroups.length} {myGroups.length === 1 ? "group" : "groups"}
                 </div>
               </div>
             </div>
@@ -1245,11 +1281,18 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                             {/* We might need to fetch sport name if mainSport is just ID */}
                             {/* For now displaying ID or if populated name */}
                             {(() => {
-                              const sportId = typeof facility.mainSport === 'object' 
-                                ? (facility.mainSport as any)._id 
+                              const sportId =
+                                typeof facility.mainSport === "object"
+                                  ? (facility.mainSport as any)._id
+                                  : facility.mainSport;
+                              const sport = sports.find(
+                                (s: any) => s._id === sportId
+                              );
+                              return sport
+                                ? sport.name
+                                : typeof facility.mainSport === "object"
+                                ? (facility.mainSport as any).name
                                 : facility.mainSport;
-                              const sport = sports.find((s: any) => s._id === sportId);
-                              return sport ? sport.name : (typeof facility.mainSport === 'object' ? (facility.mainSport as any).name : facility.mainSport);
                             })()}
                           </span>
                         </div>
@@ -1536,7 +1579,8 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                               Coaches:
                             </span>
                             <span className="text-cyan-600 font-medium">
-                              {club.coaches.length} coach{club.coaches.length !== 1 ? 'es' : ''}
+                              {club.coaches.length} coach
+                              {club.coaches.length !== 1 ? "es" : ""}
                             </span>
                           </div>
                         )}
@@ -1673,7 +1717,6 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                           </div>
                         )}
                       </div>
-
                     </div>
                   ))}
                 </div>
