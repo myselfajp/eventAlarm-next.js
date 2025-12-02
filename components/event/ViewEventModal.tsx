@@ -29,10 +29,9 @@ interface Event {
     _id: string;
     name: string;
   };
-  style?: {
-    _id: string;
+  eventStyle?: {
     name: string;
-    color?: string;
+    color: string;
   };
   facility?: {
     _id: string;
@@ -140,18 +139,23 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
               </div>
             )}
             <div className="absolute bottom-0 left-6 transform translate-y-1/2 z-10">
-              <div className="w-40 h-40 bg-white p-2 rounded-full shadow-xl">
-                {imageUrl ? (
-                  <img
-                    src={imageUrl}
-                    alt="Event"
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center w-full h-full bg-gray-50 rounded-full">
-                    <ImageIcon className="w-16 h-16 text-gray-400" />
-                  </div>
-                )}
+              <div
+                className="w-44 h-44 rounded-full p-1 shadow-xl"
+                style={{ backgroundColor: event.eventStyle?.color || '#ffffff' }}
+              >
+                <div className="w-full h-full p-2 rounded-full">
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt="Event"
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center w-full h-full bg-gray-50 rounded-full">
+                      <ImageIcon className="w-16 h-16 text-gray-400" />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -244,7 +248,7 @@ const ViewEventModal: React.FC<ViewEventModalProps> = ({
                   Event Style
                 </label>
                 <div className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
-                  {event.style?.name || "-"}
+                  {event.eventStyle?.name || "-"}
                 </div>
               </div>
             </div>

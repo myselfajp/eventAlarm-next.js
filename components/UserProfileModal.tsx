@@ -18,9 +18,11 @@ import {
   MapPin,
   DollarSign,
   Image as ImageIcon,
+  ShieldCheck,
 } from "lucide-react";
 import { fetchJSON } from "@/app/lib/api";
 import { EP } from "@/app/lib/endpoints";
+import { useMe } from "@/app/hooks/useAuth";
 import {
   User as UserType,
   UserDetailsResponse,
@@ -29,6 +31,8 @@ import {
   CoachDetails,
   CoachDetailsResponse,
 } from "@/app/lib/types";
+import ClubViewModal from "@/components/ClubViewModal";
+import GroupViewModal from "@/components/GroupViewModal";
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -43,6 +47,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
   userId,
   context,
 }) => {
+  const { data: currentUser } = useMe();
   const [user, setUser] = useState<UserType | null>(null);
   const [mainSport, setMainSport] = useState<string>("");
   const [sportGoal, setSportGoal] = useState<SportGoal | null>(null);
@@ -51,6 +56,12 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const [isLoadingExtras, setIsLoadingExtras] = useState(false);
   const [isFullyLoaded, setIsFullyLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Modal states for clubs and groups
+  const [isClubModalOpen, setIsClubModalOpen] = useState(false);
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+  const [selectedClub, setSelectedClub] = useState<any>(null);
+  const [selectedGroup, setSelectedGroup] = useState<any>(null);
 
   useEffect(() => {
     if (isOpen && userId) {
@@ -227,6 +238,39 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US");
+  };
+
+  const getImageUrl = (path: string) => {
+    return `${EP.API_ASSETS_BASE}/${path}`.replace(/\\/g, "/");
+  };
+
+  const isOwnerOrCreator = (resource: any, type: 'club' | 'group') => {
+    if (!currentUser) return false;
+    if (type === 'club') {
+      return resource.creator === currentUser._id;
+    } else {
+      return resource.owner === currentUser._id;
+    }
+  };
+
+  const handleClubClick = (club: any) => {
+    setSelectedClub(club);
+    setIsClubModalOpen(true);
+  };
+
+  const handleGroupClick = (group: any) => {
+    setSelectedGroup(group);
+    setIsGroupModalOpen(true);
+  };
+
+  const handleCloseClubModal = () => {
+    setIsClubModalOpen(false);
+    setSelectedClub(null);
+  };
+
+  const handleCloseGroupModal = () => {
+    setIsGroupModalOpen(false);
+    setSelectedGroup(null);
   };
 
   const getRoleName = (role: number) => {
@@ -469,24 +513,48 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     {/* Clubs Owned */}
                     {coachDetails?.club && coachDetails.club.length > 0 && (
                       <div className="mb-6">
-                        <h5 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
+                        <h5 className="text-md font-medium text-gray-800 mb-4 flex items-center gap-2">
                           <Building className="w-4 h-4 text-green-600" />
                           Owned Clubs ({coachDetails.club.length})
                         </h5>
-                        <div className="space-y-2">
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                           {coachDetails.club.map((club) => (
                             <div
                               key={club._id}
-                              className="flex items-center gap-3 p-3 bg-green-50 rounded-lg"
+                              className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all group cursor-pointer"
+                              onClick={() => handleClubClick(club)}
                             >
-                              <Building className="w-5 h-5 text-green-600" />
-                              <div>
-                                <p className="font-medium">{club.name}</p>
-                                {club.vision && (
-                                  <p className="text-sm text-gray-600">
-                                    {club.vision}
-                                  </p>
+                              <div className="h-32 bg-gray-200 relative overflow-hidden">
+                                {club.photo?.path ? (
+                                  <img
+                                    src={getImageUrl(club.photo.path)}
+                                    alt={club.name}
+                                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-100 to-green-200">
+                                    <div className="text-center">
+                                      <ShieldCheck className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                                      <div className="text-xs font-medium text-green-700">Club</div>
+                                    </div>
+                                  </div>
                                 )}
+                                <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-semibold text-gray-700 shadow-sm">
+                                  {club.isApproved ? "Approved" : "Pending"}
+                                </div>
+                              </div>
+                              <div className="p-4">
+                                <h6 className="font-bold text-gray-900 mb-1 truncate">
+                                  {club.name}
+                                </h6>
+                                {club.vision && (
+                                  <div className="text-sm text-gray-500 mb-2 line-clamp-2">
+                                    {club.vision}
+                                  </div>
+                                )}
+                                <div className="text-xs text-gray-400">
+                                  Created {formatDate(club.createdAt)}
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -498,47 +566,47 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     {coachDetails?.clubGroup &&
                       coachDetails.clubGroup.length > 0 && (
                         <div className="mb-6">
-                          <h5 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
+                          <h5 className="text-md font-medium text-gray-800 mb-4 flex items-center gap-2">
                             <Users className="w-4 h-4 text-green-600" />
                             Owned Club Groups ({coachDetails.clubGroup.length})
                           </h5>
-                          <div className="space-y-2">
+                          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             {coachDetails.clubGroup.map((group) => (
                               <div
                                 key={group._id}
-                                className="flex items-center gap-3 p-3 bg-green-50 rounded-lg"
+                                className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all group cursor-pointer"
+                                onClick={() => handleGroupClick(group)}
                               >
-                                {group.photo ? (
-                                  <img
-                                    src={`${EP.API_ASSETS_BASE}${group.photo.path}`}
-                                    alt="Group Photo"
-                                    className="w-12 h-12 object-cover rounded-lg border"
-                                  />
-                                ) : (
-                                  <Users className="w-5 h-5 text-green-600" />
-                                )}
-                                <div className="flex-1">
-                                  <p className="font-medium">{group.name}</p>
-                                  <p className="text-sm text-gray-600">
-                                    Club: {group.clubName}
-                                  </p>
-                                  {group.description && (
-                                    <p className="text-sm text-gray-500 mt-1">
-                                      {group.description}
-                                    </p>
+                                <div className="h-32 bg-gray-200 relative overflow-hidden">
+                                  {group.photo?.path ? (
+                                    <img
+                                      src={getImageUrl(group.photo.path)}
+                                      alt={group.name}
+                                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-100 to-green-200">
+                                      <div className="text-center">
+                                        <Users className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                                        <div className="text-xs font-medium text-green-700">Group</div>
+                                      </div>
+                                    </div>
                                   )}
-                                  <div className="mt-1">
-                                    <span
-                                      className={`px-2 py-0.5 text-xs rounded-full ${
-                                        group.isApproved
-                                          ? "bg-green-100 text-green-800"
-                                          : "bg-blue-100 text-blue-800"
-                                      }`}
-                                    >
-                                      {group.isApproved
-                                        ? "Approved"
-                                        : "Pending"}
-                                    </span>
+                                  <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-semibold text-gray-700 shadow-sm">
+                                    {group.clubName}
+                                  </div>
+                                </div>
+                                <div className="p-4">
+                                  <h6 className="font-bold text-gray-900 mb-1 truncate">
+                                    {group.name}
+                                  </h6>
+                                  {group.description && (
+                                    <div className="text-sm text-gray-500 mb-2 line-clamp-2">
+                                      {group.description}
+                                    </div>
+                                  )}
+                                  <div className="text-xs text-gray-400">
+                                    Created {formatDate(group.createdAt)}
                                   </div>
                                 </div>
                               </div>
@@ -716,6 +784,24 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
           ) : null}
         </div>
       </div>
+
+      {/* Club Modal */}
+      {selectedClub && (
+        <ClubViewModal
+          isOpen={isClubModalOpen}
+          onClose={handleCloseClubModal}
+          club={selectedClub}
+        />
+      )}
+
+      {/* Group Modal */}
+      {selectedGroup && (
+        <GroupViewModal
+          isOpen={isGroupModalOpen}
+          onClose={handleCloseGroupModal}
+          group={selectedGroup}
+        />
+      )}
     </div>
   );
 };

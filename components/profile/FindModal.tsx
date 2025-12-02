@@ -10,6 +10,8 @@ import {
   Building,
   ChevronLeft,
   ChevronRight,
+  Shield,
+  UserCheck,
 } from "lucide-react";
 import { fetchJSON } from "@/app/lib/api";
 import { EP } from "@/app/lib/endpoints";
@@ -21,6 +23,10 @@ import {
   FacilitySearchResponse,
   Company,
   CompanySearchResponse,
+  Club,
+  ClubSearchResponse,
+  Group,
+  GroupSearchResponse,
   SportGroup,
   Sport,
   SportResponse,
@@ -28,19 +34,21 @@ import {
 import UserProfileModal from "../UserProfileModal";
 import FacilityDetailsModal from "./FacilityDetailsModal";
 import CompanyDetailsModal from "./CompanyDetailsModal";
+import ClubViewModal from "../ClubViewModal";
+import GroupViewModal from "../GroupViewModal";
 
 interface FindModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-type SearchType = "coach" | "participant" | "facility" | "company";
+type SearchType = "coach" | "participant" | "facility" | "company" | "club" | "group";
 
 const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
   const [selectedType, setSelectedType] = useState<SearchType>("coach");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<
-    UserType[] | Facility[] | Company[]
+    UserType[] | Facility[] | Company[] | Club[] | Group[]
   >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +70,10 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
   const [showFacilityDetails, setShowFacilityDetails] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [showCompanyDetails, setShowCompanyDetails] = useState(false);
+  const [selectedClub, setSelectedClub] = useState<Club | null>(null);
+  const [showClubDetails, setShowClubDetails] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const [showGroupDetails, setShowGroupDetails] = useState(false);
   const [sportGroupFilter, setSportGroupFilter] = useState("");
   const [sportFilter, setSportFilter] = useState("");
   const [sportGroups, setSportGroups] = useState<SportGroup[]>([]);
@@ -307,6 +319,107 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const searchClubs = async (filters: {
+    search?: string;
+    creator?: string;
+    pageNumber?: number;
+    perPage?: number;
+  }) => {
+    setIsLoading(true);
+    setError(null);
+    setHasSearched(true);
+
+    try {
+      const payload: any = {
+        perPage: filters.perPage || 5,
+        pageNumber: filters.pageNumber || 1,
+      };
+
+      if (filters.search && filters.search.trim().length >= 2) {
+        payload.search = filters.search.trim();
+      }
+
+      if (filters.creator) {
+        payload.creator = filters.creator;
+      }
+
+      const response: ClubSearchResponse = await fetchJSON(
+        EP.CLUB.getClub,
+        {
+          method: "POST",
+          body: payload,
+        }
+      );
+
+      if (response?.success && response?.data) {
+        setSearchResults(response.data);
+        setPagination({
+          currentPage: response.pagination?.currentPage || 1,
+          totalPages: response.pagination?.totalPages || 1,
+          total: response.pagination?.total || 0,
+          perPage: response.pagination?.perPage || 5,
+        });
+      } else {
+        setError(response?.message || "Failed to search clubs");
+        setSearchResults([]);
+      }
+    } catch (err) {
+      setError("An error occurred while searching clubs");
+      setSearchResults([]);
+      console.error("Error searching clubs:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const searchGroups = async (filters: {
+    search?: string;
+    pageNumber?: number;
+    perPage?: number;
+  }) => {
+    setIsLoading(true);
+    setError(null);
+    setHasSearched(true);
+
+    try {
+      const payload: any = {
+        perPage: filters.perPage || 5,
+        pageNumber: filters.pageNumber || 1,
+      };
+
+      if (filters.search && filters.search.trim().length >= 2) {
+        payload.search = filters.search.trim();
+      }
+
+      const response: GroupSearchResponse = await fetchJSON(
+        EP.GROUP.getGroup,
+        {
+          method: "POST",
+          body: payload,
+        }
+      );
+
+      if (response?.success && response?.data) {
+        setSearchResults(response.data);
+        setPagination({
+          currentPage: response.pagination?.currentPage || 1,
+          totalPages: response.pagination?.totalPages || 1,
+          total: response.pagination?.total || 0,
+          perPage: response.pagination?.perPage || 5,
+        });
+      } else {
+        setError(response?.message || "Failed to search groups");
+        setSearchResults([]);
+      }
+    } catch (err) {
+      setError("An error occurred while searching groups");
+      setSearchResults([]);
+      console.error("Error searching groups:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim().length < 2 && searchQuery.trim().length > 0) {
@@ -344,6 +457,18 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
         pageNumber: 1,
         perPage: pagination.perPage,
       });
+    } else if (selectedType === "club") {
+      searchClubs({
+        search: searchQuery.trim().length >= 2 ? searchQuery : "",
+        pageNumber: 1,
+        perPage: pagination.perPage,
+      });
+    } else if (selectedType === "group") {
+      searchGroups({
+        search: searchQuery.trim().length >= 2 ? searchQuery : "",
+        pageNumber: 1,
+        perPage: pagination.perPage,
+      });
     }
   };
 
@@ -371,6 +496,18 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
       });
     } else if (selectedType === "company") {
       searchCompanies({
+        search: hasSearched ? searchQuery : "",
+        pageNumber: page,
+        perPage: pagination.perPage,
+      });
+    } else if (selectedType === "club") {
+      searchClubs({
+        search: hasSearched ? searchQuery : "",
+        pageNumber: page,
+        perPage: pagination.perPage,
+      });
+    } else if (selectedType === "group") {
+      searchGroups({
         search: hasSearched ? searchQuery : "",
         pageNumber: page,
         perPage: pagination.perPage,
@@ -403,6 +540,16 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
         });
       } else if (selectedType === "company") {
         searchCompanies({
+          pageNumber: 1,
+          perPage: pagination.perPage,
+        });
+      } else if (selectedType === "club") {
+        searchClubs({
+          pageNumber: 1,
+          perPage: pagination.perPage,
+        });
+      } else if (selectedType === "group") {
+        searchGroups({
           pageNumber: 1,
           perPage: pagination.perPage,
         });
@@ -478,6 +625,16 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
     setShowCompanyDetails(true);
   };
 
+  const handleClubSelect = (club: Club) => {
+    setSelectedClub(club);
+    setShowClubDetails(true);
+  };
+
+  const handleGroupSelect = (group: Group) => {
+    setSelectedGroup(group);
+    setShowGroupDetails(true);
+  };
+
   const handleCloseUserProfile = () => {
     setShowProfile(false);
     setSelectedUserId(null);
@@ -492,6 +649,16 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
   const handleCloseCompanyDetails = () => {
     setShowCompanyDetails(false);
     setSelectedCompany(null);
+  };
+
+  const handleCloseClubDetails = () => {
+    setShowClubDetails(false);
+    setSelectedClub(null);
+  };
+
+  const handleCloseGroupDetails = () => {
+    setShowGroupDetails(false);
+    setSelectedGroup(null);
   };
 
   const handleClose = () => {
@@ -516,6 +683,10 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
     setSelectedFacility(null);
     setShowCompanyDetails(false);
     setSelectedCompany(null);
+    setShowClubDetails(false);
+    setSelectedClub(null);
+    setShowGroupDetails(false);
+    setSelectedGroup(null);
   };
 
   if (!isOpen) return null;
@@ -543,7 +714,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
             <label className="block text-sm font-medium text-gray-700 mb-3">
               What are you looking for?
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => setSelectedType("coach")}
@@ -645,6 +816,60 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                   }`}
                 >
                   Company
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedType("club")}
+                className={`flex flex-col items-center p-3 sm:p-4 rounded-lg border-2 transition-all ${
+                  selectedType === "club"
+                    ? "border-cyan-500 bg-cyan-50"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <Shield
+                  className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 ${
+                    selectedType === "club"
+                      ? "text-cyan-500"
+                      : "text-gray-400"
+                  }`}
+                />
+                <span
+                  className={`text-xs sm:text-sm font-medium ${
+                    selectedType === "club"
+                      ? "text-cyan-700"
+                      : "text-gray-600"
+                  }`}
+                >
+                  Club
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedType("group")}
+                className={`flex flex-col items-center p-3 sm:p-4 rounded-lg border-2 transition-all ${
+                  selectedType === "group"
+                    ? "border-cyan-500 bg-cyan-50"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <UserCheck
+                  className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 ${
+                    selectedType === "group"
+                      ? "text-cyan-500"
+                      : "text-gray-400"
+                  }`}
+                />
+                <span
+                  className={`text-xs sm:text-sm font-medium ${
+                    selectedType === "group"
+                      ? "text-cyan-700"
+                      : "text-gray-600"
+                  }`}
+                >
+                  Group
                 </span>
               </button>
             </div>
@@ -906,6 +1131,96 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                         </div>
                       </div>
                     );
+                  } else if (selectedType === "club") {
+                    const club = result as Club;
+                    return (
+                      <div
+                        key={club._id}
+                        onClick={() => handleClubSelect(club)}
+                        className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                            {club.photo ? (
+                              <img
+                                src={
+                                  typeof club.photo === "string"
+                                    ? club.photo
+                                    : `${EP.API_ASSETS_BASE}/${(club.photo as any).path}`.replace(/\\/g, "/")
+                                }
+                                alt={club.name}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                            ) : (
+                              <Shield className="w-5 h-5 text-purple-600" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900">
+                              {club.name}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {club.vision || "Sports club"}
+                            </div>
+                            <div className="flex gap-1 mt-1">
+                              <span className="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs rounded-full">
+                                Club
+                              </span>
+                              {club.isApproved && (
+                                <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                                  Approved
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  } else if (selectedType === "group") {
+                    const group = result as Group;
+                    return (
+                      <div
+                        key={group._id}
+                        onClick={() => handleGroupSelect(group)}
+                        className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                            {group.photo ? (
+                              <img
+                                src={
+                                  typeof group.photo === "string"
+                                    ? group.photo
+                                    : `${EP.API_ASSETS_BASE}/${(group.photo as any).path}`.replace(/\\/g, "/")
+                                }
+                                alt={group.name}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                            ) : (
+                              <UserCheck className="w-5 h-5 text-indigo-600" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900">
+                              {group.name}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {group.clubName}
+                            </div>
+                            <div className="flex gap-1 mt-1">
+                              <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-xs rounded-full">
+                                Group
+                              </span>
+                              {group.isApproved && (
+                                <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                                  Approved
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
                   }
                   return null;
                 })}
@@ -979,6 +1294,20 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
         isOpen={showCompanyDetails}
         onClose={handleCloseCompanyDetails}
         company={selectedCompany}
+      />
+
+      {/* Club Details Modal */}
+      <ClubViewModal
+        isOpen={showClubDetails}
+        onClose={handleCloseClubDetails}
+        club={selectedClub}
+      />
+
+      {/* Group Details Modal */}
+      <GroupViewModal
+        isOpen={showGroupDetails}
+        onClose={handleCloseGroupDetails}
+        group={selectedGroup}
       />
     </div>
   );
