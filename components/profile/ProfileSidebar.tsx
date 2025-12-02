@@ -30,6 +30,7 @@ import CoachModal from "./CoachModal";
 import FacilityModal from "./FacilityModal";
 import CompanyModal from "./CompanyModal";
 import ClubModal from "./ClubModal";
+import GroupModal from "./GroupModal";
 import FindModal from "./FindModal";
 import {
   getFacilities,
@@ -41,7 +42,16 @@ import {
   deleteSalon,
   Facility,
 } from "@/app/lib/facility-api";
-import { getCreatedClubs, getCreatedGroups, createClub, updateClub, deleteClub } from "@/app/lib/club-api";
+import { 
+  getCreatedClubs, 
+  getCreatedGroups, 
+  createClub, 
+  updateClub, 
+  deleteClub,
+  createGroup,
+  updateGroup,
+  deleteGroup
+} from "@/app/lib/club-api";
 import { editUserPhoto } from "@/app/lib/auth-api";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import { EP } from "@/app/lib/endpoints";
@@ -71,6 +81,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
 
   const [isFacilitiesListOpen, setIsFacilitiesListOpen] = useState(false);
   const [isClubsListOpen, setIsClubsListOpen] = useState(false);
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [isGroupsListOpen, setIsGroupsListOpen] = useState(false);
   
   const { data: allFacilities = [] } = useQuery({
@@ -172,6 +183,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
 
   const [editingFacility, setEditingFacility] = useState<any | null>(null);
   const [editingClub, setEditingClub] = useState<any | null>(null);
+  const [editingGroup, setEditingGroup] = useState<any | null>(null);
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
   const [isCompaniesListOpen, setIsCompaniesListOpen] = useState(false);
   const [companies, setCompanies] = useState<any[]>(initialCompanies);
@@ -348,6 +360,61 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
     },
   });
 
+  // Group mutations and handlers
+  const createGroupMutation = useMutation({
+    mutationFn: ({ clubId, formData }: { clubId: string; formData: FormData }) =>
+      createGroup(clubId, formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-groups"] });
+    },
+  });
+
+  const updateGroupMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: FormData }) =>
+      updateGroup(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-groups"] });
+    },
+  });
+
+  const [deleteGroupModalState, setDeleteGroupModalState] = useState({
+    isOpen: false,
+    groupId: "",
+    isLoading: false,
+    isSuccess: false,
+    error: "",
+  });
+
+  const deleteGroupMutation = useMutation({
+    mutationFn: deleteGroup,
+    onMutate: () => {
+      setDeleteGroupModalState((prev) => ({ ...prev, isLoading: true, error: "" }));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-groups"] });
+      setDeleteGroupModalState((prev) => ({
+        ...prev,
+        isLoading: false,
+        isSuccess: true,
+      }));
+      setTimeout(() => {
+        setDeleteGroupModalState((prev) => ({
+          ...prev,
+          isOpen: false,
+          isSuccess: false,
+          groupId: "",
+        }));
+      }, 1500);
+    },
+    onError: () => {
+      setDeleteGroupModalState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: "Failed to delete group. Please try again.",
+      }));
+    },
+  });
+
   const handleCreateClub = async (formData: FormData) => {
     try {
       if (editingClub) {
@@ -392,6 +459,54 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   const confirmDeleteClub = async () => {
     if (deleteClubModalState.clubId) {
       deleteClubMutation.mutate(deleteClubModalState.clubId);
+    }
+  };
+
+  // Group handlers
+  const handleCreateGroup = async (clubId: string, formData: FormData) => {
+    try {
+      if (editingGroup) {
+        return await updateGroupMutation.mutateAsync({ id: editingGroup._id, data: formData });
+      } else {
+        return await createGroupMutation.mutateAsync({ clubId, formData });
+      }
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleOpenGroupModal = () => {
+    setIsGroupModalOpen(true);
+  };
+
+  const handleCloseGroupModal = () => {
+    setIsGroupModalOpen(false);
+    setEditingGroup(null);
+  };
+
+  const handleGroupAdd = () => {
+    setEditingGroup(null);
+    handleOpenGroupModal();
+  };
+
+  const handleEditGroup = (group: any) => {
+    setEditingGroup(group);
+    setIsGroupModalOpen(true);
+  };
+
+  const handleDeleteGroup = (groupId: string) => {
+    setDeleteGroupModalState({
+      isOpen: true,
+      groupId,
+      isLoading: false,
+      isSuccess: false,
+      error: "",
+    });
+  };
+
+  const confirmDeleteGroup = async () => {
+    if (deleteGroupModalState.groupId) {
+      deleteGroupMutation.mutate(deleteGroupModalState.groupId);
     }
   };
 
@@ -1454,12 +1569,21 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
               <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
                 My Groups
               </h2>
-              <button
-                onClick={() => setIsGroupsListOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleGroupAdd}
+                  className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  <Layers className="w-4 h-4" />
+                  <span>Add Group</span>
+                </button>
+                <button
+                  onClick={() => setIsGroupsListOpen(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Modal Body */}
@@ -1479,28 +1603,24 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                       key={group._id}
                       className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow relative cursor-pointer hover:border-cyan-300"
                       onClick={() => {
-                        // TODO: Open detail modal or edit modal
-                        console.log("Group clicked:", group);
+                        const editData = {
+                          ...group,
+                          club: group.clubId,
+                          clubName: group.clubName,
+                          photo: group.photo
+                            ? `${EP.API_ASSETS_BASE}/${group.photo.path}`
+                            : "",
+                        };
+                        handleEditGroup(editData);
+                        setIsGroupsListOpen(false);
                       }}
                     >
-                      {/* Edit and Delete Buttons */}
+                      {/* Delete Button */}
                       <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex gap-1.5 sm:gap-2">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            // TODO: Implement edit
-                            console.log("Edit group:", group._id);
-                          }}
-                          className="p-1.5 sm:p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // TODO: Implement delete
-                            console.log("Delete group:", group._id);
+                            handleDeleteGroup(group._id);
                           }}
                           className="p-1.5 sm:p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
                           title="Delete"
@@ -1509,12 +1629,16 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                         </button>
                       </div>
 
-                      {group.photo && (
+                      {group.photo ? (
                         <img
                           src={`${EP.API_ASSETS_BASE}/${group.photo.path}`}
                           alt={group.name}
                           className="w-full h-40 object-cover rounded-lg mb-3"
                         />
+                      ) : (
+                        <div className="w-full h-40 bg-gray-100 rounded-lg mb-3 flex items-center justify-center">
+                          <Layers className="w-16 h-16 text-gray-300" />
+                        </div>
                       )}
                       <h3 className="font-semibold text-gray-800 text-base sm:text-lg mb-2 pr-16 sm:pr-20">
                         {group.name}
@@ -1534,8 +1658,8 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                           <span className="font-medium text-gray-600 w-20 sm:w-24">
                             Club:
                           </span>
-                          <span className="text-cyan-600 font-medium">
-                            {group.clubName}
+                          <span className="text-gray-800 font-medium">
+                            {group.clubName || "Unknown Club"}
                           </span>
                         </div>
                         {group.description && (
@@ -1543,12 +1667,13 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                             <span className="font-medium text-gray-600 w-20 sm:w-24">
                               Description:
                             </span>
-                            <span className="text-gray-800 flex-1 line-clamp-3">
+                            <span className="text-gray-800 flex-1 line-clamp-2">
                               {group.description}
                             </span>
                           </div>
                         )}
                       </div>
+
                     </div>
                   ))}
                 </div>
@@ -1578,6 +1703,51 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
           <span>Logout</span>
         </button>
       </div>
+
+      {/* Club Modal */}
+      <ClubModal
+        isOpen={isClubModalOpen}
+        onClose={handleCloseClubModal}
+        onSubmit={handleCreateClub}
+        initialData={editingClub}
+      />
+
+      {/* Club Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteClubModalState.isOpen}
+        onClose={() =>
+          setDeleteClubModalState((prev) => ({ ...prev, isOpen: false }))
+        }
+        onConfirm={confirmDeleteClub}
+        title="Delete Club"
+        message="Are you sure you want to delete this club? This action cannot be undone."
+        isLoading={deleteClubModalState.isLoading}
+        isSuccess={deleteClubModalState.isSuccess}
+        error={deleteClubModalState.error}
+      />
+
+      {/* Group Modal */}
+      <GroupModal
+        isOpen={isGroupModalOpen}
+        onClose={handleCloseGroupModal}
+        onSubmit={handleCreateGroup}
+        initialData={editingGroup}
+        userId={user?._id}
+      />
+
+      {/* Group Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteGroupModalState.isOpen}
+        onClose={() =>
+          setDeleteGroupModalState((prev) => ({ ...prev, isOpen: false }))
+        }
+        onConfirm={confirmDeleteGroup}
+        title="Delete Group"
+        message="Are you sure you want to delete this group? This action cannot be undone."
+        isLoading={deleteGroupModalState.isLoading}
+        isSuccess={deleteGroupModalState.isSuccess}
+        error={deleteGroupModalState.error}
+      />
 
       {/* Find Modal */}
       <FindModal

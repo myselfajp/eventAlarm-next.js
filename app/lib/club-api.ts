@@ -117,3 +117,66 @@ export async function deleteClub(id: string) {
   }
   return true;
 }
+
+// Group CRUD operations
+export async function createGroup(clubId: string, formData: FormData) {
+  const res = await apiFetch(EP.CLUB_GROUPS.createGroup(clubId), {
+    method: "POST",
+    body: formData,
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok || body?.success === false) {
+    throw new Error(body?.message || `HTTP ${res.status}`);
+  }
+  return body?.data;
+}
+
+export async function updateGroup(groupId: string, formData: FormData) {
+  const res = await apiFetch(EP.CLUB_GROUPS.editGroup(groupId), {
+    method: "POST",
+    body: formData,
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok || body?.success === false) {
+    throw new Error(body?.message || `HTTP ${res.status}`);
+  }
+  return body?.data;
+}
+
+export async function deleteGroup(groupId: string) {
+  const res = await apiFetch(EP.CLUB_GROUPS.deleteGroup(groupId), {
+    method: "DELETE",
+  });
+
+  if (res.status === 204) return true;
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok || body?.success === false) {
+    throw new Error(body?.message || `HTTP ${res.status}`);
+  }
+  return true;
+}
+
+export async function getClubs(
+  search?: string,
+  page: number = 1,
+  perPage: number = 10,
+  creator?: string
+) {
+  const body: any = {
+    search: search || "",
+    pageNumber: page,
+    perPage: perPage,
+  };
+
+  if (creator) {
+    body.creator = creator;
+  }
+
+  return fetchJSON(EP.CLUB_GROUPS.getClubs, {
+    method: "POST",
+    body,
+  });
+}
