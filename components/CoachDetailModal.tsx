@@ -12,6 +12,12 @@ import {
 } from "lucide-react";
 import { fetchJSON } from "@/app/lib/api";
 import { EP } from "@/app/lib/endpoints";
+import { useMe } from "@/app/hooks/useAuth";
+import { getCreatedClubs, getCreatedGroups } from "@/app/lib/club-api";
+import ClubModal from "@/components/profile/ClubModal";
+import GroupModal from "@/components/profile/GroupModal";
+import ClubViewModal from "@/components/ClubViewModal";
+import GroupViewModal from "@/components/GroupViewModal";
 
 interface CoachDetailModalProps {
   isOpen: boolean;
@@ -75,9 +81,18 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
   onClose,
   coachId,
 }) => {
+  const { data: currentUser } = useMe();
   const [data, setData] = useState<CoachResponseData | null>(null);
+  const [clubs, setClubs] = useState<any[]>([]);
+  const [groups, setGroups] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Modal states for clubs and groups
+  const [isClubModalOpen, setIsClubModalOpen] = useState(false);
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+  const [selectedClub, setSelectedClub] = useState<any>(null);
+  const [selectedGroup, setSelectedGroup] = useState<any>(null);
 
   useEffect(() => {
     if (isOpen && coachId) {
@@ -92,16 +107,28 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
     setIsLoading(true);
     setError(null);
     try {
-      const url = EP.COACH.getCoachById(id);
-      const response = await fetchJSON(url, {
-        method: "GET",
-      });
+      // Fetch coach details and clubs/groups in parallel
+      const [coachResponse, clubsResponse, groupsResponse] = await Promise.all([
+        fetchJSON(EP.COACH.getCoachById(id), { method: "GET" }),
+        getCreatedClubs(id),
+        getCreatedGroups(id)
+      ]);
 
-      if (response?.success && response?.data) {
-        setData(response.data);
+      if (coachResponse?.success && coachResponse?.data) {
+        setData(coachResponse.data);
       } else {
-        setError(response?.message || "Failed to load coach details");
+        setError(coachResponse?.message || "Failed to load coach details");
       }
+
+      // Set clubs and groups
+      if (clubsResponse?.success && clubsResponse?.data) {
+        setClubs(clubsResponse.data);
+      }
+
+      if (groupsResponse?.success && groupsResponse?.data) {
+        setGroups(groupsResponse.data);
+      }
+
     } catch (err) {
       setError("An error occurred while fetching coach details");
       console.error(err);
@@ -134,6 +161,35 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
       month: "short",
       year: "numeric",
     }).format(new Date(isoString));
+  };
+
+  const isOwnerOrCreator = (resource: any, type: 'club' | 'group') => {
+    if (!currentUser) return false;
+    if (type === 'club') {
+      return resource.creator === currentUser._id;
+    } else {
+      return resource.owner === currentUser._id;
+    }
+  };
+
+  const handleClubClick = (club: any) => {
+    setSelectedClub(club);
+    setIsClubModalOpen(true);
+  };
+
+  const handleGroupClick = (group: any) => {
+    setSelectedGroup(group);
+    setIsGroupModalOpen(true);
+  };
+
+  const handleCloseClubModal = () => {
+    setIsClubModalOpen(false);
+    setSelectedClub(null);
+  };
+
+  const handleCloseGroupModal = () => {
+    setIsGroupModalOpen(false);
+    setSelectedGroup(null);
   };
 
   if (!isOpen) return null;
@@ -360,6 +416,118 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
                   </div>
                 )}
               </div>
+
+              {/* Clubs Section */}
+              <div>
+                <h4 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-cyan-500" />
+                  Clubs
+                </h4>
+                {clubs && clubs.length > 0 ? (
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {clubs.map((club) => (
+                      <div
+                        key={club._id}
+                        className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all group cursor-pointer"
+                        onClick={() => handleClubClick(club)}
+                      >
+                        <div className="h-32 bg-gray-200 relative overflow-hidden">
+                          {club.photo?.path ? (
+                            <img
+                              src={getImageUrl(club.photo.path)!}
+                              alt={club.name}
+                              className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyan-100 to-cyan-200">
+                              <div className="text-center">
+                                <ShieldCheck className="w-12 h-12 text-cyan-500 mx-auto mb-2" />
+                                <div className="text-xs font-medium text-cyan-700">Club</div>
+                              </div>
+                            </div>
+                          )}
+                          <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-semibold text-gray-700 shadow-sm">
+                            {club.isApproved ? "Approved" : "Pending"}
+                          </div>
+                        </div>
+                        <div className="p-4">
+                          <h5 className="font-bold text-gray-900 mb-1 truncate">
+                            {club.name}
+                          </h5>
+                          {club.vision && (
+                            <div className="text-sm text-gray-500 mb-2 line-clamp-2">
+                              {club.vision}
+                            </div>
+                          )}
+                          <div className="text-xs text-gray-400">
+                            Created {formatDate(club.createdAt)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-white p-6 rounded-xl border border-gray-100 text-center text-gray-500 italic">
+                    No clubs found.
+                  </div>
+                )}
+              </div>
+
+              {/* Groups Section */}
+              <div>
+                <h4 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <User className="w-5 h-5 text-cyan-500" />
+                  Groups
+                </h4>
+                {groups && groups.length > 0 ? (
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {groups.map((group) => (
+                      <div
+                        key={group._id}
+                        className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all group cursor-pointer"
+                        onClick={() => handleGroupClick(group)}
+                      >
+                        <div className="h-32 bg-gray-200 relative overflow-hidden">
+                          {group.photo?.path ? (
+                            <img
+                              src={getImageUrl(group.photo.path)!}
+                              alt={group.name}
+                              className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyan-100 to-cyan-200">
+                              <div className="text-center">
+                                <User className="w-12 h-12 text-cyan-500 mx-auto mb-2" />
+                                <div className="text-xs font-medium text-cyan-700">Group</div>
+                              </div>
+                            </div>
+                          )}
+                          <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-semibold text-gray-700 shadow-sm">
+                            {group.clubName}
+                          </div>
+                        </div>
+                        <div className="p-4">
+                          <h5 className="font-bold text-gray-900 mb-1 truncate">
+                            {group.name}
+                          </h5>
+                          {group.description && (
+                            <div className="text-sm text-gray-500 mb-2 line-clamp-2">
+                              {group.description}
+                            </div>
+                          )}
+                          <div className="text-xs text-gray-400">
+                            Created {formatDate(group.createdAt)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-white p-6 rounded-xl border border-gray-100 text-center text-gray-500 italic">
+                    No groups found.
+                  </div>
+                )}
+              </div>
             </div>
           ) : null}
         </div>
@@ -374,6 +542,45 @@ const CoachDetailModal: React.FC<CoachDetailModalProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Club Modal */}
+      {selectedClub && isOwnerOrCreator(selectedClub, 'club') && (
+        <ClubModal
+          isOpen={isClubModalOpen}
+          onClose={handleCloseClubModal}
+          onSubmit={async () => {}}
+          initialData={selectedClub}
+        />
+      )}
+
+      {/* Club View Modal */}
+      {selectedClub && !isOwnerOrCreator(selectedClub, 'club') && (
+        <ClubViewModal
+          isOpen={isClubModalOpen}
+          onClose={handleCloseClubModal}
+          club={selectedClub}
+        />
+      )}
+
+      {/* Group Modal */}
+      {selectedGroup && isOwnerOrCreator(selectedGroup, 'group') && (
+        <GroupModal
+          isOpen={isGroupModalOpen}
+          onClose={handleCloseGroupModal}
+          onSubmit={async () => {}}
+          initialData={selectedGroup}
+          userId={currentUser?._id}
+        />
+      )}
+
+      {/* Group View Modal */}
+      {selectedGroup && !isOwnerOrCreator(selectedGroup, 'group') && (
+        <GroupViewModal
+          isOpen={isGroupModalOpen}
+          onClose={handleCloseGroupModal}
+          group={selectedGroup}
+        />
+      )}
     </div>
   );
 };
