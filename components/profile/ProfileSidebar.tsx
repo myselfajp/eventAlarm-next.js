@@ -29,6 +29,7 @@ import ParticipantModal from "./ParticipantModal";
 import CoachModal from "./CoachModal";
 import FacilityModal from "./FacilityModal";
 import CompanyModal from "./CompanyModal";
+import ClubModal from "./ClubModal";
 import FindModal from "./FindModal";
 import {
   getFacilities,
@@ -40,7 +41,7 @@ import {
   deleteSalon,
   Facility,
 } from "@/app/lib/facility-api";
-import { getCreatedClubs, getCreatedGroups } from "@/app/lib/club-api";
+import { getCreatedClubs, getCreatedGroups, createClub, updateClub, deleteClub } from "@/app/lib/club-api";
 import { editUserPhoto } from "@/app/lib/auth-api";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import { EP } from "@/app/lib/endpoints";
@@ -66,6 +67,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   const [isParticipantModalOpen, setIsParticipantModalOpen] = useState(false);
   const [isCoachModalOpen, setIsCoachModalOpen] = useState(false);
   const [isFacilityModalOpen, setIsFacilityModalOpen] = useState(false);
+  const [isClubModalOpen, setIsClubModalOpen] = useState(false);
 
   const [isFacilitiesListOpen, setIsFacilitiesListOpen] = useState(false);
   const [isClubsListOpen, setIsClubsListOpen] = useState(false);
@@ -169,6 +171,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   });
 
   const [editingFacility, setEditingFacility] = useState<any | null>(null);
+  const [editingClub, setEditingClub] = useState<any | null>(null);
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
   const [isCompaniesListOpen, setIsCompaniesListOpen] = useState(false);
   const [companies, setCompanies] = useState<any[]>(initialCompanies);
@@ -288,6 +291,107 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
           error: "Failed to delete facility and its salons. Please try again.",
         }));
       }
+    }
+  };
+
+  // Club mutations and handlers
+  const createClubMutation = useMutation({
+    mutationFn: createClub,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-clubs"] });
+    },
+  });
+
+  const updateClubMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: FormData }) =>
+      updateClub(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-clubs"] });
+    },
+  });
+
+  const [deleteClubModalState, setDeleteClubModalState] = useState({
+    isOpen: false,
+    clubId: "",
+    isLoading: false,
+    isSuccess: false,
+    error: "",
+  });
+
+  const deleteClubMutation = useMutation({
+    mutationFn: deleteClub,
+    onMutate: () => {
+      setDeleteClubModalState((prev) => ({ ...prev, isLoading: true, error: "" }));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-clubs"] });
+      setDeleteClubModalState((prev) => ({
+        ...prev,
+        isLoading: false,
+        isSuccess: true,
+      }));
+      setTimeout(() => {
+        setDeleteClubModalState((prev) => ({
+          ...prev,
+          isOpen: false,
+          isSuccess: false,
+          clubId: "",
+        }));
+      }, 1500);
+    },
+    onError: () => {
+      setDeleteClubModalState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: "Failed to delete club. Please try again.",
+      }));
+    },
+  });
+
+  const handleCreateClub = async (formData: FormData) => {
+    try {
+      if (editingClub) {
+        return await updateClubMutation.mutateAsync({ id: editingClub._id, data: formData });
+      } else {
+        return await createClubMutation.mutateAsync(formData);
+      }
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleOpenClubModal = () => {
+    setIsClubModalOpen(true);
+  };
+
+  const handleCloseClubModal = () => {
+    setIsClubModalOpen(false);
+    setEditingClub(null);
+  };
+
+  const handleClubAdd = () => {
+    setEditingClub(null);
+    handleOpenClubModal();
+  };
+
+  const handleEditClub = (club: any) => {
+    setEditingClub(club);
+    setIsClubModalOpen(true);
+  };
+
+  const handleDeleteClub = (clubId: string) => {
+    setDeleteClubModalState({
+      isOpen: true,
+      clubId,
+      isLoading: false,
+      isSuccess: false,
+      error: "",
+    });
+  };
+
+  const confirmDeleteClub = async () => {
+    if (deleteClubModalState.clubId) {
+      deleteClubMutation.mutate(deleteClubModalState.clubId);
     }
   };
 
@@ -853,6 +957,14 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
         initialData={editingFacility}
       />
 
+      {/* Club Modal */}
+      <ClubModal
+        isOpen={isClubModalOpen}
+        onClose={handleCloseClubModal}
+        onSubmit={handleCreateClub}
+        initialData={editingClub}
+      />
+
       <DeleteConfirmationModal
         isOpen={deleteModalState.isOpen}
         onClose={() =>
@@ -864,6 +976,19 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
         error={deleteModalState.error}
         title="Delete Facility"
         message="Are you sure you want to delete this facility? This action cannot be undone."
+      />
+
+      <DeleteConfirmationModal
+        isOpen={deleteClubModalState.isOpen}
+        onClose={() =>
+          setDeleteClubModalState((prev) => ({ ...prev, isOpen: false }))
+        }
+        onConfirm={confirmDeleteClub}
+        isLoading={deleteClubModalState.isLoading}
+        isSuccess={deleteClubModalState.isSuccess}
+        error={deleteClubModalState.error}
+        title="Delete Club"
+        message="Are you sure you want to delete this club? This action cannot be undone."
       />
 
       <DeleteConfirmationModal
@@ -1182,12 +1307,25 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
               <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
                 My Clubs
               </h2>
-              <button
-                onClick={() => setIsClubsListOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <button
+                  onClick={() => {
+                    setIsClubsListOpen(false);
+                    handleClubAdd();
+                  }}
+                  className="px-3 py-1.5 sm:px-4 sm:py-2 bg-cyan-500 hover:bg-cyan-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center gap-1 sm:gap-2"
+                >
+                  <Shield className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Add Club</span>
+                  <span className="sm:hidden">Add</span>
+                </button>
+                <button
+                  onClick={() => setIsClubsListOpen(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Modal Body */}
@@ -1207,28 +1345,23 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                       key={club._id}
                       className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow relative cursor-pointer hover:border-cyan-300"
                       onClick={() => {
-                        // TODO: Open detail modal or edit modal
-                        console.log("Club clicked:", club);
+                        // Transform API data to form data structure
+                        const editData = {
+                          ...club,
+                          photo: club.photo
+                            ? `${EP.API_ASSETS_BASE}/${club.photo.path}`
+                            : "",
+                        };
+                        handleEditClub(editData);
+                        setIsClubsListOpen(false);
                       }}
                     >
-                      {/* Edit and Delete Buttons */}
+                      {/* Delete Button */}
                       <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex gap-1.5 sm:gap-2">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            // TODO: Implement edit
-                            console.log("Edit club:", club._id);
-                          }}
-                          className="p-1.5 sm:p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // TODO: Implement delete
-                            console.log("Delete club:", club._id);
+                            handleDeleteClub(club._id);
                           }}
                           className="p-1.5 sm:p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
                           title="Delete"
@@ -1237,12 +1370,16 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                         </button>
                       </div>
 
-                      {club.photo && (
+                      {club.photo ? (
                         <img
                           src={`${EP.API_ASSETS_BASE}/${club.photo.path}`}
                           alt={club.name}
                           className="w-full h-40 object-cover rounded-lg mb-3"
                         />
+                      ) : (
+                        <div className="w-full h-40 bg-gray-100 rounded-lg mb-3 flex items-center justify-center">
+                          <Shield className="w-16 h-16 text-gray-300" />
+                        </div>
                       )}
                       <h3 className="font-semibold text-gray-800 text-base sm:text-lg mb-2 pr-16 sm:pr-20">
                         {club.name}

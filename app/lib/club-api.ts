@@ -1,5 +1,5 @@
 import { EP } from "./endpoints";
-import { fetchJSON } from "./api";
+import { fetchJSON, apiFetch } from "./api";
 
 export interface Club {
   _id: string;
@@ -76,3 +76,44 @@ export const getCreatedGroups = async (
     },
   });
 };
+
+export async function createClub(formData: FormData) {
+  const res = await apiFetch(EP.CLUB.createClub, {
+    method: "POST",
+    body: formData,
+    // Content-Type header is automatically set by browser for FormData
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok || body?.success === false) {
+    throw new Error(body?.message || `HTTP ${res.status}`);
+  }
+  return body?.data;
+}
+
+export async function updateClub(id: string, formData: FormData) {
+  const res = await apiFetch(EP.CLUB.editClub(id), {
+    method: "PATCH",
+    body: formData,
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok || body?.success === false) {
+    throw new Error(body?.message || `HTTP ${res.status}`);
+  }
+  return body?.data;
+}
+
+export async function deleteClub(id: string) {
+  const res = await apiFetch(EP.CLUB.deleteClub(id), {
+    method: "DELETE",
+  });
+
+  if (res.status === 204) return true;
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok || body?.success === false) {
+    throw new Error(body?.message || `HTTP ${res.status}`);
+  }
+  return true;
+}
