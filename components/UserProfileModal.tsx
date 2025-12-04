@@ -290,18 +290,18 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex-shrink-0 p-6 border-b border-gray-200">
+        <div className="flex-shrink-0 p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <h2 className="text-xl font-semibold text-gray-800">
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
                 User Profile
               </h2>
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 p-1"
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
             >
               <X className="w-6 h-6" />
             </button>
@@ -309,18 +309,18 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 dark:bg-gray-800">
           {!isFullyLoaded ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
             </div>
           ) : error ? (
-            <div className="text-center text-red-500 py-8">{error}</div>
+            <div className="text-center text-red-500 dark:text-red-400 py-8">{error}</div>
           ) : user ? (
             <div className="space-y-6">
               {/* User Avatar and Basic Info */}
               <div className="flex items-center gap-4">
-                <div className="w-20 h-20 bg-cyan-100 rounded-full flex items-center justify-center">
+                <div className="w-20 h-20 bg-cyan-100 dark:bg-cyan-900 rounded-full flex items-center justify-center">
                   {user.photo ? (
                     <img
                       src={`${EP.API_ASSETS_BASE}${user.photo}`}
@@ -328,81 +328,81 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       className="w-20 h-20 rounded-full object-cover"
                     />
                   ) : (
-                    <User className="w-10 h-10 text-cyan-600" />
+                    <User className="w-10 h-10 text-cyan-600 dark:text-cyan-400" />
                   )}
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900">
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
                     {user.firstName} {user.lastName}
                   </h3>
-                  <p className="text-gray-600">{getRoleName(user.role)}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-gray-600 dark:text-gray-300">{getRoleName(user.role)}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     Member since {formatDate(user.createdAt)}
                   </p>
                 </div>
               </div>
 
               {/* Basic Information */}
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <Calendar className="w-5 h-5 text-gray-500" />
+              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <Calendar className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                 <div>
-                  <p className="text-sm text-gray-500">Date of Birth</p>
-                  <p className="font-medium">{formatDate(user.age)}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Date of Birth</p>
+                  <p className="font-medium dark:text-white">{formatDate(user.age)}</p>
                 </div>
               </div>
 
               {/* Participant Details */}
               {user.participant && (!context || context === "participant") && (
-                <div className="border-t pt-6">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-cyan-600" />
+                <div className="border-t dark:border-gray-700 pt-6">
+                  <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                    <Trophy className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                     Participant Information
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-center gap-3 p-3 bg-cyan-50 rounded-lg">
-                      <Target className="w-5 h-5 text-cyan-600" />
+                    <div className="flex items-center gap-3 p-3 bg-cyan-50 dark:bg-cyan-900/30 rounded-lg">
+                      <Target className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                       <div>
-                        <p className="text-sm text-gray-600">Main Sport</p>
-                        <p className="font-medium">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Main Sport</p>
+                        <p className="font-medium dark:text-white">
                           {mainSport || user.participant.mainSport}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-cyan-50 rounded-lg">
-                      <Award className="w-5 h-5 text-cyan-600" />
+                    <div className="flex items-center gap-3 p-3 bg-cyan-50 dark:bg-cyan-900/30 rounded-lg">
+                      <Award className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                       <div>
-                        <p className="text-sm text-gray-600">Skill Level</p>
-                        <p className="font-medium">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Skill Level</p>
+                        <p className="font-medium dark:text-white">
                           {user.participant.skillLevel}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-cyan-50 rounded-lg">
-                      <Trophy className="w-5 h-5 text-cyan-600" />
+                    <div className="flex items-center gap-3 p-3 bg-cyan-50 dark:bg-cyan-900/30 rounded-lg">
+                      <Trophy className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                       <div>
-                        <p className="text-sm text-gray-600">Points</p>
-                        <p className="font-medium">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Points</p>
+                        <p className="font-medium dark:text-white">
                           {user.participant.point || 0}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-cyan-50 rounded-lg">
-                      <Award className="w-5 h-5 text-cyan-600" />
+                    <div className="flex items-center gap-3 p-3 bg-cyan-50 dark:bg-cyan-900/30 rounded-lg">
+                      <Award className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                       <div>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
                           Membership Level
                         </p>
-                        <p className="font-medium">
+                        <p className="font-medium dark:text-white">
                           {user.participant.membershipLevel || "Standard"}
                         </p>
                       </div>
                     </div>
                     {sportGoal && (
-                      <div className="flex items-center gap-3 p-3 bg-cyan-50 rounded-lg">
-                        <Target className="w-5 h-5 text-cyan-600" />
+                      <div className="flex items-center gap-3 p-3 bg-cyan-50 dark:bg-cyan-900/30 rounded-lg">
+                        <Target className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                         <div>
-                          <p className="text-sm text-gray-600">Sport Goal</p>
-                          <p className="font-medium">{sportGoal.name}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Sport Goal</p>
+                          <p className="font-medium dark:text-white">{sportGoal.name}</p>
                         </div>
                       </div>
                     )}
@@ -413,44 +413,44 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
               {/* Coach Information */}
               {(user.coach || coachDetails) &&
                 (!context || context === "coach") && (
-                  <div className="border-t pt-6">
-                    <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                      <Award className="w-5 h-5 text-green-600" />
+                  <div className="border-t dark:border-gray-700 pt-6">
+                    <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                      <Award className="w-5 h-5 text-green-600 dark:text-green-400" />
                       Coach Information
                     </h4>
 
                     {/* Basic Coach Info */}
                     {user.coach && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                          <CheckCircle className="w-5 h-5 text-green-600" />
+                        <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg">
+                          <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
                           <div>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
                               Verification Status
                             </p>
-                            <p className="font-medium">
+                            <p className="font-medium dark:text-white">
                               {user.coach.isVerified
                                 ? "Verified"
                                 : "Pending Verification"}
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                          <Award className="w-5 h-5 text-green-600" />
+                        <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg">
+                          <Award className="w-5 h-5 text-green-600 dark:text-green-400" />
                           <div>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
                               Membership Level
                             </p>
-                            <p className="font-medium">
+                            <p className="font-medium dark:text-white">
                               {user.coach.membershipLevel || "Standard"}
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                          <Trophy className="w-5 h-5 text-green-600" />
+                        <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg">
+                          <Trophy className="w-5 h-5 text-green-600 dark:text-green-400" />
                           <div>
-                            <p className="text-sm text-gray-600">Points</p>
-                            <p className="font-medium">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Points</p>
+                            <p className="font-medium dark:text-white">
                               {user.coach.point || 0}
                             </p>
                           </div>
@@ -461,30 +461,30 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     {/* Coach Branches */}
                     {coachDetails?.branch && coachDetails.branch.length > 0 && (
                       <div className="mb-6">
-                        <h5 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
-                          <Target className="w-4 h-4 text-green-600" />
+                        <h5 className="text-md font-medium text-gray-800 dark:text-white mb-3 flex items-center gap-2">
+                          <Target className="w-4 h-4 text-green-600 dark:text-green-400" />
                           Coaching Specialties ({coachDetails.branch.length})
                         </h5>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {coachDetails.branch.map((branch) => (
                             <div
                               key={branch._id}
-                              className="flex items-center gap-3 p-3 bg-green-50 rounded-lg"
+                              className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg"
                             >
                               {branch.certificate ? (
                                 <img
                                   src={`${EP.API_ASSETS_BASE}${branch.certificate.path}`}
                                   alt="Branch Certificate"
-                                  className="w-12 h-12 object-cover rounded-lg border"
+                                  className="w-12 h-12 object-cover rounded-lg border dark:border-gray-600"
                                 />
                               ) : (
-                                <Target className="w-4 h-4 text-green-600" />
+                                <Target className="w-4 h-4 text-green-600 dark:text-green-400" />
                               )}
                               <div className="flex-1">
-                                <p className="font-medium text-sm">
+                                <p className="font-medium text-sm dark:text-white">
                                   {branch.sport.name} - {branch.sport.groupName}
                                 </p>
-                                <p className="text-xs text-gray-600">
+                                <p className="text-xs text-gray-600 dark:text-gray-400">
                                   Level: {branch.level} • Order:{" "}
                                   {branch.branchOrder}
                                 </p>
@@ -492,10 +492,10 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                                   <span
                                     className={`px-2 py-0.5 text-xs rounded-full ${
                                       branch.isApproved
-                                        ? "bg-green-100 text-green-800"
+                                        ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
                                         : branch.status === "Pending"
-                                        ? "bg-blue-100 text-blue-800"
-                                        : "bg-red-100 text-red-800"
+                                        ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
+                                        : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
                                     }`}
                                   >
                                     {branch.isApproved
@@ -513,18 +513,18 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     {/* Clubs Owned */}
                     {coachDetails?.club && coachDetails.club.length > 0 && (
                       <div className="mb-6">
-                        <h5 className="text-md font-medium text-gray-800 mb-4 flex items-center gap-2">
-                          <Building className="w-4 h-4 text-green-600" />
+                        <h5 className="text-md font-medium text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                          <Building className="w-4 h-4 text-green-600 dark:text-green-400" />
                           Owned Clubs ({coachDetails.club.length})
                         </h5>
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                           {coachDetails.club.map((club) => (
                             <div
                               key={club._id}
-                              className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all group cursor-pointer"
+                              className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-600 shadow-sm hover:shadow-md transition-all group cursor-pointer"
                               onClick={() => handleClubClick(club)}
                             >
-                              <div className="h-32 bg-gray-200 relative overflow-hidden">
+                              <div className="h-32 bg-gray-200 dark:bg-gray-600 relative overflow-hidden">
                                 {club.photo?.path ? (
                                   <img
                                     src={getImageUrl(club.photo.path)}
@@ -532,27 +532,27 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                                     className="w-full h-full object-cover transition-transform group-hover:scale-105"
                                   />
                                 ) : (
-                                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-100 to-green-200">
+                                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900 dark:to-green-800">
                                     <div className="text-center">
-                                      <ShieldCheck className="w-12 h-12 text-green-500 mx-auto mb-2" />
-                                      <div className="text-xs font-medium text-green-700">Club</div>
+                                      <ShieldCheck className="w-12 h-12 text-green-500 dark:text-green-400 mx-auto mb-2" />
+                                      <div className="text-xs font-medium text-green-700 dark:text-green-300">Club</div>
                                     </div>
                                   </div>
                                 )}
-                                <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-semibold text-gray-700 shadow-sm">
+                                <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-semibold text-gray-700 dark:text-gray-200 shadow-sm">
                                   {club.isApproved ? "Approved" : "Pending"}
                                 </div>
                               </div>
                               <div className="p-4">
-                                <h6 className="font-bold text-gray-900 mb-1 truncate">
+                                <h6 className="font-bold text-gray-900 dark:text-white mb-1 truncate">
                                   {club.name}
                                 </h6>
                                 {club.vision && (
-                                  <div className="text-sm text-gray-500 mb-2 line-clamp-2">
+                                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-2 line-clamp-2">
                                     {club.vision}
                                   </div>
                                 )}
-                                <div className="text-xs text-gray-400">
+                                <div className="text-xs text-gray-400 dark:text-gray-500">
                                   Created {formatDate(club.createdAt)}
                                 </div>
                               </div>
@@ -566,18 +566,18 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     {coachDetails?.clubGroup &&
                       coachDetails.clubGroup.length > 0 && (
                         <div className="mb-6">
-                          <h5 className="text-md font-medium text-gray-800 mb-4 flex items-center gap-2">
-                            <Users className="w-4 h-4 text-green-600" />
+                          <h5 className="text-md font-medium text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                            <Users className="w-4 h-4 text-green-600 dark:text-green-400" />
                             Owned Club Groups ({coachDetails.clubGroup.length})
                           </h5>
                           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             {coachDetails.clubGroup.map((group) => (
                               <div
                                 key={group._id}
-                                className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all group cursor-pointer"
+                                className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-600 shadow-sm hover:shadow-md transition-all group cursor-pointer"
                                 onClick={() => handleGroupClick(group)}
                               >
-                                <div className="h-32 bg-gray-200 relative overflow-hidden">
+                                <div className="h-32 bg-gray-200 dark:bg-gray-600 relative overflow-hidden">
                                   {group.photo?.path ? (
                                     <img
                                       src={getImageUrl(group.photo.path)}
@@ -585,27 +585,27 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                                       className="w-full h-full object-cover transition-transform group-hover:scale-105"
                                     />
                                   ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-100 to-green-200">
+                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900 dark:to-green-800">
                                       <div className="text-center">
-                                        <Users className="w-12 h-12 text-green-500 mx-auto mb-2" />
-                                        <div className="text-xs font-medium text-green-700">Group</div>
+                                        <Users className="w-12 h-12 text-green-500 dark:text-green-400 mx-auto mb-2" />
+                                        <div className="text-xs font-medium text-green-700 dark:text-green-300">Group</div>
                                       </div>
                                     </div>
                                   )}
-                                  <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-semibold text-gray-700 shadow-sm">
+                                  <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-semibold text-gray-700 dark:text-gray-200 shadow-sm">
                                     {group.clubName}
                                   </div>
                                 </div>
                                 <div className="p-4">
-                                  <h6 className="font-bold text-gray-900 mb-1 truncate">
+                                  <h6 className="font-bold text-gray-900 dark:text-white mb-1 truncate">
                                     {group.name}
                                   </h6>
                                   {group.description && (
-                                    <div className="text-sm text-gray-500 mb-2 line-clamp-2">
+                                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-2 line-clamp-2">
                                       {group.description}
                                     </div>
                                   )}
-                                  <div className="text-xs text-gray-400">
+                                  <div className="text-xs text-gray-400 dark:text-gray-500">
                                     Created {formatDate(group.createdAt)}
                                   </div>
                                 </div>
@@ -618,33 +618,33 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     {/* Events Created */}
                     {coachDetails?.event && coachDetails.event.length > 0 && (
                       <div className="mb-6">
-                        <h5 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
-                          <CalendarIcon className="w-4 h-4 text-green-600" />
+                        <h5 className="text-md font-medium text-gray-800 dark:text-white mb-3 flex items-center gap-2">
+                          <CalendarIcon className="w-4 h-4 text-green-600 dark:text-green-400" />
                           Created Events ({coachDetails.event.length})
                         </h5>
                         <div className="space-y-2">
                           {coachDetails.event.slice(0, 5).map((event) => (
                             <div
                               key={event._id}
-                              className="flex items-center gap-3 p-3 bg-green-50 rounded-lg"
+                              className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg"
                             >
-                              <CalendarIcon className="w-5 h-5 text-green-600" />
+                              <CalendarIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
                               <div className="flex-1">
-                                <p className="font-medium">{event.name}</p>
-                                <p className="text-sm text-gray-600">
+                                <p className="font-medium dark:text-white">{event.name}</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
                                   {new Date(
                                     event.startTime
                                   ).toLocaleDateString()}
                                 </p>
                                 <div className="flex items-center gap-2 mt-1">
-                                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                                  <span className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100 px-2 py-0.5 rounded-full">
                                     {event.capacity} capacity
                                   </span>
                                   <span
                                     className={`text-xs px-2 py-0.5 rounded-full ${
                                       event.private
-                                        ? "bg-red-100 text-red-800"
-                                        : "bg-green-100 text-green-800"
+                                        ? "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
+                                        : "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
                                     }`}
                                   >
                                     {event.private ? "Private" : "Public"}
@@ -654,7 +654,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                             </div>
                           ))}
                           {coachDetails.event.length > 5 && (
-                            <p className="text-sm text-gray-500 text-center py-2">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
                               And {coachDetails.event.length - 5} more events...
                             </p>
                           )}
@@ -665,22 +665,22 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     {/* Associated Companies */}
                     {user?.company && user.company.length > 0 && (
                       <div className="mb-6">
-                        <h5 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
-                          <Building className="w-4 h-4 text-green-600" />
+                        <h5 className="text-md font-medium text-gray-800 dark:text-white mb-3 flex items-center gap-2">
+                          <Building className="w-4 h-4 text-green-600 dark:text-green-400" />
                           Associated Companies ({user.company.length})
                         </h5>
                         <div className="space-y-2">
                           {user.company.map((company, index) => (
                             <div
                               key={index}
-                              className="flex items-center gap-3 p-3 bg-green-50 rounded-lg"
+                              className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg"
                             >
-                              <Building className="w-5 h-5 text-green-600" />
+                              <Building className="w-5 h-5 text-green-600 dark:text-green-400" />
                               <div>
-                                <p className="font-medium">
+                                <p className="font-medium dark:text-white">
                                   Company {index + 1}
                                 </p>
-                                <p className="text-sm text-gray-600">
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
                                   ID: {company}
                                 </p>
                               </div>
@@ -697,32 +697,32 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 (user.company.length > 0 &&
                   context !== "coach" &&
                   context !== "participant")) && (
-                <div className="border-t pt-6">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-4">
+                <div className="border-t dark:border-gray-700 pt-6">
+                  <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
                     Associated with
                   </h4>
                   {user.facility.length > 0 && context !== "participant" && (
                     <div className="mb-4">
-                      <h5 className="text-md font-medium text-gray-800 mb-2">
+                      <h5 className="text-md font-medium text-gray-800 dark:text-white mb-2">
                         Sports Facilities ({user.facility.length})
                       </h5>
                       <div className="space-y-2">
                         {user.facility.map((facility) => (
                           <div
                             key={facility._id}
-                            className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg"
+                            className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg"
                           >
-                            <Building className="w-5 h-5 text-blue-600" />
+                            <Building className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                             <div className="flex-1">
-                              <p className="font-medium">{facility.name}</p>
-                              <p className="text-sm text-gray-600">
+                              <p className="font-medium dark:text-white">{facility.name}</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
                                 Sport Group: {facility.sportGroup}
                               </p>
-                              <p className="text-sm text-gray-600">
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
                                 Sport: {facility.sport}
                               </p>
                               {facility.priceInfo && (
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-gray-500 dark:text-gray-500">
                                   {facility.priceInfo}
                                 </p>
                               )}
@@ -736,38 +736,38 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     context !== "coach" &&
                     context !== "participant" && (
                       <div>
-                        <h5 className="text-md font-medium text-gray-800 mb-2">
+                        <h5 className="text-md font-medium text-gray-800 dark:text-white mb-2">
                           Companies ({user.company.length})
                         </h5>
                         <div className="space-y-2">
                           {user.company.map((company) => (
                             <div
                               key={company._id}
-                              className="flex items-center gap-3 p-3 bg-green-50 rounded-lg"
+                              className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg"
                             >
                               {company.photo ? (
                                 <img
                                   src={`${EP.API_ASSETS_BASE}${company.photo.path}`}
                                   alt={company.name}
-                                  className="w-16 h-16 object-cover rounded-lg border"
+                                  className="w-16 h-16 object-cover rounded-lg border dark:border-gray-600"
                                 />
                               ) : (
-                                <Building className="w-5 h-5 text-green-600" />
+                                <Building className="w-5 h-5 text-green-600 dark:text-green-400" />
                               )}
                               <div className="flex-1">
-                                <p className="font-medium">{company.name}</p>
-                                <p className="text-sm text-gray-600">
+                                <p className="font-medium dark:text-white">{company.name}</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
                                   <MapPin className="w-4 h-4 inline mr-1" />
                                   {company.address}
                                 </p>
                                 {company.phone && (
-                                  <p className="text-sm text-gray-600">
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">
                                     <Phone className="w-4 h-4 inline mr-1" />
                                     {company.phone}
                                   </p>
                                 )}
                                 {company.email && (
-                                  <p className="text-sm text-gray-600">
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">
                                     <Mail className="w-4 h-4 inline mr-1" />
                                     {company.email}
                                   </p>

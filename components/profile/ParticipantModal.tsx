@@ -381,17 +381,17 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-auto max-h-[90vh] overflow-y-auto">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-          <h2 className="text-xl font-semibold text-gray-800">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
             {isEditMode
               ? "Edit Participant Profile"
               : "Create Participant Profile"}
           </h2>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             disabled={loading}
           >
             <X className="w-5 h-5" />
@@ -399,12 +399,12 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 dark:bg-gray-800">
           {initializing && (
             <div className="flex items-center justify-center py-8">
               <div className="flex flex-col items-center space-y-3">
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-500"></div>
-                <p className="text-sm text-gray-600">Loading profile...</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Loading profile...</p>
               </div>
             </div>
           )}
@@ -416,7 +416,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
           >
             {/* Sport Group Dropdown */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Sport Group <span className="text-red-500">*</span>
               </label>
               <div className="relative dropdown-container">
@@ -425,23 +425,23 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
                   onClick={() =>
                     setShowSportGroupDropdown(!showSportGroupDropdown)
                   }
-                  className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors text-left flex items-center justify-between bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors text-left flex items-center justify-between bg-white dark:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={loading || initializing}
                 >
                   <span
                     className={
-                      formData.sportGroup ? "text-gray-800" : "text-gray-400"
+                      formData.sportGroup ? "text-gray-800 dark:text-white" : "text-gray-400 dark:text-gray-500"
                     }
                   >
                     {getSelectedSportGroupName()}
                   </span>
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                  <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                 </button>
 
                 {showSportGroupDropdown && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                     {loading ? (
-                      <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                      <div className="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
                         Loading...
                       </div>
                     ) : sportGroups.length > 0 ? (
@@ -457,13 +457,13 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
                             );
                             setShowSportGroupDropdown(false);
                           }}
-                          className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                          className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors first:rounded-t-lg last:rounded-b-lg dark:text-white"
                         >
                           {group.name}
                         </button>
                       ))
                     ) : (
-                      <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                      <div className="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
                         No sport groups available
                       </div>
                     )}
@@ -474,7 +474,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
 
             {/* Main Sport Dropdown */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Main Sport <span className="text-red-500">*</span>
               </label>
               <div className="relative dropdown-container">
@@ -485,7 +485,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
                       setShowSportDropdown(!showSportDropdown);
                     }
                   }}
-                  className={`w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors text-left flex items-center justify-between bg-white ${
+                  className={`w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors text-left flex items-center justify-between bg-white dark:bg-gray-700 ${
                     !formData.sportGroup || loading || initializing
                       ? "opacity-50 cursor-not-allowed"
                       : ""
@@ -494,18 +494,18 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
                 >
                   <span
                     className={
-                      formData.mainSport ? "text-gray-800" : "text-gray-400"
+                      formData.mainSport ? "text-gray-800 dark:text-white" : "text-gray-400 dark:text-gray-500"
                     }
                   >
                     {getSelectedSportName()}
                   </span>
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                  <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                 </button>
 
                 {showSportDropdown && formData.sportGroup && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                     {loading ? (
-                      <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                      <div className="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
                         Loading...
                       </div>
                     ) : sports.length > 0 ? (
@@ -521,13 +521,13 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
                             );
                             setShowSportDropdown(false);
                           }}
-                          className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                          className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors first:rounded-t-lg last:rounded-b-lg dark:text-white"
                         >
                           {sport.name}
                         </button>
                       ))
                     ) : (
-                      <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                      <div className="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
                         No sports in this group
                       </div>
                     )}
@@ -535,7 +535,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
                 )}
               </div>
               {!formData.sportGroup && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Please select a sport group first
                 </p>
               )}
@@ -543,7 +543,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
 
             {/* Skill Level Slider */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Skill Level <span className="text-red-500">*</span>
               </label>
               <div className="space-y-2">
@@ -555,12 +555,12 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
                   onChange={(e) =>
                     handleInputChange("skillLevel", Number(e.target.value))
                   }
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={loading || initializing}
                 />
-                <div className="flex justify-between text-xs text-gray-600">
+                <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
                   <span>Beginner (1)</span>
-                  <span className="font-medium text-cyan-600">
+                  <span className="font-medium text-cyan-600 dark:text-cyan-400">
                     {getSkillLevelLabel()}
                   </span>
                   <span>Pro (10)</span>
@@ -570,30 +570,30 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
 
             {/* Sport Goal Dropdown */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Sport Goal <span className="text-red-500">*</span>
               </label>
               <div className="relative dropdown-container">
                 <button
                   type="button"
                   onClick={() => setShowGoalDropdown(!showGoalDropdown)}
-                  className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors text-left flex items-center justify-between bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors text-left flex items-center justify-between bg-white dark:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={loading || initializing}
                 >
                   <span
                     className={
-                      formData.sportGoal ? "text-gray-800" : "text-gray-400"
+                      formData.sportGoal ? "text-gray-800 dark:text-white" : "text-gray-400 dark:text-gray-500"
                     }
                   >
                     {getSelectedGoalName()}
                   </span>
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                  <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                 </button>
 
                 {showGoalDropdown && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                     {loading ? (
-                      <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                      <div className="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
                         Loading...
                       </div>
                     ) : sportGoals.length > 0 ? (
@@ -605,13 +605,13 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
                             handleInputChange("sportGoal", goal._id, goal.name);
                             setShowGoalDropdown(false);
                           }}
-                          className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                          className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors first:rounded-t-lg last:rounded-b-lg dark:text-white"
                         >
                           {goal.name}
                         </button>
                       ))
                     ) : (
-                      <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                      <div className="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
                         No goals available
                       </div>
                     )}
@@ -622,7 +622,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
 
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-3 py-2 rounded-lg">
+              <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm px-3 py-2 rounded-lg">
                 {error}
               </div>
             )}
@@ -633,7 +633,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading || initializing}
             >
               Cancel

@@ -693,25 +693,25 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-auto max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl mx-auto max-h-[90vh] overflow-y-auto">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white">
             Find
           </h2>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-4 sm:p-6">
+        <div className="p-4 sm:p-6 dark:bg-gray-800">
           {/* Search Type Selection */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
               What are you looking for?
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
@@ -720,18 +720,18 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                 onClick={() => setSelectedType("coach")}
                 className={`flex flex-col items-center p-3 sm:p-4 rounded-lg border-2 transition-all ${
                   selectedType === "coach"
-                    ? "border-cyan-500 bg-cyan-50"
-                    : "border-gray-200 hover:border-gray-300"
+                    ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/30"
+                    : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
                 }`}
               >
                 <Users
                   className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 ${
-                    selectedType === "coach" ? "text-cyan-500" : "text-gray-400"
+                    selectedType === "coach" ? "text-cyan-500" : "text-gray-400 dark:text-gray-500"
                   }`}
                 />
                 <span
                   className={`text-xs sm:text-sm font-medium ${
-                    selectedType === "coach" ? "text-cyan-700" : "text-gray-600"
+                    selectedType === "coach" ? "text-cyan-700 dark:text-cyan-300" : "text-gray-600 dark:text-gray-400"
                   }`}
                 >
                   Coach
@@ -743,22 +743,22 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                 onClick={() => setSelectedType("participant")}
                 className={`flex flex-col items-center p-3 sm:p-4 rounded-lg border-2 transition-all ${
                   selectedType === "participant"
-                    ? "border-cyan-500 bg-cyan-50"
-                    : "border-gray-200 hover:border-gray-300"
+                    ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/30"
+                    : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
                 }`}
               >
                 <User
                   className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 ${
                     selectedType === "participant"
                       ? "text-cyan-500"
-                      : "text-gray-400"
+                      : "text-gray-400 dark:text-gray-500"
                   }`}
                 />
                 <span
                   className={`text-xs sm:text-sm font-medium ${
                     selectedType === "participant"
-                      ? "text-cyan-700"
-                      : "text-gray-600"
+                      ? "text-cyan-700 dark:text-cyan-300"
+                      : "text-gray-600 dark:text-gray-400"
                   }`}
                 >
                   Participant
@@ -770,22 +770,22 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                 onClick={() => setSelectedType("facility")}
                 className={`flex flex-col items-center p-3 sm:p-4 rounded-lg border-2 transition-all ${
                   selectedType === "facility"
-                    ? "border-cyan-500 bg-cyan-50"
-                    : "border-gray-200 hover:border-gray-300"
+                    ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/30"
+                    : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
                 }`}
               >
                 <Home
                   className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 ${
                     selectedType === "facility"
                       ? "text-cyan-500"
-                      : "text-gray-400"
+                      : "text-gray-400 dark:text-gray-500"
                   }`}
                 />
                 <span
                   className={`text-xs sm:text-sm font-medium ${
                     selectedType === "facility"
-                      ? "text-cyan-700"
-                      : "text-gray-600"
+                      ? "text-cyan-700 dark:text-cyan-300"
+                      : "text-gray-600 dark:text-gray-400"
                   }`}
                 >
                   Facility
@@ -797,22 +797,22 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                 onClick={() => setSelectedType("company")}
                 className={`flex flex-col items-center p-3 sm:p-4 rounded-lg border-2 transition-all ${
                   selectedType === "company"
-                    ? "border-cyan-500 bg-cyan-50"
-                    : "border-gray-200 hover:border-gray-300"
+                    ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/30"
+                    : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
                 }`}
               >
                 <Building
                   className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 ${
                     selectedType === "company"
                       ? "text-cyan-500"
-                      : "text-gray-400"
+                      : "text-gray-400 dark:text-gray-500"
                   }`}
                 />
                 <span
                   className={`text-xs sm:text-sm font-medium ${
                     selectedType === "company"
-                      ? "text-cyan-700"
-                      : "text-gray-600"
+                      ? "text-cyan-700 dark:text-cyan-300"
+                      : "text-gray-600 dark:text-gray-400"
                   }`}
                 >
                   Company
@@ -824,22 +824,22 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                 onClick={() => setSelectedType("club")}
                 className={`flex flex-col items-center p-3 sm:p-4 rounded-lg border-2 transition-all ${
                   selectedType === "club"
-                    ? "border-cyan-500 bg-cyan-50"
-                    : "border-gray-200 hover:border-gray-300"
+                    ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/30"
+                    : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
                 }`}
               >
                 <Shield
                   className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 ${
                     selectedType === "club"
                       ? "text-cyan-500"
-                      : "text-gray-400"
+                      : "text-gray-400 dark:text-gray-500"
                   }`}
                 />
                 <span
                   className={`text-xs sm:text-sm font-medium ${
                     selectedType === "club"
-                      ? "text-cyan-700"
-                      : "text-gray-600"
+                      ? "text-cyan-700 dark:text-cyan-300"
+                      : "text-gray-600 dark:text-gray-400"
                   }`}
                 >
                   Club
@@ -851,22 +851,22 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                 onClick={() => setSelectedType("group")}
                 className={`flex flex-col items-center p-3 sm:p-4 rounded-lg border-2 transition-all ${
                   selectedType === "group"
-                    ? "border-cyan-500 bg-cyan-50"
-                    : "border-gray-200 hover:border-gray-300"
+                    ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/30"
+                    : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
                 }`}
               >
                 <UserCheck
                   className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 ${
                     selectedType === "group"
                       ? "text-cyan-500"
-                      : "text-gray-400"
+                      : "text-gray-400 dark:text-gray-500"
                   }`}
                 />
                 <span
                   className={`text-xs sm:text-sm font-medium ${
                     selectedType === "group"
-                      ? "text-cyan-700"
-                      : "text-gray-600"
+                      ? "text-cyan-700 dark:text-cyan-300"
+                      : "text-gray-600 dark:text-gray-400"
                   }`}
                 >
                   Group
@@ -877,7 +877,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
 
           {/* Search Form */}
           <form onSubmit={handleSearch} className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Search{" "}
               {selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}
             </label>
@@ -887,7 +887,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={`Enter ${selectedType} name...`}
-                className="w-full px-4 py-3 pr-12 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
+                className="w-full px-4 py-3 pr-12 text-sm border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
               />
               <button
                 type="submit"
@@ -909,7 +909,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                     setSportFilter("");
                   }}
                   disabled={isLoadingSportGroups}
-                  className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-cyan-500 disabled:opacity-50 text-base"
+                  className="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:border-cyan-500 disabled:opacity-50 text-base dark:bg-gray-700 dark:text-white"
                 >
                   <option value="">
                     {isLoadingSportGroups ? "Loading..." : "All sport groups"}
@@ -924,7 +924,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                   value={sportFilter}
                   onChange={(e) => setSportFilter(e.target.value)}
                   disabled={!sportGroupFilter || isLoadingSports}
-                  className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-cyan-500 disabled:opacity-50 text-base"
+                  className="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:border-cyan-500 disabled:opacity-50 text-base dark:bg-gray-700 dark:text-white"
                 >
                   <option value="">
                     {!sportGroupFilter
@@ -955,17 +955,17 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
               </div>
             ) : error ? (
-              <div className="p-4 text-center text-red-500">{error}</div>
+              <div className="p-4 text-center text-red-500 dark:text-red-400">{error}</div>
             ) : searchResults.length === 0 && hasSearched && !isLoading ? (
-              <div className="text-center py-12 text-gray-500">
-                <Search className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                <Search className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                 <p className="text-sm">
                   No {selectedType}s found for "{searchQuery}"
                 </p>
               </div>
             ) : searchResults.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                <Search className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                <Search className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                 <p className="text-sm">
                   {hasSearched
                     ? `No ${selectedType}s found for your search`
@@ -973,7 +973,7 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-gray-100 dark:divide-gray-700">
                 {searchResults.map((result, index) => {
                   if (selectedType === "coach") {
                     const coach = result as any;
@@ -983,26 +983,26 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                         onClick={() =>
                           handleUserSelect(coach.coach._id, "coach")
                         }
-                        className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                        className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center">
-                            <Users className="w-5 h-5 text-cyan-600" />
+                          <div className="w-10 h-10 bg-cyan-100 dark:bg-cyan-900/50 rounded-full flex items-center justify-center">
+                            <Users className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                           </div>
                           <div className="flex-1">
-                            <div className="font-medium text-gray-900">
+                            <div className="font-medium text-gray-900 dark:text-white">
                               {coach.firstName} {coach.lastName}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
                               Coach •{" "}
                               {coach.coach?.membershipLevel || "Standard"}
                             </div>
                             <div className="flex gap-1 mt-1">
-                              <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                              <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 text-xs rounded-full">
                                 Coach
                               </span>
                               {coach.coach?.isVerified && (
-                                <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 text-xs rounded-full">
                                   Verified
                                 </span>
                               )}
@@ -1019,25 +1019,25 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                         onClick={() =>
                           handleUserSelect(participant._id, "participant")
                         }
-                        className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                        className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center">
-                            <User className="w-5 h-5 text-cyan-600" />
+                          <div className="w-10 h-10 bg-cyan-100 dark:bg-cyan-900/50 rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                           </div>
                           <div className="flex-1">
-                            <div className="font-medium text-gray-900">
+                            <div className="font-medium text-gray-900 dark:text-white">
                               {participant.name}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
                               {participant.mainSport?.name} • Level{" "}
                               {participant.skillLevel}
                             </div>
                             <div className="flex gap-1 mt-1">
-                              <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
+                              <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 text-xs rounded-full">
                                 Participant
                               </span>
-                              <span className="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs rounded-full">
+                              <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300 text-xs rounded-full">
                                 {participant.membershipLevel}
                               </span>
                             </div>
@@ -1051,10 +1051,10 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                       <div
                         key={facility._id}
                         onClick={() => handleFacilitySelect(facility)}
-                        className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                        className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                          <div className="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center">
                             {facility.photo ? (
                               <img
                                 src={
@@ -1068,19 +1068,19 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                                 className="w-10 h-10 rounded-full object-cover"
                               />
                             ) : (
-                              <Home className="w-5 h-5 text-green-600" />
+                              <Home className="w-5 h-5 text-green-600 dark:text-green-400" />
                             )}
                           </div>
                           <div className="flex-1">
-                            <div className="font-medium text-gray-900">
+                            <div className="font-medium text-gray-900 dark:text-white">
                               {facility.name}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
                               {facility.address}
                             </div>
                             {facility.membershipLevel && (
                               <div className="flex gap-1 mt-1">
-                                <span className="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs rounded-full">
+                                <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300 text-xs rounded-full">
                                   {facility.membershipLevel}
                                 </span>
                               </div>
@@ -1095,10 +1095,10 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                       <div
                         key={company._id}
                         onClick={() => handleCompanySelect(company)}
-                        className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                        className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                          <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/50 rounded-full flex items-center justify-center">
                             {company.photo ? (
                               <img
                                 src={
@@ -1112,18 +1112,18 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                                 className="w-10 h-10 rounded-full object-cover"
                               />
                             ) : (
-                              <Building className="w-5 h-5 text-orange-600" />
+                              <Building className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                             )}
                           </div>
                           <div className="flex-1">
-                            <div className="font-medium text-gray-900">
+                            <div className="font-medium text-gray-900 dark:text-white">
                               {company.name}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
                               {company.address}
                             </div>
                             {company.email && (
-                              <div className="text-xs text-gray-400 mt-1">
+                              <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                                 {company.email}
                               </div>
                             )}
@@ -1137,10 +1137,10 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                       <div
                         key={club._id}
                         onClick={() => handleClubSelect(club)}
-                        className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                        className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                          <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center">
                             {club.photo ? (
                               <img
                                 src={
@@ -1152,22 +1152,22 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                                 className="w-10 h-10 rounded-full object-cover"
                               />
                             ) : (
-                              <Shield className="w-5 h-5 text-purple-600" />
+                              <Shield className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                             )}
                           </div>
                           <div className="flex-1">
-                            <div className="font-medium text-gray-900">
+                            <div className="font-medium text-gray-900 dark:text-white">
                               {club.name}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
                               {club.vision || "Sports club"}
                             </div>
                             <div className="flex gap-1 mt-1">
-                              <span className="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs rounded-full">
+                              <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300 text-xs rounded-full">
                                 Club
                               </span>
                               {club.isApproved && (
-                                <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                                <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 text-xs rounded-full">
                                   Approved
                                 </span>
                               )}
@@ -1182,10 +1182,10 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                       <div
                         key={group._id}
                         onClick={() => handleGroupSelect(group)}
-                        className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                        className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                          <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center">
                             {group.photo ? (
                               <img
                                 src={
@@ -1197,22 +1197,22 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                                 className="w-10 h-10 rounded-full object-cover"
                               />
                             ) : (
-                              <UserCheck className="w-5 h-5 text-indigo-600" />
+                              <UserCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                             )}
                           </div>
                           <div className="flex-1">
-                            <div className="font-medium text-gray-900">
+                            <div className="font-medium text-gray-900 dark:text-white">
                               {group.name}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
                               {group.clubName}
                             </div>
                             <div className="flex gap-1 mt-1">
-                              <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-xs rounded-full">
+                              <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 text-xs rounded-full">
                                 Group
                               </span>
                               {group.isApproved && (
-                                <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                                <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 text-xs rounded-full">
                                   Approved
                                 </span>
                               )}
@@ -1230,8 +1230,8 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
 
           {/* Pagination */}
           {pagination.total > pagination.perPage && (
-            <div className="p-4 border-t border-gray-200 flex items-center justify-between">
-              <div className="text-sm text-gray-500">
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 Showing {(pagination.currentPage - 1) * pagination.perPage + 1}{" "}
                 to{" "}
                 {Math.min(
@@ -1244,17 +1244,17 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                 <button
                   onClick={() => handlePageChange(pagination.currentPage - 1)}
                   disabled={pagination.currentPage === 1}
-                  className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
                   Page {pagination.currentPage} of {pagination.totalPages}
                 </span>
                 <button
                   onClick={() => handlePageChange(pagination.currentPage + 1)}
                   disabled={pagination.currentPage === pagination.totalPages}
-                  className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -1264,10 +1264,10 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Modal Footer */}
-        <div className="flex justify-end gap-3 p-4 sm:p-6 border-t border-gray-200">
+        <div className="flex justify-end gap-3 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700">
           <button
             onClick={handleClose}
-            className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+            className="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
           >
             Close
           </button>

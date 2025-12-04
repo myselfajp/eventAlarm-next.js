@@ -396,58 +396,58 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-auto max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl mx-auto max-h-[90vh] flex flex-col">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 shrink-0">
-          <h2 className="text-xl font-semibold text-gray-800">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 shrink-0">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
             {initialData ? "Edit Facility" : "Add Facility"}
           </h2>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto dark:bg-gray-800">
           {isSuccess ? (
             <div className="p-12 flex flex-col items-center justify-center text-center h-full">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <Check className="w-8 h-8 text-green-600" />
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-4">
+                <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
                 Success!
               </h3>
-              <p className="text-gray-500">
+              <p className="text-gray-500 dark:text-gray-400">
                 Facility saved successfully.
               </p>
             </div>
           ) : (
             <div className="p-6 space-y-4">
               {/* Section 1: Edit Facility */}
-              <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setExpandedSection(expandedSection === "facility" ? null : "facility")}
-                  className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                 >
-                  <span className="font-medium text-gray-800">Edit Facility</span>
+                  <span className="font-medium text-gray-800 dark:text-white">Edit Facility</span>
                   {expandedSection === "facility" ? (
-                    <ChevronUp className="w-5 h-5 text-gray-500" />
+                    <ChevronUp className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-500" />
+                    <ChevronDown className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   )}
                 </button>
                 
                 {expandedSection === "facility" && (
-                  <div className="p-4 border-t border-gray-200 bg-white">
+                  <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Left Column */}
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Facility Name {!initialData && <span className="text-red-500">*</span>}
                           </label>
                           <input
@@ -455,8 +455,8 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                             value={formData.name}
                             onChange={(e) => handleInputChange("name", e.target.value)}
                             placeholder="Enter facility name"
-                            className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                              errors.name ? "border-red-300 focus:ring-red-200" : "border-gray-200 focus:ring-cyan-500"
+                            className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 ${
+                              errors.name ? "border-red-300 focus:ring-red-200 dark:border-red-500" : "border-gray-200 dark:border-gray-600 focus:ring-cyan-500"
                             }`}
                             disabled={isLoading}
                           />
@@ -464,7 +464,7 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Address {!initialData && <span className="text-red-500">*</span>}
                           </label>
                           <textarea
@@ -472,8 +472,8 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                             onChange={(e) => handleInputChange("address", e.target.value)}
                             placeholder="Enter address"
                             rows={3}
-                            className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors resize-none ${
-                              errors.address ? "border-red-300 focus:ring-red-200" : "border-gray-200 focus:ring-cyan-500"
+                            className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors resize-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 ${
+                              errors.address ? "border-red-300 focus:ring-red-200 dark:border-red-500" : "border-gray-200 dark:border-gray-600 focus:ring-cyan-500"
                             }`}
                             disabled={isLoading}
                           />
@@ -481,7 +481,7 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Phone {!initialData && <span className="text-red-500">*</span>}
                           </label>
                           <input
@@ -489,8 +489,8 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                             value={formData.phone}
                             onChange={(e) => handleInputChange("phone", e.target.value)}
                             placeholder="Enter phone number"
-                            className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                              errors.phone ? "border-red-300 focus:ring-red-200" : "border-gray-200 focus:ring-cyan-500"
+                            className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 ${
+                              errors.phone ? "border-red-300 focus:ring-red-200 dark:border-red-500" : "border-gray-200 dark:border-gray-600 focus:ring-cyan-500"
                             }`}
                             disabled={isLoading}
                           />
@@ -498,7 +498,7 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             E-mail {!initialData && <span className="text-red-500">*</span>}
                           </label>
                           <input
@@ -506,8 +506,8 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                             value={formData.email}
                             onChange={(e) => handleInputChange("email", e.target.value)}
                             placeholder="Enter email address"
-                            className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                              errors.email ? "border-red-300 focus:ring-red-200" : "border-gray-200 focus:ring-cyan-500"
+                            className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 ${
+                              errors.email ? "border-red-300 focus:ring-red-200 dark:border-red-500" : "border-gray-200 dark:border-gray-600 focus:ring-cyan-500"
                             }`}
                             disabled={isLoading}
                           />
@@ -515,14 +515,14 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Main Sport {!initialData && <span className="text-red-500">*</span>}
                           </label>
                           <select
                             value={typeof formData.mainSport === 'string' ? formData.mainSport : formData.mainSport?._id}
                             onChange={(e) => handleInputChange("mainSport", e.target.value)}
-                            className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors bg-white ${
-                              errors.mainSport ? "border-red-300 focus:ring-red-200" : "border-gray-200 focus:ring-cyan-500"
+                            className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors bg-white dark:bg-gray-700 dark:text-white ${
+                              errors.mainSport ? "border-red-300 focus:ring-red-200 dark:border-red-500" : "border-gray-200 dark:border-gray-600 focus:ring-cyan-500"
                             }`}
                             disabled={isLoading}
                           >
@@ -542,10 +542,10 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                             id="isPrivate"
                             checked={formData.isPrivate}
                             onChange={(e) => handleInputChange("isPrivate", e.target.checked)}
-                            className="w-4 h-4 text-cyan-500 border-gray-300 rounded focus:ring-cyan-500 focus:ring-2"
+                            className="w-4 h-4 text-cyan-500 border-gray-300 dark:border-gray-600 rounded focus:ring-cyan-500 focus:ring-2"
                             disabled={isLoading}
                           />
-                          <label htmlFor="isPrivate" className="ml-2 text-sm font-medium text-gray-700">
+                          <label htmlFor="isPrivate" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                             Private Facility
                           </label>
                         </div>
@@ -553,12 +553,12 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
 
                       {/* Right Column - Photo */}
                       <div className="flex flex-col">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Facility Photo
                         </label>
                         <div className="flex-1 flex items-center justify-center">
                           <div className="w-full">
-                            <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-cyan-400 transition-colors cursor-pointer">
+                            <div className="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-cyan-400 dark:hover:border-cyan-500 transition-colors cursor-pointer">
                               {photoPreview ? (
                                 <div className="flex flex-col items-center space-y-3">
                                   <img
@@ -569,19 +569,19 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                                   <button
                                     type="button"
                                     onClick={removePhoto}
-                                    className="text-red-500 hover:text-red-700 transition-colors text-sm font-medium"
+                                    className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors text-sm font-medium"
                                   >
                                     Remove Photo
                                   </button>
                                 </div>
                               ) : (
                                 <div className="space-y-3">
-                                  <Upload className="w-12 h-12 mx-auto text-gray-400" />
+                                  <Upload className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500" />
                                   <div>
-                                    <p className="text-sm text-gray-600 font-medium">
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
                                       Click to upload photo
                                     </p>
-                                    <p className="text-xs text-gray-400">
+                                    <p className="text-xs text-gray-400 dark:text-gray-500">
                                       PNG, JPG, JPEG up to 10MB
                                     </p>
                                   </div>
@@ -605,35 +605,35 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
               </div>
 
               {/* Section 2: Add Salon */}
-              <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setExpandedSection(expandedSection === "salon" ? null : "salon")}
-                  className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                 >
-                  <span className="font-medium text-gray-800">Add Salon</span>
+                  <span className="font-medium text-gray-800 dark:text-white">Add Salon</span>
                   {expandedSection === "salon" ? (
-                    <ChevronUp className="w-5 h-5 text-gray-500" />
+                    <ChevronUp className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-500" />
+                    <ChevronDown className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   )}
                 </button>
 
                 {expandedSection === "salon" && (
-                  <div className="p-4 border-t border-gray-200 bg-white space-y-4">
+                  <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 space-y-4">
                     {salons.map((salon, index) => (
-                      <div key={salon.id} className="p-4 border border-gray-100 rounded-lg bg-gray-50 relative">
+                      <div key={salon.id} className="p-4 border border-gray-100 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700 relative">
                         <button
                           type="button"
                           onClick={() => handleRemoveSalon(index)}
-                          className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors"
+                          className="absolute top-2 right-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pr-6">
                           <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                               Salon Name <span className="text-red-500">*</span>
                             </label>
                             <input
@@ -641,8 +641,8 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                               value={salon.name}
                               onChange={(e) => handleSalonChange(index, "name", e.target.value)}
                               placeholder="e.g., Main Hall"
-                              className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                                errors[`salon_${index}_name`] ? "border-red-300 focus:ring-red-200" : "border-gray-200 focus:ring-cyan-500"
+                              className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors dark:bg-gray-600 dark:text-white dark:placeholder-gray-400 ${
+                                errors[`salon_${index}_name`] ? "border-red-300 focus:ring-red-200 dark:border-red-500" : "border-gray-200 dark:border-gray-500 focus:ring-cyan-500"
                               }`}
                             />
                             {errors[`salon_${index}_name`] && (
@@ -652,25 +652,25 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
 
                           {/* Sport Group Selection */}
                           <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                               Sport Group <span className="text-red-500">*</span>
                             </label>
                             <div className="relative">
                               <button
                                 type="button"
                                 onClick={() => setActiveDropdown(activeDropdown?.type === 'group' && activeDropdown.index === index ? null : { type: 'group', index })}
-                                className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors bg-white text-left flex items-center justify-between ${
-                                  errors[`salon_${index}_sportGroup`] ? "border-red-300 focus:ring-red-200" : "border-gray-200 focus:ring-cyan-500"
+                                className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors bg-white dark:bg-gray-600 text-left flex items-center justify-between ${
+                                  errors[`salon_${index}_sportGroup`] ? "border-red-300 focus:ring-red-200 dark:border-red-500" : "border-gray-200 dark:border-gray-500 focus:ring-cyan-500"
                                 }`}
                               >
-                                <span className={salon.sportGroup ? "text-gray-800" : "text-gray-400"}>
+                                <span className={salon.sportGroup ? "text-gray-800 dark:text-white" : "text-gray-400 dark:text-gray-400"}>
                                   {getSportGroupName(salon.sportGroup)}
                                 </span>
                                 <ChevronDown className="w-4 h-4 text-gray-400" />
                               </button>
                               
                               {activeDropdown?.type === 'group' && activeDropdown.index === index && (
-                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                                   {sportGroups.map(group => (
                                     <button
                                       key={group._id}
@@ -679,7 +679,7 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                                         handleSalonChange(index, "sportGroup", group._id);
                                         setActiveDropdown(null);
                                       }}
-                                      className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors"
+                                      className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-600 dark:text-white transition-colors"
                                     >
                                       {group.name}
                                     </button>
@@ -694,7 +694,7 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
 
                           {/* Sport Selection */}
                           <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                               Sport <span className="text-red-500">*</span>
                             </label>
                             <div className="relative">
@@ -705,19 +705,19 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                                     setActiveDropdown(activeDropdown?.type === 'sport' && activeDropdown.index === index ? null : { type: 'sport', index });
                                   }
                                 }}
-                                className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors bg-white text-left flex items-center justify-between ${
-                                  errors[`salon_${index}_sport`] ? "border-red-300 focus:ring-red-200" : "border-gray-200 focus:ring-cyan-500"
+                                className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors bg-white dark:bg-gray-600 text-left flex items-center justify-between ${
+                                  errors[`salon_${index}_sport`] ? "border-red-300 focus:ring-red-200 dark:border-red-500" : "border-gray-200 dark:border-gray-500 focus:ring-cyan-500"
                                 } ${!salon.sportGroup ? "opacity-50 cursor-not-allowed" : ""}`}
                                 disabled={!salon.sportGroup}
                               >
-                                <span className={salon.sport ? "text-gray-800" : "text-gray-400"}>
+                                <span className={salon.sport ? "text-gray-800 dark:text-white" : "text-gray-400 dark:text-gray-400"}>
                                   {getSportName(salon.sport)}
                                 </span>
                                 <ChevronDown className="w-4 h-4 text-gray-400" />
                               </button>
 
                               {activeDropdown?.type === 'sport' && activeDropdown.index === index && (
-                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                                   {sports
                                     .filter(s => s.group === salon.sportGroup)
                                     .map(sport => (
@@ -728,7 +728,7 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                                           handleSalonChange(index, "sport", sport._id);
                                           setActiveDropdown(null);
                                         }}
-                                        className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors"
+                                        className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-600 dark:text-white transition-colors"
                                       >
                                         {sport.name}
                                       </button>
@@ -742,7 +742,7 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                           </div>
 
                           <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                               Price Info <span className="text-red-500">*</span>
                             </label>
                             <input
@@ -750,8 +750,8 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                               value={salon.priceInfo}
                               onChange={(e) => handleSalonChange(index, "priceInfo", e.target.value)}
                               placeholder="e.g., $50/hour"
-                              className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                                errors[`salon_${index}_priceInfo`] ? "border-red-300 focus:ring-red-200" : "border-gray-200 focus:ring-cyan-500"
+                              className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors dark:bg-gray-600 dark:text-white dark:placeholder-gray-400 ${
+                                errors[`salon_${index}_priceInfo`] ? "border-red-300 focus:ring-red-200 dark:border-red-500" : "border-gray-200 dark:border-gray-500 focus:ring-cyan-500"
                               }`}
                             />
                             {errors[`salon_${index}_priceInfo`] && (
@@ -765,7 +765,7 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                     <button
                       type="button"
                       onClick={handleAddSalon}
-                      className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-cyan-400 hover:text-cyan-500 transition-colors flex items-center justify-center font-medium text-sm"
+                      className="w-full py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-400 hover:border-cyan-400 dark:hover:border-cyan-500 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors flex items-center justify-center font-medium text-sm"
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       Add {salons.length > 0 ? "Another " : ""}Salon
@@ -780,7 +780,7 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
         {/* Error Message */}
         {generalError && (
           <div className="px-6 pb-4">
-            <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg">
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm px-4 py-3 rounded-lg">
               {generalError}
             </div>
           </div>
@@ -788,11 +788,11 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
 
         {/* Modal Footer */}
         {!isSuccess && (
-          <div className="flex gap-3 p-6 border-t border-gray-200 shrink-0">
+          <div className="flex gap-3 p-6 border-t border-gray-200 dark:border-gray-700 shrink-0">
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50"
               disabled={isLoading}
             >
               Cancel

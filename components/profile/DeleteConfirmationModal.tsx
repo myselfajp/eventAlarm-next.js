@@ -26,13 +26,13 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-auto overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
-          <h3 className="font-semibold text-gray-800">{title}</h3>
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+          <h3 className="font-semibold text-gray-800 dark:text-white">{title}</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             disabled={isLoading}
           >
             <X className="w-5 h-5" />
@@ -40,27 +40,27 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className="p-6">
+        <div className="p-6 dark:bg-gray-800">
           {isSuccess ? (
             <div className="flex flex-col items-center justify-center text-center py-4">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
-                <Check className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mb-3">
+                <Check className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
-              <p className="text-gray-800 font-medium">Deleted successfully</p>
+              <p className="text-gray-800 dark:text-white font-medium">Deleted successfully</p>
             </div>
           ) : (
             <div className="flex gap-4">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                <div className="w-10 h-10 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                 </div>
               </div>
               <div>
-                <p className="text-gray-600 text-sm leading-relaxed">
+                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                   {message}
                 </p>
                 {error && (
-                  <p className="mt-2 text-xs text-red-500 bg-red-50 p-2 rounded">
+                  <p className="mt-2 text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/30 p-2 rounded">
                     {error}
                   </p>
                 )}
@@ -71,10 +71,10 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
 
         {/* Footer */}
         {!isSuccess && (
-          <div className="flex justify-end gap-3 p-4 bg-gray-50 border-t border-gray-200">
+          <div className="flex justify-end gap-3 p-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 rounded-lg transition-colors disabled:opacity-50"
               disabled={isLoading}
             >
               Cancel

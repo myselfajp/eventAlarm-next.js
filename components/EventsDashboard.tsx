@@ -132,7 +132,7 @@ const EventsDashboard = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-screen bg-gray-50 dark:bg-slate-900 overflow-hidden transition-colors duration-300">
       <LeftSidebar 
         isOpen={leftSidebarOpen} 
         onShowCalendar={() => setShowCoachCalendar(true)}
@@ -145,12 +145,13 @@ const EventsDashboard = () => {
         />
 
         <div className="p-6">
-          <div className="bg-gradient-to-r from-orange-50 to-blue-50 rounded-lg p-8 mb-6 flex items-center justify-between">
+          {/* Hero Banner */}
+          <div className="bg-gradient-to-r from-orange-50 to-blue-50 dark:from-orange-900/20 dark:to-blue-900/20 rounded-lg p-8 mb-6 flex items-center justify-between border border-gray-100 dark:border-slate-700 transition-colors">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100 mb-2">
                 Good admin theme
               </h2>
-              <p className="text-gray-600 mb-4">is a tool of enthusiasm</p>
+              <p className="text-gray-600 dark:text-slate-400 mb-4">is a tool of enthusiasm</p>
               <button className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition-colors">
                 Create App
               </button>
@@ -159,7 +160,7 @@ const EventsDashboard = () => {
               <img
                 src="/api/placeholder/300/150"
                 alt="Illustration"
-                className="w-80"
+                className="w-80 opacity-80 dark:opacity-60"
               />
             </div>
           </div>
@@ -195,9 +196,10 @@ const EventsDashboard = () => {
         onEventCreated={fetchEvents}
       />
 
+      {/* Mobile Toggle - Left Sidebar */}
       <button
         onClick={() => setLeftSidebarOpen(!leftSidebarOpen)}
-        className="fixed bottom-6 left-6 lg:hidden bg-cyan-500 text-white p-3 rounded-full shadow-lg z-50"
+        className="fixed bottom-6 left-6 lg:hidden bg-cyan-500 dark:bg-cyan-600 text-white p-3 rounded-full shadow-lg z-50 hover:bg-cyan-600 dark:hover:bg-cyan-500 transition-colors"
       >
         {leftSidebarOpen ? (
           <X className="w-6 h-6" />
@@ -206,9 +208,10 @@ const EventsDashboard = () => {
         )}
       </button>
 
+      {/* Mobile Toggle - Right Sidebar */}
       <button
         onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
-        className="fixed bottom-6 right-6 lg:hidden bg-cyan-500 text-white p-3 rounded-full shadow-lg z-50"
+        className="fixed bottom-6 right-6 lg:hidden bg-cyan-500 dark:bg-cyan-600 text-white p-3 rounded-full shadow-lg z-50 hover:bg-cyan-600 dark:hover:bg-cyan-500 transition-colors"
       >
         {rightSidebarOpen ? (
           <X className="w-6 h-6" />

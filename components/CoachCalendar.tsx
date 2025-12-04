@@ -155,7 +155,7 @@ const CoachCalendar: React.FC<CoachCalendarProps> = ({ onBack }) => {
 
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
       days.push(
-        <div key={`prev-${i}`} className="text-center py-2 text-gray-300 text-sm">
+        <div key={`prev-${i}`} className="text-center py-2 text-gray-300 dark:text-slate-600 text-sm">
           {prevMonthDays - i}
         </div>
       );
@@ -180,16 +180,16 @@ const CoachCalendar: React.FC<CoachCalendarProps> = ({ onBack }) => {
             }
           }}
           className={`relative text-center py-4 rounded-lg transition-all border-2 min-h-[60px] flex flex-col justify-center ${
-            isToday ? "bg-cyan-50 border-cyan-500" : "border-transparent"
+            isToday ? "bg-cyan-50 dark:bg-cyan-900/30 border-cyan-500" : "border-transparent"
           } ${
             dayEvents.length > 0
-              ? "cursor-pointer hover:bg-blue-50 hover:shadow-md hover:border-blue-200"
-              : "cursor-default hover:bg-gray-50"
+              ? "cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700"
+              : "cursor-default hover:bg-gray-50 dark:hover:bg-slate-700/50"
           }`}
         >
           <div
             className={`text-lg font-semibold mb-2 ${
-              isToday ? "text-cyan-700" : dayEvents.length > 0 ? "text-gray-800" : "text-gray-700"
+              isToday ? "text-cyan-700 dark:text-cyan-400" : dayEvents.length > 0 ? "text-gray-800 dark:text-white" : "text-gray-700 dark:text-slate-300"
             }`}
           >
             {day}
@@ -207,7 +207,7 @@ const CoachCalendar: React.FC<CoachCalendarProps> = ({ onBack }) => {
                 );
               })}
               {uniqueColors.length > 3 && (
-                <div className="text-[8px] text-gray-600 font-semibold bg-gray-100 px-1 rounded">
+                <div className="text-[8px] text-gray-600 dark:text-slate-300 font-semibold bg-gray-100 dark:bg-slate-700 px-1 rounded">
                   +{uniqueColors.length - 3}
                 </div>
               )}
@@ -220,7 +220,7 @@ const CoachCalendar: React.FC<CoachCalendarProps> = ({ onBack }) => {
     const remainingDays = 42 - days.length;
     for (let i = 1; i <= remainingDays; i++) {
       days.push(
-        <div key={`next-${i}`} className="text-center py-2 text-gray-300 text-sm">
+        <div key={`next-${i}`} className="text-center py-2 text-gray-300 dark:text-slate-600 text-sm">
           {i}
         </div>
       );
@@ -245,17 +245,17 @@ const CoachCalendar: React.FC<CoachCalendarProps> = ({ onBack }) => {
       <div className="flex items-center gap-3 mb-6">
         <button
           onClick={onBack}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
           title="Back to Events"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-600" />
+          <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-slate-300" />
         </button>
-        <h2 className="text-xl font-semibold text-gray-800">My Calendar</h2>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">My Calendar</h2>
       </div>
 
       <div className="flex-1 flex flex-col lg:flex-row gap-6">
         {/* Calendar Section */}
-        <div className="flex-1 bg-white rounded-xl shadow-md border border-gray-100 p-6">
+        <div className="flex-1 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-gray-100 dark:border-slate-700 p-6">
           <div className="flex items-center justify-between mb-6">
             <button
               onClick={() => {
@@ -263,11 +263,11 @@ const CoachCalendar: React.FC<CoachCalendarProps> = ({ onBack }) => {
                 newDate.setMonth(newDate.getMonth() - 1);
                 setCurrentDate(newDate);
               }}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
             >
-              <ChevronLeft className="w-5 h-5 text-gray-600" />
+              <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-slate-300" />
             </button>
-            <h3 className="font-semibold text-gray-800 text-xl">
+            <h3 className="font-semibold text-gray-800 dark:text-white text-xl">
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h3>
             <button
@@ -276,15 +276,15 @@ const CoachCalendar: React.FC<CoachCalendarProps> = ({ onBack }) => {
                 newDate.setMonth(newDate.getMonth() + 1);
                 setCurrentDate(newDate);
               }}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
             >
-              <ChevronRight className="w-5 h-5 text-gray-600" />
+              <ChevronRight className="w-5 h-5 text-gray-600 dark:text-slate-300" />
             </button>
           </div>
 
           <div className="grid grid-cols-7 gap-1 mb-4">
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-              <div key={day} className="text-center text-sm font-semibold text-gray-700 py-4 min-h-[40px] flex items-center justify-center">
+              <div key={day} className="text-center text-sm font-semibold text-gray-700 dark:text-slate-300 py-4 min-h-[40px] flex items-center justify-center">
                 {day}
               </div>
             ))}
@@ -292,37 +292,37 @@ const CoachCalendar: React.FC<CoachCalendarProps> = ({ onBack }) => {
 
           <div className="grid grid-cols-7 gap-1">{renderCalendar()}</div>
 
-          <div className="mt-6 pt-4 border-t border-gray-200">
+          <div className="mt-6 pt-4 border-t border-gray-200 dark:border-slate-700">
             <div className="flex flex-wrap items-center gap-4 text-sm">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded-full bg-blue-500 shadow-sm"></div>
-                <span className="text-gray-600 font-medium">Event</span>
+                <span className="text-gray-600 dark:text-slate-300 font-medium">Event</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded-full bg-green-500 shadow-sm"></div>
-                <span className="text-gray-600 font-medium">Training</span>
+                <span className="text-gray-600 dark:text-slate-300 font-medium">Training</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded-full bg-purple-500 shadow-sm"></div>
-                <span className="text-gray-600 font-medium">Meeting</span>
+                <span className="text-gray-600 dark:text-slate-300 font-medium">Meeting</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Events Statistics Section */}
-        <div className="lg:w-80 w-full bg-white rounded-xl p-6 shadow-md border border-gray-100 flex flex-col justify-center">
+        <div className="lg:w-80 w-full bg-white dark:bg-slate-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-slate-700 flex flex-col justify-center">
           <div className="text-center">
             <div className="mb-6">
               <div className="flex items-center justify-center gap-2 mb-1">
-                <span className="text-4xl font-bold text-gray-800">
+                <span className="text-4xl font-bold text-gray-800 dark:text-white">
                   {totalEvents}
                 </span>
-                <span className="text-sm text-cyan-600 font-medium">
+                <span className="text-sm text-cyan-600 dark:text-cyan-400 font-medium">
                   total
                 </span>
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-slate-400">
                 All Events This Month
               </p>
             </div>
@@ -365,34 +365,34 @@ const CoachCalendar: React.FC<CoachCalendarProps> = ({ onBack }) => {
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-lg font-bold text-gray-700">{totalEvents}</span>
+                  <span className="text-lg font-bold text-gray-700 dark:text-slate-200">{totalEvents}</span>
                 </div>
               </div>
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
                 <div className="flex items-center gap-3">
                   <span className="text-blue-500 text-xl">●</span>
-                  <span className="text-gray-700 font-medium">Events</span>
+                  <span className="text-gray-700 dark:text-slate-200 font-medium">Events</span>
                 </div>
-                <span className="font-bold text-gray-800 text-lg">{blueEvents} ({bluePercentage}%)</span>
+                <span className="font-bold text-gray-800 dark:text-white text-lg">{blueEvents} ({bluePercentage}%)</span>
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/30 rounded-lg">
                 <div className="flex items-center gap-3">
                   <span className="text-green-500 text-xl">●</span>
-                  <span className="text-gray-700 font-medium">Training</span>
+                  <span className="text-gray-700 dark:text-slate-200 font-medium">Training</span>
                 </div>
-                <span className="font-bold text-gray-800 text-lg">{greenEvents} ({greenPercentage}%)</span>
+                <span className="font-bold text-gray-800 dark:text-white text-lg">{greenEvents} ({greenPercentage}%)</span>
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/30 rounded-lg">
                 <div className="flex items-center gap-3">
                   <span className="text-red-500 text-xl">●</span>
-                  <span className="text-gray-700 font-medium">Meetings</span>
+                  <span className="text-gray-700 dark:text-slate-200 font-medium">Meetings</span>
                 </div>
-                <span className="font-bold text-gray-800 text-lg">{redEvents} ({redPercentage}%)</span>
+                <span className="font-bold text-gray-800 dark:text-white text-lg">{redEvents} ({redPercentage}%)</span>
               </div>
             </div>
           </div>
@@ -401,13 +401,13 @@ const CoachCalendar: React.FC<CoachCalendarProps> = ({ onBack }) => {
 
       {showEventModal && selectedDay && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-auto max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-2xl mx-auto max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 z-10">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
                   {monthNames[currentDate.getMonth()]} {selectedDay}, {currentDate.getFullYear()}
                 </h2>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
                   {selectedDayEvents.length} event{selectedDayEvents.length !== 1 ? "s" : ""} scheduled
                 </p>
               </div>
@@ -416,7 +416,7 @@ const CoachCalendar: React.FC<CoachCalendarProps> = ({ onBack }) => {
                   setShowEventModal(false);
                   setSelectedDay(null);
                 }}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -425,36 +425,36 @@ const CoachCalendar: React.FC<CoachCalendarProps> = ({ onBack }) => {
             <div className="p-6">
               {selectedDayEvents.length === 0 ? (
                 <div className="text-center py-12">
-                  <div className="text-gray-300 mb-4">
+                  <div className="text-gray-300 dark:text-slate-600 mb-4">
                     <Clock className="w-16 h-16 mx-auto" />
                   </div>
-                  <p className="text-gray-500 text-lg">No events scheduled for this day</p>
+                  <p className="text-gray-500 dark:text-slate-400 text-lg">No events scheduled for this day</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {selectedDayEvents.map((event) => (
                     <div
                       key={event.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                      className="border border-gray-200 dark:border-slate-700 rounded-lg p-4 hover:shadow-md transition-shadow bg-white dark:bg-slate-700/50"
                     >
                       <div className="flex items-start gap-4">
                         <div className={`${event.color} w-4 h-4 rounded-full mt-2 flex-shrink-0`} />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between">
                             <div>
-                              <h4 className="font-semibold text-gray-800 text-lg mb-1">{event.title}</h4>
-                              <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                                <Clock className="w-4 h-4 text-gray-400" />
+                              <h4 className="font-semibold text-gray-800 dark:text-white text-lg mb-1">{event.title}</h4>
+                              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300 mb-3">
+                                <Clock className="w-4 h-4 text-gray-400 dark:text-slate-500" />
                                 <span className="font-medium">{event.time}</span>
                               </div>
                             </div>
                             <span
                               className={`text-xs px-3 py-1 rounded-full font-medium ${
                                 event.type === "event"
-                                  ? "bg-blue-100 text-blue-700"
+                                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
                                   : event.type === "training"
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-purple-100 text-purple-700"
+                                  ? "bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300"
+                                  : "bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300"
                               }`}
                             >
                               {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
