@@ -42,6 +42,7 @@ export const EP = {
     editProfile: `${PARTICIPANT_DATA_API}/edit-profile`,
     getDetails: (participantId: string) =>
       `${PARTICIPANT_DATA_API}/get-by-detail/${participantId}`,
+    getFavorites: `${PARTICIPANT_DATA_API}/get-favorites`,
   },
   COACH: {
     createProfileAndBranch: `${COACH_DATA_API}/create-branch`,
