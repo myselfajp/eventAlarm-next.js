@@ -13,6 +13,8 @@ import {
   Shield,
   UserCheck,
   Heart,
+  Loader2,
+  Check,
 } from "lucide-react";
 import { fetchJSON } from "@/app/lib/api";
 import { EP } from "@/app/lib/endpoints";
@@ -46,6 +48,13 @@ import {
   useFavorites,
   useRemoveFavorite,
 } from "@/app/hooks/useFavorites";
+import {
+  FollowType,
+  defaultFollowLists as defaultFollows,
+  useFollows,
+  useFollowMutation,
+  useUnfollowMutation,
+} from "@/app/hooks/useFollows";
 
 interface FindModalProps {
   isOpen: boolean;
@@ -104,9 +113,160 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
   const { mutateAsync: removeFavoriteAsync, isPending: isRemovingFavorite } =
     useRemoveFavorite();
   const canFavorite = !!user?.participant;
+  const canFollow = !!user?.participant;
+  const { data: followsData } = useFollows();
+  const follows = followsData?.grouped || defaultFollows;
+  const { mutateAsync: followAsync, isPending: isSavingFollow } =
+    useFollowMutation();
+  const { mutateAsync: unfollowAsync, isPending: isRemovingFollowAction } =
+    useUnfollowMutation();
+  const [followAnimatingId, setFollowAnimatingId] = useState<string | null>(
+    null
+  );
+  const [pendingFollowIds, setPendingFollowIds] = useState<Set<string>>(
+    new Set()
+  );
+  const [followSuccessIds, setFollowSuccessIds] = useState<Set<string>>(
+    new Set()
+  );
+  const [followOverrides, setFollowOverrides] = useState<
+    Record<string, boolean>
+  >({});
   const [favoriteAnimatingId, setFavoriteAnimatingId] = useState<string | null>(
     null
   );
+
+  const followKey = (type: FollowType, id?: string) => `${type}:${id || ""}`;
+
+  const isFollowedOptimistic = (type: FollowType, id?: string) => {
+    if (!id) return false;
+    const key = followKey(type, id);
+    if (followOverrides[key] !== undefined) return followOverrides[key];
+    return isFollowed(type, id);
+  };
+
+  const getFollowEntryId = (type: FollowType, entry: any) => {
+    if (!entry) return "";
+    if (type === "coach") {
+      return (
+        entry?.followingCoach?._id ||
+        entry?.followingCoach?.id ||
+        entry?.followingCoach ||
+        entry?.coachId ||
+        ""
+      );
+    }
+    if (type === "facility") {
+      return (
+        entry?.followingFacility?._id ||
+        entry?.followingFacility?.id ||
+        entry?.followingFacility ||
+        entry?.facilityId ||
+        ""
+      );
+    }
+    if (type === "company") {
+      return (
+        entry?.followingCompany?._id ||
+        entry?.followingCompany?.id ||
+        entry?.followingCompany ||
+        entry?.companyId ||
+        ""
+      );
+    }
+    if (type === "club") {
+      return (
+        entry?.followingClub?._id ||
+        entry?.followingClub?.id ||
+        entry?.followingClub ||
+        entry?.clubId ||
+        ""
+      );
+    }
+    return (
+      entry?.followingClubGroup?._id ||
+      entry?.followingClubGroup?.id ||
+      entry?.followingClubGroup ||
+      entry?.groupId ||
+      ""
+    );
+  };
+
+  const isFollowed = (type: FollowType, id?: string) => {
+    if (!id) return false;
+    const list = follows?.[type] || [];
+    return list.some((entry: any) => getFollowEntryId(type, entry) === id);
+  };
+
+  const handleFollowClick = async (
+    e: React.MouseEvent,
+    type: FollowType,
+    id?: string
+  ) => {
+    e.stopPropagation();
+    if (!id) return;
+    if (!canFollow) {
+      alert("Create a participant profile to follow.");
+      return;
+    }
+
+    const animKey = `follow-${type}-${id}`;
+    setFollowAnimatingId(animKey);
+    setPendingFollowIds((prev) => new Set(prev).add(animKey));
+    const key = followKey(type, id);
+    const currently = isFollowedOptimistic(type, id);
+    setFollowOverrides((prev) => ({ ...prev, [key]: !currently }));
+
+    try {
+      if (currently) {
+        await unfollowAsync({ type, id });
+      } else {
+        await followAsync({ type, id });
+      }
+      setFollowSuccessIds((prev) => {
+        const next = new Set(prev);
+        next.add(animKey);
+        return next;
+      });
+    } catch (err) {
+      // revert optimistic state on failure
+      setFollowOverrides((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+      setFollowSuccessIds((prev) => {
+        const next = new Set(prev);
+        next.add(animKey + "-err");
+        return next;
+      });
+    } finally {
+      setFollowAnimatingId((curr) => (curr === animKey ? null : curr));
+      setPendingFollowIds((prev) => {
+        const next = new Set(prev);
+        next.delete(animKey);
+        return next;
+      });
+      setTimeout(() => {
+        setFollowSuccessIds((prev) => {
+          const next = new Set(prev);
+          next.delete(animKey);
+          next.delete(animKey + "-err");
+          return next;
+        });
+      }, 900);
+    }
+  };
+
+  const revertFollowOverride = (type: FollowType, id?: string) => {
+    if (!id) return;
+    const key = followKey(type, id);
+    setFollowOverrides((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
 
   const fetchSportsAndGroups = async () => {
     setIsLoadingSports(true);
@@ -1068,48 +1228,82 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                               )}
                             </div>
                           </div>
-                          <button
-                            aria-label={
-                              isFavorited(favorites, "coach", coachId || "") ||
-                              !coachId
-                                ? "Favorited"
-                                : "Add to favorites"
-                            }
-                            onClick={(e) =>
-                              handleFavoriteClick(
-                                e,
-                                "coach",
-                                coachId,
-                                coachFavoriteEntity
-                              )
-                            }
-                            disabled={
-                              !coachId ||
-                              !canFavorite ||
-                              isSavingFavorite ||
-                              isRemovingFavorite
-                            }
-                            className={`ml-auto p-2 rounded-full border border-transparent hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors transition-transform ${
-                              isFavorited(favorites, "coach", coachId || "")
-                                ? "text-red-500"
-                                : "text-gray-400 dark:text-gray-500"
-                            } ${
-                              !coachId || !canFavorite
-                                ? "cursor-not-allowed opacity-60"
-                                : favoriteAnimatingId === `coach-${coachId}`
-                                ? "scale-110"
-                                : ""
-                            }`}
-                          >
-                            <Heart
-                              className="w-4 h-4"
-                              fill={
-                                isFavorited(favorites, "coach", coachId || "")
-                                  ? "currentColor"
-                                  : "none"
+                          <div className="ml-auto flex items-center gap-2">
+                            <button
+                              onClick={(e) =>
+                                handleFollowClick(e, "coach", coachId)
                               }
-                            />
-                          </button>
+                              disabled={!coachId || !canFollow}
+                              className={`px-3 py-1 text-xs rounded-lg border transition-colors ${
+                                isFollowedOptimistic("coach", coachId)
+                                  ? "border-red-200 text-red-600 dark:border-red-800 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                  : "border-cyan-200 text-cyan-700 dark:border-cyan-800 dark:text-cyan-200 hover:bg-cyan-50 dark:hover:bg-cyan-900/30"
+                              } ${
+                                !coachId || !canFollow
+                                  ? "cursor-not-allowed opacity-60"
+                                  : ""
+                              }`}
+                            >
+                              {pendingFollowIds.has(
+                                `follow-coach-${coachId}`
+                              ) ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : followSuccessIds.has(
+                                  `follow-coach-${coachId}`
+                                ) ? (
+                                <Check className="w-4 h-4 text-green-600" />
+                              ) : isFollowedOptimistic("coach", coachId) ? (
+                                "Unfollow"
+                              ) : (
+                                "Follow"
+                              )}
+                            </button>
+                            <button
+                              aria-label={
+                                isFavorited(
+                                  favorites,
+                                  "coach",
+                                  coachId || ""
+                                ) || !coachId
+                                  ? "Favorited"
+                                  : "Add to favorites"
+                              }
+                              onClick={(e) =>
+                                handleFavoriteClick(
+                                  e,
+                                  "coach",
+                                  coachId,
+                                  coachFavoriteEntity
+                                )
+                              }
+                              disabled={
+                                !coachId ||
+                                !canFavorite ||
+                                isSavingFavorite ||
+                                isRemovingFavorite
+                              }
+                              className={`p-2 rounded-full border border-transparent hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors transition-transform ${
+                                isFavorited(favorites, "coach", coachId || "")
+                                  ? "text-red-500"
+                                  : "text-gray-400 dark:text-gray-500"
+                              } ${
+                                !coachId || !canFavorite
+                                  ? "cursor-not-allowed opacity-60"
+                                  : favoriteAnimatingId === `coach-${coachId}`
+                                  ? "scale-110"
+                                  : ""
+                              }`}
+                            >
+                              <Heart
+                                className="w-4 h-4"
+                                fill={
+                                  isFavorited(favorites, "coach", coachId || "")
+                                    ? "currentColor"
+                                    : "none"
+                                }
+                              />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -1188,52 +1382,90 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                               </div>
                             )}
                           </div>
-                          <button
-                            aria-label={
-                              isFavorited(
-                                favorites,
-                                "facility",
-                                facility._id || ""
-                              )
-                                ? "Favorited"
-                                : "Add to favorites"
-                            }
-                            onClick={(e) =>
-                              handleFavoriteClick(
-                                e,
-                                "facility",
-                                facility._id,
-                                facility
-                              )
-                            }
-                            disabled={
-                              !facility._id ||
-                              !canFavorite ||
-                              isSavingFavorite ||
-                              isRemovingFavorite
-                            }
-                            className={`ml-auto p-2 rounded-full border border-transparent hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors transition-transform ${
-                              isFavorited(favorites, "facility", facility._id)
-                                ? "text-red-500"
-                                : "text-gray-400 dark:text-gray-500"
-                            } ${
-                              !facility._id || !canFavorite
-                                ? "cursor-not-allowed opacity-60"
-                                : favoriteAnimatingId ===
-                                  `facility-${facility._id}`
-                                ? "scale-110"
-                                : ""
-                            }`}
-                          >
-                            <Heart
-                              className="w-4 h-4"
-                              fill={
-                                isFavorited(favorites, "facility", facility._id)
-                                  ? "currentColor"
-                                  : "none"
+                          <div className="ml-auto flex items-center gap-2">
+                            <button
+                              onClick={(e) =>
+                                handleFollowClick(e, "facility", facility._id)
                               }
-                            />
-                          </button>
+                              disabled={!facility._id || !canFollow}
+                              className={`px-3 py-1 text-xs rounded-lg border transition-colors ${
+                                isFollowedOptimistic("facility", facility._id)
+                                  ? "border-red-200 text-red-600 dark:border-red-800 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                  : "border-cyan-200 text-cyan-700 dark:border-cyan-800 dark:text-cyan-200 hover:bg-cyan-50 dark:hover:bg-cyan-900/30"
+                              } ${
+                                !facility._id || !canFollow
+                                  ? "cursor-not-allowed opacity-60"
+                                  : ""
+                              }`}
+                            >
+                              {pendingFollowIds.has(
+                                `follow-facility-${facility._id}`
+                              ) ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : followSuccessIds.has(
+                                  `follow-facility-${facility._id}`
+                                ) ? (
+                                <Check className="w-4 h-4 text-green-600" />
+                              ) : isFollowedOptimistic(
+                                  "facility",
+                                  facility._id
+                                ) ? (
+                                "Unfollow"
+                              ) : (
+                                "Follow"
+                              )}
+                            </button>
+                            <button
+                              aria-label={
+                                isFavorited(
+                                  favorites,
+                                  "facility",
+                                  facility._id || ""
+                                )
+                                  ? "Favorited"
+                                  : "Add to favorites"
+                              }
+                              onClick={(e) =>
+                                handleFavoriteClick(
+                                  e,
+                                  "facility",
+                                  facility._id,
+                                  facility
+                                )
+                              }
+                              disabled={
+                                !facility._id ||
+                                !canFavorite ||
+                                isSavingFavorite ||
+                                isRemovingFavorite
+                              }
+                              className={`p-2 rounded-full border border-transparent hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors transition-transform ${
+                                isFavorited(favorites, "facility", facility._id)
+                                  ? "text-red-500"
+                                  : "text-gray-400 dark:text-gray-500"
+                              } ${
+                                !facility._id || !canFavorite
+                                  ? "cursor-not-allowed opacity-60"
+                                  : favoriteAnimatingId ===
+                                    `facility-${facility._id}`
+                                  ? "scale-110"
+                                  : ""
+                              }`}
+                            >
+                              <Heart
+                                className="w-4 h-4"
+                                fill={
+                                  isFavorited(
+                                    favorites,
+                                    "facility",
+                                    facility._id
+                                  )
+                                    ? "currentColor"
+                                    : "none"
+                                }
+                              />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -1275,6 +1507,40 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                                 {company.email}
                               </div>
                             )}
+                          </div>
+                          <div className="ml-auto flex items-center gap-2">
+                            <button
+                              onClick={(e) =>
+                                handleFollowClick(e, "company", company._id)
+                              }
+                              disabled={!company._id || !canFollow}
+                              className={`px-3 py-1 text-xs rounded-lg border transition-colors ${
+                                isFollowedOptimistic("company", company._id)
+                                  ? "border-red-200 text-red-600 dark:border-red-800 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                  : "border-cyan-200 text-cyan-700 dark:border-cyan-800 dark:text-cyan-200 hover:bg-cyan-50 dark:hover:bg-cyan-900/30"
+                              } ${
+                                !company._id || !canFollow
+                                  ? "cursor-not-allowed opacity-60"
+                                  : ""
+                              }`}
+                            >
+                              {pendingFollowIds.has(
+                                `follow-company-${company._id}`
+                              ) ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : followSuccessIds.has(
+                                  `follow-company-${company._id}`
+                                ) ? (
+                                <Check className="w-4 h-4 text-green-600" />
+                              ) : isFollowedOptimistic(
+                                  "company",
+                                  company._id
+                                ) ? (
+                                "Unfollow"
+                              ) : (
+                                "Follow"
+                              )}
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -1323,6 +1589,37 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                               )}
                             </div>
                           </div>
+                          <div className="ml-auto flex items-center gap-2">
+                            <button
+                              onClick={(e) =>
+                                handleFollowClick(e, "club", club._id)
+                              }
+                              disabled={!club._id || !canFollow}
+                              className={`px-3 py-1 text-xs rounded-lg border transition-colors ${
+                                isFollowedOptimistic("club", club._id)
+                                  ? "border-red-200 text-red-600 dark:border-red-800 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                  : "border-cyan-200 text-cyan-700 dark:border-cyan-800 dark:text-cyan-200 hover:bg-cyan-50 dark:hover:bg-cyan-900/30"
+                              } ${
+                                !club._id || !canFollow
+                                  ? "cursor-not-allowed opacity-60"
+                                  : ""
+                              }`}
+                            >
+                              {pendingFollowIds.has(
+                                `follow-club-${club._id}`
+                              ) ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : followSuccessIds.has(
+                                  `follow-club-${club._id}`
+                                ) ? (
+                                <Check className="w-4 h-4 text-green-600" />
+                              ) : isFollowedOptimistic("club", club._id) ? (
+                                "Unfollow"
+                              ) : (
+                                "Follow"
+                              )}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -1369,6 +1666,37 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                                 </span>
                               )}
                             </div>
+                          </div>
+                          <div className="ml-auto flex items-center gap-2">
+                            <button
+                              onClick={(e) =>
+                                handleFollowClick(e, "group", group._id)
+                              }
+                              disabled={!group._id || !canFollow}
+                              className={`px-3 py-1 text-xs rounded-lg border transition-colors ${
+                                isFollowedOptimistic("group", group._id)
+                                  ? "border-red-200 text-red-600 dark:border-red-800 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                  : "border-cyan-200 text-cyan-700 dark:border-cyan-800 dark:text-cyan-200 hover:bg-cyan-50 dark:hover:bg-cyan-900/30"
+                              } ${
+                                !group._id || !canFollow
+                                  ? "cursor-not-allowed opacity-60"
+                                  : ""
+                              }`}
+                            >
+                              {pendingFollowIds.has(
+                                `follow-group-${group._id}`
+                              ) ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : followSuccessIds.has(
+                                  `follow-group-${group._id}`
+                                ) ? (
+                                <Check className="w-4 h-4 text-green-600" />
+                              ) : isFollowedOptimistic("group", group._id) ? (
+                                "Unfollow"
+                              ) : (
+                                "Follow"
+                              )}
+                            </button>
                           </div>
                         </div>
                       </div>

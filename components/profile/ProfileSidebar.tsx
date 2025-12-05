@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useMe } from "@/app/hooks/useAuth";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import ParticipantModal from "./ParticipantModal";
 import CoachModal from "./CoachModal";
 import FacilityModal from "./FacilityModal";
@@ -58,6 +59,7 @@ import UserProfileModal from "@/components/UserProfileModal";
 import ViewEventModal from "@/components/event/ViewEventModal";
 import { EP } from "@/app/lib/endpoints";
 import { defaultFavorites, useFavorites } from "@/app/hooks/useFavorites";
+import { useFollows } from "@/app/hooks/useFollows";
 
 interface ProfileSidebarProps {
   onLogout: () => void;
@@ -72,6 +74,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   initialFacilities = [],
   initialCompanies = [],
 }) => {
+  const router = useRouter();
   const { data: user } = useMe();
   const queryClient = useQueryClient();
   const hasParticipantProfile = !!user?.participant;
@@ -128,6 +131,9 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
     (favorites.coach?.length || 0) +
     (favorites.facility?.length || 0) +
     (favorites.event?.length || 0);
+
+  const { data: followsData } = useFollows();
+  const totalFollows = followsData?.counts?.total || 0;
 
   const facilities = React.useMemo(() => {
     if (!user?.facility || !Array.isArray(user.facility)) return [];
@@ -838,7 +844,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
         </p>
       </div>
 
-      <div className="flex justify-around mb-6 sm:mb-8 text-center">
+      <div className="flex justify-around mb-6 sm:mb-8 text-center gap-3">
         <button
           onClick={() => setIsFavoritesListOpen(true)}
           className="flex flex-col items-center hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-2 rounded-lg transition-colors"
@@ -849,6 +855,18 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
           </div>
           <div className="text-xs text-gray-500 dark:text-gray-400">
             Favorites
+          </div>
+        </button>
+        <button
+          onClick={() => router.push("/followings")}
+          className="flex flex-col items-center hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-2 rounded-lg transition-colors"
+        >
+          <div className="font-bold text-gray-800 dark:text-white text-sm sm:text-base flex items-center gap-1">
+            <Users className="w-4 h-4 text-cyan-500" />
+            {totalFollows}
+          </div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            Following
           </div>
         </button>
         <div>
@@ -905,13 +923,13 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
           <Activity className="w-4 h-4 mr-3 text-gray-500 dark:text-gray-400" />
           Activity
         </a>
-        <a
-          href="#"
-          className="flex items-center px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+        <button
+          onClick={() => router.push("/followings")}
+          className="w-full flex items-center px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-left"
         >
           <Users className="w-4 h-4 mr-3 text-gray-500 dark:text-gray-400" />
-          Followers
-        </a>
+          Following
+        </button>
         <a
           href="#"
           className="flex items-center px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
