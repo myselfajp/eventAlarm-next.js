@@ -24,8 +24,6 @@ import {
 } from "lucide-react";
 import { useMe } from "@/app/hooks/useAuth";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
-import { fetchJSON } from "@/app/lib/api";
-// import { EP } from "@/app/lib/endpoints";
 import ParticipantModal from "./ParticipantModal";
 import CoachModal from "./CoachModal";
 import FacilityModal from "./FacilityModal";
@@ -59,6 +57,7 @@ import FacilityDetailsModal from "./FacilityDetailsModal";
 import UserProfileModal from "@/components/UserProfileModal";
 import ViewEventModal from "@/components/event/ViewEventModal";
 import { EP } from "@/app/lib/endpoints";
+import { defaultFavorites, useFavorites } from "@/app/hooks/useFavorites";
 
 interface ProfileSidebarProps {
   onLogout: () => void;
@@ -123,24 +122,8 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   const myClubs = myClubsData?.data || [];
   const myGroups = myGroupsData?.data || [];
 
-  // Fetch favorites
-  const { data: favoritesData } = useQuery({
-    queryKey: ["favorites", user?._id],
-    queryFn: async () => {
-      const response = await fetchJSON(EP.PARTICIPANT.getFavorites, {
-        method: "GET",
-      });
-      return response;
-    },
-    enabled: !!user?._id,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
-
-  const favorites = favoritesData?.data || {
-    coach: [],
-    facility: [],
-    event: [],
-  };
+  const { data: favoritesData } = useFavorites();
+  const favorites = favoritesData?.data || defaultFavorites;
   const totalFavorites =
     (favorites.coach?.length || 0) +
     (favorites.facility?.length || 0) +

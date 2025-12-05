@@ -9,11 +9,19 @@ import {
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
+  Heart,
 } from "lucide-react";
 import ViewEventModal from "./ViewEventModal";
 import CoachDetailModal from "../CoachDetailModal";
 import { EP } from "@/app/lib/endpoints";
 import { fetchJSON } from "@/app/lib/api";
+import {
+  useFavorites,
+  useAddFavorite,
+  isFavorited,
+  defaultFavorites,
+} from "@/app/hooks/useFavorites";
+import { useMe } from "@/app/hooks/useAuth";
 
 interface Event {
   _id: string;
@@ -45,7 +53,8 @@ interface Event {
     lastName: string;
     coach: string;
   };
-  backuoCoach?: { // Handling potential typo from backend
+  backuoCoach?: {
+    // Handling potential typo from backend
     _id: string;
     firstName: string;
     lastName: string;
@@ -112,6 +121,16 @@ const EventsTable: React.FC<EventsTableProps> = ({
 
   const [selectedCoachId, setSelectedCoachId] = useState<string | null>(null);
   const [isCoachModalOpen, setIsCoachModalOpen] = useState(false);
+
+  const { data: user } = useMe();
+  const { data: favoritesData } = useFavorites();
+  const favorites = favoritesData?.data || defaultFavorites;
+  const { mutateAsync: addFavoriteAsync, isPending: isSavingFavorite } =
+    useAddFavorite();
+  const canFavorite = !!user?.participant;
+  const [favoriteAnimatingId, setFavoriteAnimatingId] = useState<string | null>(
+    null
+  );
 
   const [sportGroups, setSportGroups] = useState<SportGroup[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
@@ -213,6 +232,28 @@ const EventsTable: React.FC<EventsTableProps> = ({
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event);
     setIsViewModalOpen(true);
+  };
+
+  const handleFavoriteEvent = async (e: React.MouseEvent, eventItem: Event) => {
+    e.stopPropagation();
+    if (!eventItem?._id) return;
+    if (!canFavorite) {
+      alert("Create a participant profile to add favorites.");
+      return;
+    }
+    const animKey = `event-${eventItem._id}`;
+    setFavoriteAnimatingId(animKey);
+    try {
+      await addFavoriteAsync({
+        type: "event",
+        id: eventItem._id,
+        entity: eventItem,
+      });
+    } finally {
+      setTimeout(() => {
+        setFavoriteAnimatingId((curr) => (curr === animKey ? null : curr));
+      }, 350);
+    }
   };
 
   const handleCloseViewModal = () => {
@@ -447,10 +488,10 @@ const EventsTable: React.FC<EventsTableProps> = ({
                          bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg 
                          focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 dark:focus:border-cyan-400 
                          flex items-center justify-between transition-colors ${
-                selectedSportGroup
-                  ? "hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer text-gray-700 dark:text-slate-300"
-                  : "opacity-50 cursor-not-allowed text-gray-400 dark:text-slate-500"
-              }`}
+                           selectedSportGroup
+                             ? "hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer text-gray-700 dark:text-slate-300"
+                             : "opacity-50 cursor-not-allowed text-gray-400 dark:text-slate-500"
+                         }`}
             >
               <span className="truncate">
                 {selectedSport
@@ -498,8 +539,8 @@ const EventsTable: React.FC<EventsTableProps> = ({
             <button
               onClick={() => onPrivateToggle(!isPrivateFilter)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                isPrivateFilter 
-                  ? "bg-cyan-500 dark:bg-cyan-600" 
+                isPrivateFilter
+                  ? "bg-cyan-500 dark:bg-cyan-600"
                   : "bg-gray-300 dark:bg-slate-600"
               }`}
             >
@@ -588,12 +629,14 @@ const EventsTable: React.FC<EventsTableProps> = ({
                     className={`border-b border-gray-100 dark:border-slate-700/50 
                                hover:bg-cyan-50/50 dark:hover:bg-cyan-900/10 
                                cursor-pointer transition-all duration-200 relative group ${
-                      index % 2 === 0 
-                        ? "bg-white dark:bg-slate-800" 
-                        : "bg-gray-50/50 dark:bg-slate-800/50"
-                    }`}
+                                 index % 2 === 0
+                                   ? "bg-white dark:bg-slate-800"
+                                   : "bg-gray-50/50 dark:bg-slate-800/50"
+                               }`}
                     style={{
-                      borderLeft: event.eventStyle?.color ? `4px solid ${event.eventStyle.color}` : "4px solid transparent"
+                      borderLeft: event.eventStyle?.color
+                        ? `4px solid ${event.eventStyle.color}`
+                        : "4px solid transparent",
                     }}
                   >
                     <td className="py-5 px-4">
@@ -630,9 +673,40 @@ const EventsTable: React.FC<EventsTableProps> = ({
                       {formatDate(event.endTime)}
                     </td>
                     <td className="py-5 px-4">
-                      <button className="text-gray-400 dark:text-slate-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors text-lg font-bold">
-                        →
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          aria-label={
+                            isFavorited(favorites, "event", event._id)
+                              ? "Favorited"
+                              : "Add to favorites"
+                          }
+                          onClick={(e) => handleFavoriteEvent(e, event)}
+                          disabled={!canFavorite || isSavingFavorite}
+                          className={`p-2 rounded-full border border-transparent hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors transition-transform ${
+                            isFavorited(favorites, "event", event._id)
+                              ? "text-red-500"
+                              : "text-gray-400 dark:text-slate-500"
+                          } ${
+                            !canFavorite
+                              ? "cursor-not-allowed opacity-60"
+                              : favoriteAnimatingId === `event-${event._id}`
+                              ? "scale-110"
+                              : ""
+                          }`}
+                        >
+                          <Heart
+                            className="w-4 h-4"
+                            fill={
+                              isFavorited(favorites, "event", event._id)
+                                ? "currentColor"
+                                : "none"
+                            }
+                          />
+                        </button>
+                        <button className="text-gray-400 dark:text-slate-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors text-lg font-bold">
+                          →
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -644,7 +718,19 @@ const EventsTable: React.FC<EventsTableProps> = ({
           {pagination.total > 0 && (
             <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200 dark:border-slate-700 pt-5">
               <div className="text-sm text-gray-600 dark:text-slate-400 font-medium">
-                Showing <span className="text-cyan-600 dark:text-cyan-400 font-semibold">{startIndex + 1}</span> to <span className="text-cyan-600 dark:text-cyan-400 font-semibold">{endIndex}</span> of <span className="text-cyan-600 dark:text-cyan-400 font-semibold">{pagination.total}</span> entries
+                Showing{" "}
+                <span className="text-cyan-600 dark:text-cyan-400 font-semibold">
+                  {startIndex + 1}
+                </span>{" "}
+                to{" "}
+                <span className="text-cyan-600 dark:text-cyan-400 font-semibold">
+                  {endIndex}
+                </span>{" "}
+                of{" "}
+                <span className="text-cyan-600 dark:text-cyan-400 font-semibold">
+                  {pagination.total}
+                </span>{" "}
+                entries
               </div>
 
               <div className="flex items-center gap-2">
@@ -663,7 +749,9 @@ const EventsTable: React.FC<EventsTableProps> = ({
                   {getPageNumbers().map((page, index) => (
                     <React.Fragment key={index}>
                       {page === "..." ? (
-                        <span className="px-3 py-1.5 text-gray-500 dark:text-slate-400">...</span>
+                        <span className="px-3 py-1.5 text-gray-500 dark:text-slate-400">
+                          ...
+                        </span>
                       ) : (
                         <button
                           onClick={() => goToPage(page as number)}

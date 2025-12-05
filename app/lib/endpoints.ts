@@ -43,6 +43,9 @@ export const EP = {
     getDetails: (participantId: string) =>
       `${PARTICIPANT_DATA_API}/get-by-detail/${participantId}`,
     getFavorites: `${PARTICIPANT_DATA_API}/get-favorites`,
+    favoriteCoach: `${PARTICIPANT_DATA_API}/favorite-coach`,
+    favoriteFacility: `${PARTICIPANT_DATA_API}/favorite-facility`,
+    favoriteEvent: `${PARTICIPANT_DATA_API}/favorite-event`,
   },
   COACH: {
     createProfileAndBranch: `${COACH_DATA_API}/create-branch`,
@@ -55,9 +58,9 @@ export const EP = {
       `${COACH_DATA_API}/get-by-detail/${coachId}`,
     getCoachList: `${API_V1_BASE}/get-coach-list`,
   },
-   PARTICIPANT_LIST: {
+  PARTICIPANT_LIST: {
     getParticipantList: `${API_V1_BASE}/get-participant-list`,
-  }, 
+  },
   FACILITY: {
     base: `${API_V1_BASE}/facility`,
     getFacility: `${API_V1_BASE}/get-facility`,
@@ -85,11 +88,12 @@ export const EP = {
   GROUP: {
     getGroup: `${API_V1_BASE}/get-group`,
   },
-  CLUB_GROUPS: { 
+  CLUB_GROUPS: {
     getClubGroups: `${API_V1_BASE}/get-group-by-coach`,
     createGroup: (clubId: string) => `${COACH_DATA_API}/create-group/${clubId}`,
     editGroup: (groupId: string) => `${COACH_DATA_API}/edit-group/${groupId}`,
-    deleteGroup: (groupId: string) => `${COACH_DATA_API}/delete-group/${groupId}`,
+    deleteGroup: (groupId: string) =>
+      `${COACH_DATA_API}/delete-group/${groupId}`,
     getClubs: `${API_V1_BASE}/get-club`,
   },
   EVENT_STYLE: { getEventStyle: `${API_V1_BASE}/get-event-style` },

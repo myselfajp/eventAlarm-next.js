@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Shield,
   UserCheck,
+  Heart,
 } from "lucide-react";
 import { fetchJSON } from "@/app/lib/api";
 import { EP } from "@/app/lib/endpoints";
@@ -36,13 +37,27 @@ import FacilityDetailsModal from "./FacilityDetailsModal";
 import CompanyDetailsModal from "./CompanyDetailsModal";
 import ClubViewModal from "../ClubViewModal";
 import GroupViewModal from "../GroupViewModal";
+import { useMe } from "@/app/hooks/useAuth";
+import {
+  FavoriteKind,
+  defaultFavorites,
+  isFavorited,
+  useAddFavorite,
+  useFavorites,
+} from "@/app/hooks/useFavorites";
 
 interface FindModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-type SearchType = "coach" | "participant" | "facility" | "company" | "club" | "group";
+type SearchType =
+  | "coach"
+  | "participant"
+  | "facility"
+  | "company"
+  | "club"
+  | "group";
 
 const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
   const [selectedType, setSelectedType] = useState<SearchType>("coach");
@@ -80,6 +95,15 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
   const [sports, setSports] = useState<Sport[]>([]);
   const [isLoadingSportGroups, setIsLoadingSportGroups] = useState(false);
   const [isLoadingSports, setIsLoadingSports] = useState(false);
+  const { data: user } = useMe();
+  const { data: favoritesData } = useFavorites();
+  const favorites = favoritesData?.data || defaultFavorites;
+  const { mutateAsync: addFavoriteAsync, isPending: isSavingFavorite } =
+    useAddFavorite();
+  const canFavorite = !!user?.participant;
+  const [favoriteAnimatingId, setFavoriteAnimatingId] = useState<string | null>(
+    null
+  );
 
   const fetchSportsAndGroups = async () => {
     setIsLoadingSports(true);
@@ -343,13 +367,10 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
         payload.creator = filters.creator;
       }
 
-      const response: ClubSearchResponse = await fetchJSON(
-        EP.CLUB.getClub,
-        {
-          method: "POST",
-          body: payload,
-        }
-      );
+      const response: ClubSearchResponse = await fetchJSON(EP.CLUB.getClub, {
+        method: "POST",
+        body: payload,
+      });
 
       if (response?.success && response?.data) {
         setSearchResults(response.data);
@@ -391,13 +412,10 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
         payload.search = filters.search.trim();
       }
 
-      const response: GroupSearchResponse = await fetchJSON(
-        EP.GROUP.getGroup,
-        {
-          method: "POST",
-          body: payload,
-        }
-      );
+      const response: GroupSearchResponse = await fetchJSON(EP.GROUP.getGroup, {
+        method: "POST",
+        body: payload,
+      });
 
       if (response?.success && response?.data) {
         setSearchResults(response.data);
@@ -417,6 +435,29 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
       console.error("Error searching groups:", err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleFavoriteClick = async (
+    e: React.MouseEvent,
+    type: FavoriteKind,
+    id: string,
+    entity: any
+  ) => {
+    e.stopPropagation();
+    if (!id) return;
+    if (!canFavorite) {
+      alert("Create a participant profile to add favorites.");
+      return;
+    }
+    const animKey = `${type}-${id}`;
+    setFavoriteAnimatingId(animKey);
+    try {
+      await addFavoriteAsync({ type, id, entity });
+    } finally {
+      setTimeout(() => {
+        setFavoriteAnimatingId((curr) => (curr === animKey ? null : curr));
+      }, 350);
     }
   };
 
@@ -726,12 +767,16 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
               >
                 <Users
                   className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 ${
-                    selectedType === "coach" ? "text-cyan-500" : "text-gray-400 dark:text-gray-500"
+                    selectedType === "coach"
+                      ? "text-cyan-500"
+                      : "text-gray-400 dark:text-gray-500"
                   }`}
                 />
                 <span
                   className={`text-xs sm:text-sm font-medium ${
-                    selectedType === "coach" ? "text-cyan-700 dark:text-cyan-300" : "text-gray-600 dark:text-gray-400"
+                    selectedType === "coach"
+                      ? "text-cyan-700 dark:text-cyan-300"
+                      : "text-gray-600 dark:text-gray-400"
                   }`}
                 >
                   Coach
@@ -955,7 +1000,9 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
               </div>
             ) : error ? (
-              <div className="p-4 text-center text-red-500 dark:text-red-400">{error}</div>
+              <div className="p-4 text-center text-red-500 dark:text-red-400">
+                {error}
+              </div>
             ) : searchResults.length === 0 && hasSearched && !isLoading ? (
               <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                 <Search className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
@@ -977,6 +1024,11 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                 {searchResults.map((result, index) => {
                   if (selectedType === "coach") {
                     const coach = result as any;
+                    const coachId =
+                      coach?.coach?._id || coach?.coach || coach?._id;
+                    const coachFavoriteEntity = coachId
+                      ? { ...coach, coach: coachId }
+                      : coach;
                     return (
                       <div
                         key={coach._id}
@@ -1008,6 +1060,45 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                               )}
                             </div>
                           </div>
+                          <button
+                            aria-label={
+                              isFavorited(favorites, "coach", coachId || "") ||
+                              !coachId
+                                ? "Favorited"
+                                : "Add to favorites"
+                            }
+                            onClick={(e) =>
+                              handleFavoriteClick(
+                                e,
+                                "coach",
+                                coachId,
+                                coachFavoriteEntity
+                              )
+                            }
+                            disabled={
+                              !coachId || !canFavorite || isSavingFavorite
+                            }
+                            className={`ml-auto p-2 rounded-full border border-transparent hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors transition-transform ${
+                              isFavorited(favorites, "coach", coachId || "")
+                                ? "text-red-500"
+                                : "text-gray-400 dark:text-gray-500"
+                            } ${
+                              !coachId || !canFavorite
+                                ? "cursor-not-allowed opacity-60"
+                                : favoriteAnimatingId === `coach-${coachId}`
+                                ? "scale-110"
+                                : ""
+                            }`}
+                          >
+                            <Heart
+                              className="w-4 h-4"
+                              fill={
+                                isFavorited(favorites, "coach", coachId || "")
+                                  ? "currentColor"
+                                  : "none"
+                              }
+                            />
+                          </button>
                         </div>
                       </div>
                     );
@@ -1086,6 +1177,49 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                               </div>
                             )}
                           </div>
+                          <button
+                            aria-label={
+                              isFavorited(
+                                favorites,
+                                "facility",
+                                facility._id || ""
+                              )
+                                ? "Favorited"
+                                : "Add to favorites"
+                            }
+                            onClick={(e) =>
+                              handleFavoriteClick(
+                                e,
+                                "facility",
+                                facility._id,
+                                facility
+                              )
+                            }
+                            disabled={
+                              !facility._id || !canFavorite || isSavingFavorite
+                            }
+                            className={`ml-auto p-2 rounded-full border border-transparent hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors transition-transform ${
+                              isFavorited(favorites, "facility", facility._id)
+                                ? "text-red-500"
+                                : "text-gray-400 dark:text-gray-500"
+                            } ${
+                              !facility._id || !canFavorite
+                                ? "cursor-not-allowed opacity-60"
+                                : favoriteAnimatingId ===
+                                  `facility-${facility._id}`
+                                ? "scale-110"
+                                : ""
+                            }`}
+                          >
+                            <Heart
+                              className="w-4 h-4"
+                              fill={
+                                isFavorited(favorites, "facility", facility._id)
+                                  ? "currentColor"
+                                  : "none"
+                              }
+                            />
+                          </button>
                         </div>
                       </div>
                     );
@@ -1146,7 +1280,9 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                                 src={
                                   typeof club.photo === "string"
                                     ? club.photo
-                                    : `${EP.API_ASSETS_BASE}/${(club.photo as any).path}`.replace(/\\/g, "/")
+                                    : `${EP.API_ASSETS_BASE}/${
+                                        (club.photo as any).path
+                                      }`.replace(/\\/g, "/")
                                 }
                                 alt={club.name}
                                 className="w-10 h-10 rounded-full object-cover"
@@ -1191,7 +1327,9 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                                 src={
                                   typeof group.photo === "string"
                                     ? group.photo
-                                    : `${EP.API_ASSETS_BASE}/${(group.photo as any).path}`.replace(/\\/g, "/")
+                                    : `${EP.API_ASSETS_BASE}/${
+                                        (group.photo as any).path
+                                      }`.replace(/\\/g, "/")
                                 }
                                 alt={group.name}
                                 className="w-10 h-10 rounded-full object-cover"
