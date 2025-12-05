@@ -206,16 +206,6 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   const [companies, setCompanies] = useState<any[]>(initialCompanies);
   const [editingCompany, setEditingCompany] = useState<any | null>(null);
   const [isFindModalOpen, setIsFindModalOpen] = useState(false);
-  const [isFavoritesListOpen, setIsFavoritesListOpen] = useState(false);
-  const [selectedFavoriteCoach, setSelectedFavoriteCoach] = useState<
-    string | null
-  >(null);
-  const [selectedFavoriteFacility, setSelectedFavoriteFacility] = useState<
-    any | null
-  >(null);
-  const [selectedFavoriteEvent, setSelectedFavoriteEvent] = useState<
-    any | null
-  >(null);
   const [isLoadingFacilities, setIsLoadingFacilities] = useState(false);
   const [isLoadingCompanies, setIsLoadingCompanies] = useState(false);
   const [facilityError, setFacilityError] = useState<string | null>(null);
@@ -844,10 +834,10 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
         </p>
       </div>
 
-      <div className="flex justify-around mb-6 sm:mb-8 text-center gap-3">
+      <div className="flex justify-between mb-6 sm:mb-8 text-center gap-3">
         <button
-          onClick={() => setIsFavoritesListOpen(true)}
-          className="flex flex-col items-center hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-2 rounded-lg transition-colors"
+          onClick={() => router.push("/favorites")}
+          className="flex-1 flex flex-col items-center border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-2 rounded-lg transition-colors"
         >
           <div className="font-bold text-gray-800 dark:text-white text-sm sm:text-base flex items-center gap-1">
             <Heart className="w-4 h-4 text-red-500" />
@@ -859,7 +849,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
         </button>
         <button
           onClick={() => router.push("/followings")}
-          className="flex flex-col items-center hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-2 rounded-lg transition-colors"
+          className="flex-1 flex flex-col items-center border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-2 rounded-lg transition-colors"
         >
           <div className="font-bold text-gray-800 dark:text-white text-sm sm:text-base flex items-center gap-1">
             <Users className="w-4 h-4 text-cyan-500" />
@@ -869,22 +859,6 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             Following
           </div>
         </button>
-        <div>
-          <div className="font-bold text-gray-800 dark:text-white text-sm sm:text-base">
-            0
-          </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            New Referrals
-          </div>
-        </div>
-        <div>
-          <div className="font-bold text-gray-800 dark:text-white text-sm sm:text-base">
-            0
-          </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            New Deals
-          </div>
-        </div>
       </div>
 
       <nav className="space-y-1">
@@ -1802,210 +1776,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
         </div>
       )}
 
-      {/* Favorites List Modal */}
-      {isFavoritesListOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl mx-auto max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white flex items-center gap-2">
-                <Heart className="w-5 h-5 text-red-500" />
-                My Favorites
-              </h2>
-              <button
-                onClick={() => setIsFavoritesListOpen(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-4 sm:p-6 dark:bg-gray-800">
-              {totalFavorites === 0 ? (
-                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                  <Heart className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
-                  <p className="text-sm mb-2">No favorites yet</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500">
-                    Add coaches, facilities, or events to your favorites
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Favorite Coaches */}
-                  {favorites.coach && favorites.coach.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                        <Users className="w-4 h-4 text-cyan-500" />
-                        Coaches ({favorites.coach.length})
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {favorites.coach.map((coach: any) => (
-                          <div
-                            key={coach._id}
-                            onClick={() => {
-                              setSelectedFavoriteCoach(coach.coach);
-                              setIsFavoritesListOpen(false);
-                            }}
-                            className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-md transition-shadow cursor-pointer hover:border-cyan-300 dark:hover:border-cyan-700 bg-white dark:bg-gray-700 flex items-center gap-3"
-                          >
-                            <div className="w-12 h-12 bg-cyan-100 dark:bg-cyan-900/50 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
-                              {coach.photo?.path ? (
-                                <img
-                                  src={`${EP.API_ASSETS_BASE}/${coach.photo.path}`}
-                                  alt={`${coach.firstName} ${coach.lastName}`}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <Users className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-gray-800 dark:text-white truncate">
-                                {coach.firstName} {coach.lastName}
-                              </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                Coach
-                              </p>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-gray-400" />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Favorite Facilities */}
-                  {favorites.facility && favorites.facility.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                        <Home className="w-4 h-4 text-green-500" />
-                        Facilities ({favorites.facility.length})
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {favorites.facility.map((facility: any) => (
-                          <div
-                            key={facility._id}
-                            onClick={() => {
-                              setSelectedFavoriteFacility(facility);
-                              setIsFavoritesListOpen(false);
-                            }}
-                            className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-md transition-shadow cursor-pointer hover:border-green-300 dark:hover:border-green-700 bg-white dark:bg-gray-700 flex items-center gap-3"
-                          >
-                            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
-                              {facility.photo?.path ? (
-                                <img
-                                  src={`${EP.API_ASSETS_BASE}/${facility.photo.path}`}
-                                  alt={facility.name}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <Home className="w-6 h-6 text-green-600 dark:text-green-400" />
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-gray-800 dark:text-white truncate">
-                                {facility.name}
-                              </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                {facility.address}
-                              </p>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-gray-400" />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Favorite Events */}
-                  {favorites.event && favorites.event.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-purple-500" />
-                        Events ({favorites.event.length})
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {favorites.event.map((event: any) => (
-                          <div
-                            key={event._id}
-                            onClick={() => {
-                              setSelectedFavoriteEvent(event);
-                              setIsFavoritesListOpen(false);
-                            }}
-                            className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-md transition-shadow cursor-pointer hover:border-purple-300 dark:hover:border-purple-700 bg-white dark:bg-gray-700 flex items-center gap-3"
-                          >
-                            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
-                              {event.photo?.path ? (
-                                <img
-                                  src={`${EP.API_ASSETS_BASE}/${event.photo.path}`}
-                                  alt={event.name}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <Calendar className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-gray-800 dark:text-white truncate">
-                                {event.name}
-                              </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                {event.startTime
-                                  ? new Date(
-                                      event.startTime
-                                    ).toLocaleDateString()
-                                  : "No date"}
-                              </p>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-gray-400" />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex justify-end gap-3 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
-              <button
-                onClick={() => setIsFavoritesListOpen(false)}
-                className="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Favorite Coach Detail Modal */}
-      <UserProfileModal
-        isOpen={!!selectedFavoriteCoach}
-        onClose={() => setSelectedFavoriteCoach(null)}
-        userId={selectedFavoriteCoach}
-        context="coach"
-      />
-
-      {/* Favorite Facility Detail Modal */}
-      <FacilityDetailsModal
-        isOpen={!!selectedFavoriteFacility}
-        onClose={() => setSelectedFavoriteFacility(null)}
-        facility={selectedFavoriteFacility}
-      />
-
-      {/* Favorite Event Detail Modal */}
-      <ViewEventModal
-        isOpen={!!selectedFavoriteEvent}
-        onClose={() => setSelectedFavoriteEvent(null)}
-        event={selectedFavoriteEvent}
-        onCoachClick={(coachId) => {
-          setSelectedFavoriteEvent(null);
-          setSelectedFavoriteCoach(coachId);
-        }}
-      />
+      {/* Favorites now live on /favorites page */}
 
       {/* Logout Button at Bottom */}
       <div className="mt-auto pt-6 border-t border-gray-200 dark:border-gray-700">

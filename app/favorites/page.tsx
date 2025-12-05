@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import FollowingsContent from "@/components/follow/FollowingsContent";
+import FavoritesContent from "@/components/favorite/FavoritesContent";
 import LeftSidebar from "@/components/LeftSidebar";
 import RightSidebar from "@/components/RightSidebar";
 import Header from "@/components/Header";
 import Link from "next/link";
 
-const FollowingsPage = () => {
+const FavoritesPage = () => {
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -33,7 +33,7 @@ const FollowingsPage = () => {
                 Back
               </Link>
             </div>
-            <FollowingsContent />
+            <FavoritesContent />
           </div>
         </div>
       </div>
@@ -50,4 +50,4 @@ const FollowingsPage = () => {
   );
 };
 
-export default FollowingsPage;
+export default FavoritesPage;
