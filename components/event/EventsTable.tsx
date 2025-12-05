@@ -18,6 +18,7 @@ import { fetchJSON } from "@/app/lib/api";
 import {
   useFavorites,
   useAddFavorite,
+  useRemoveFavorite,
   isFavorited,
   defaultFavorites,
 } from "@/app/hooks/useFavorites";
@@ -127,6 +128,8 @@ const EventsTable: React.FC<EventsTableProps> = ({
   const favorites = favoritesData?.data || defaultFavorites;
   const { mutateAsync: addFavoriteAsync, isPending: isSavingFavorite } =
     useAddFavorite();
+  const { mutateAsync: removeFavoriteAsync, isPending: isRemovingFavorite } =
+    useRemoveFavorite();
   const canFavorite = !!user?.participant;
   const [favoriteAnimatingId, setFavoriteAnimatingId] = useState<string | null>(
     null
@@ -242,13 +245,18 @@ const EventsTable: React.FC<EventsTableProps> = ({
       return;
     }
     const animKey = `event-${eventItem._id}`;
+    const alreadyFav = isFavorited(favorites, "event", eventItem._id);
     setFavoriteAnimatingId(animKey);
     try {
-      await addFavoriteAsync({
-        type: "event",
-        id: eventItem._id,
-        entity: eventItem,
-      });
+      if (alreadyFav) {
+        await removeFavoriteAsync({ type: "event", id: eventItem._id });
+      } else {
+        await addFavoriteAsync({
+          type: "event",
+          id: eventItem._id,
+          entity: eventItem,
+        });
+      }
     } finally {
       setTimeout(() => {
         setFavoriteAnimatingId((curr) => (curr === animKey ? null : curr));
@@ -681,7 +689,11 @@ const EventsTable: React.FC<EventsTableProps> = ({
                               : "Add to favorites"
                           }
                           onClick={(e) => handleFavoriteEvent(e, event)}
-                          disabled={!canFavorite || isSavingFavorite}
+                          disabled={
+                            !canFavorite ||
+                            isSavingFavorite ||
+                            isRemovingFavorite
+                          }
                           className={`p-2 rounded-full border border-transparent hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors transition-transform ${
                             isFavorited(favorites, "event", event._id)
                               ? "text-red-500"

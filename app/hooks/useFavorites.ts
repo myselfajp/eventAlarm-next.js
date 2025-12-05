@@ -19,6 +19,8 @@ const endpointMap: Record<FavoriteKind, string> = {
   event: EP.PARTICIPANT.favoriteEvent,
 };
 
+const removeEndpoint = (type: FavoriteKind) => EP.PARTICIPANT.unfavorite(type);
+
 const payloadKeyMap: Record<FavoriteKind, string> = {
   coach: "coachId",
   facility: "facilityId",
@@ -73,6 +75,32 @@ const mergeFavorites = (
   }
 
   result[type] = updatedList;
+  return result;
+};
+
+const removeFromFavorites = (
+  previousData: any,
+  serverData: any,
+  type: FavoriteKind,
+  id: string
+) => {
+  const base =
+    serverData && typeof serverData === "object"
+      ? serverData
+      : previousData && typeof previousData === "object"
+      ? previousData
+      : defaultFavorites;
+
+  const result: Record<FavoriteKind, any[]> = {
+    coach: Array.isArray(base?.coach) ? [...base.coach] : [],
+    facility: Array.isArray(base?.facility) ? [...base.facility] : [],
+    event: Array.isArray(base?.event) ? [...base.event] : [],
+  };
+
+  result[type] = (result[type] || []).filter(
+    (entry) => getFavoriteId(entry, type) !== id
+  );
+
   return result;
 };
 
@@ -148,6 +176,58 @@ export function useAddFavorite() {
         entity
       );
 
+      queryClient.setQueryData(key, (old: any) => ({
+        ...(old || {}),
+        data: merged,
+      }));
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["favorites", user?._id] });
+    },
+  });
+}
+
+export function useRemoveFavorite() {
+  const { data: user } = useMe();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ type, id }: { type: FavoriteKind; id: string }) => {
+      const endpoint = removeEndpoint(type);
+      const payloadKey = payloadKeyMap[type];
+      const response = await fetchJSON(endpoint, {
+        method: "DELETE",
+        body: { [payloadKey]: id },
+      });
+      return { response, type, id };
+    },
+    onMutate: async ({ type, id }) => {
+      const key = ["favorites", user?._id];
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData(key);
+      const previousData = (previous as any)?.data ?? previous;
+      const optimistic = removeFromFavorites(previousData, null, type, id);
+      queryClient.setQueryData(key, (old: any) => ({
+        ...(old || {}),
+        data: optimistic,
+      }));
+      return { previous, key };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(context.key, context.previous);
+      }
+    },
+    onSuccess: ({ response, type, id }) => {
+      const key = ["favorites", user?._id];
+      const previous = queryClient.getQueryData(key);
+      const previousData = (previous as any)?.data ?? previous;
+      const merged = removeFromFavorites(
+        previousData,
+        response?.data,
+        type,
+        id
+      );
       queryClient.setQueryData(key, (old: any) => ({
         ...(old || {}),
         data: merged,

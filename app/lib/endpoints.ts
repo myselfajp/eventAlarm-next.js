@@ -46,6 +46,8 @@ export const EP = {
     favoriteCoach: `${PARTICIPANT_DATA_API}/favorite-coach`,
     favoriteFacility: `${PARTICIPANT_DATA_API}/favorite-facility`,
     favoriteEvent: `${PARTICIPANT_DATA_API}/favorite-event`,
+    unfavorite: (type: "coach" | "facility" | "event") =>
+      `${PARTICIPANT_DATA_API}/favorite/${type}`,
   },
   COACH: {
     createProfileAndBranch: `${COACH_DATA_API}/create-branch`,

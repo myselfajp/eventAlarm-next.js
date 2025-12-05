@@ -44,6 +44,7 @@ import {
   isFavorited,
   useAddFavorite,
   useFavorites,
+  useRemoveFavorite,
 } from "@/app/hooks/useFavorites";
 
 interface FindModalProps {
@@ -100,6 +101,8 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
   const favorites = favoritesData?.data || defaultFavorites;
   const { mutateAsync: addFavoriteAsync, isPending: isSavingFavorite } =
     useAddFavorite();
+  const { mutateAsync: removeFavoriteAsync, isPending: isRemovingFavorite } =
+    useRemoveFavorite();
   const canFavorite = !!user?.participant;
   const [favoriteAnimatingId, setFavoriteAnimatingId] = useState<string | null>(
     null
@@ -450,10 +453,15 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
       alert("Create a participant profile to add favorites.");
       return;
     }
+    const currentlyFav = isFavorited(favorites, type, id);
     const animKey = `${type}-${id}`;
     setFavoriteAnimatingId(animKey);
     try {
-      await addFavoriteAsync({ type, id, entity });
+      if (currentlyFav) {
+        await removeFavoriteAsync({ type, id });
+      } else {
+        await addFavoriteAsync({ type, id, entity });
+      }
     } finally {
       setTimeout(() => {
         setFavoriteAnimatingId((curr) => (curr === animKey ? null : curr));
@@ -1076,7 +1084,10 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                               )
                             }
                             disabled={
-                              !coachId || !canFavorite || isSavingFavorite
+                              !coachId ||
+                              !canFavorite ||
+                              isSavingFavorite ||
+                              isRemovingFavorite
                             }
                             className={`ml-auto p-2 rounded-full border border-transparent hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors transition-transform ${
                               isFavorited(favorites, "coach", coachId || "")
@@ -1196,7 +1207,10 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
                               )
                             }
                             disabled={
-                              !facility._id || !canFavorite || isSavingFavorite
+                              !facility._id ||
+                              !canFavorite ||
+                              isSavingFavorite ||
+                              isRemovingFavorite
                             }
                             className={`ml-auto p-2 rounded-full border border-transparent hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors transition-transform ${
                               isFavorited(favorites, "facility", facility._id)
