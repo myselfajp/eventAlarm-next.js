@@ -536,14 +536,14 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl mx-auto max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-          <h2 className="text-xl font-semibold text-gray-800">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-3xl mx-auto max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
             Add a New Event
           </h2>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -554,10 +554,10 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Event Image <span className="text-red-500">*</span>
                   </label>
-                  <div className="relative border-2 border-dashed border-gray-300 rounded-lg overflow-hidden hover:border-cyan-400 transition-colors">
+                  <div className="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden hover:border-cyan-400 dark:hover:border-cyan-500 transition-colors">
                     {photoPreview ? (
                       <div className="relative">
                         <img
@@ -568,16 +568,16 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                         <button
                           type="button"
                           onClick={removePhoto}
-                          className="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow-lg hover:bg-gray-100 transition-colors"
+                          className="absolute top-2 right-2 bg-white dark:bg-gray-700 rounded-full p-1.5 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                         >
-                          <X className="w-3.5 h-3.5 text-gray-600" />
+                          <X className="w-3.5 h-3.5 text-gray-600 dark:text-gray-300" />
                         </button>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center h-48 space-y-2 p-4">
-                        <ImageIcon className="w-12 h-12 text-gray-300" />
-                        <Upload className="w-4 h-4 text-gray-400" />
-                        <p className="text-xs text-gray-500 text-center">
+                        <ImageIcon className="w-12 h-12 text-gray-300 dark:text-gray-600" />
+                        <Upload className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                        <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
                           Upload Image
                         </p>
                         <input
@@ -589,14 +589,14 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                       </div>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">png, jpg, jpeg</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">png, jpg, jpeg</p>
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Event Banner <span className="text-red-500">*</span>
                   </label>
-                  <div className="relative border-2 border-dashed border-gray-300 rounded-lg overflow-hidden hover:border-cyan-400 transition-colors">
+                  <div className="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden hover:border-cyan-400 dark:hover:border-cyan-500 transition-colors">
                     {bannerPreview ? (
                       <div className="relative">
                         <img
@@ -607,16 +607,16 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                         <button
                           type="button"
                           onClick={removeBanner}
-                          className="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow-lg hover:bg-gray-100 transition-colors"
+                          className="absolute top-2 right-2 bg-white dark:bg-gray-700 rounded-full p-1.5 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                         >
-                          <X className="w-3.5 h-3.5 text-gray-600" />
+                          <X className="w-3.5 h-3.5 text-gray-600 dark:text-gray-300" />
                         </button>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center h-48 space-y-2 p-4">
-                        <ImageIcon className="w-12 h-12 text-gray-300" />
-                        <Upload className="w-4 h-4 text-gray-400" />
-                        <p className="text-xs text-gray-500 text-center">
+                        <ImageIcon className="w-12 h-12 text-gray-300 dark:text-gray-600" />
+                        <Upload className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                        <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
                           Upload Banner
                         </p>
                         <input
@@ -628,12 +628,12 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                       </div>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">png, jpg, jpeg</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">png, jpg, jpeg</p>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Event Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -641,7 +641,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                   placeholder="What's Your Event's Name"
-                  className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                   disabled={isAnyLoading}
                   required
                 />
@@ -649,14 +649,14 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="relative dropdown-container">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Club <span className="text-red-500">*</span>
                   </label>
                   <button
                     type="button"
                     onClick={() => setShowClubDropdown(!showClubDropdown)}
                     disabled={isAnyLoading}
-                    className="w-full px-4 py-2.5 text-sm text-left bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-2.5 text-sm text-left bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed dark:text-white"
                   >
                     <span className="truncate">
                       {loadingClubs
@@ -667,7 +667,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                     <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0" />
                   </button>
                   {showClubDropdown && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                       {clubs.map((club) => (
                         <button
                           key={club._id}
@@ -678,10 +678,10 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                             setGroups([]);
                             setShowClubDropdown(false);
                           }}
-                          className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 ${
+                          className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-600 ${
                             formData.club === club._id
-                              ? "bg-cyan-50 text-cyan-600"
-                              : "text-gray-700"
+                              ? "bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400"
+                              : "text-gray-700 dark:text-gray-200"
                           }`}
                         >
                           {club.name}
@@ -692,7 +692,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                 </div>
 
                 <div className="relative dropdown-container">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Group <span className="text-red-500">*</span>
                   </label>
                   <button
@@ -703,7 +703,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                       }
                     }}
                     disabled={!formData.club || isAnyLoading}
-                    className="w-full px-4 py-2.5 text-sm text-left bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                    className="w-full px-4 py-2.5 text-sm text-left bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-600 dark:text-white"
                   >
                     <span className="truncate">
                       {loadingGroups
@@ -714,7 +714,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                     <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0" />
                   </button>
                   {showGroupDropdown && formData.club && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                       {groups.map((group) => (
                         <button
                           key={group._id}
@@ -723,10 +723,10 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                             handleInputChange("group", group._id);
                             setShowGroupDropdown(false);
                           }}
-                          className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 ${
+                          className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-600 ${
                             formData.group === group._id
-                              ? "bg-cyan-50 text-cyan-600"
-                              : "text-gray-700"
+                              ? "bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400"
+                              : "text-gray-700 dark:text-gray-200"
                           }`}
                         >
                           {group.name}
@@ -737,14 +737,14 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                 </div>
 
                 <div className="relative dropdown-container">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Event Style <span className="text-red-500">*</span>
                   </label>
                   <button
                     type="button"
                     onClick={() => setShowStyleDropdown(!showStyleDropdown)}
                     disabled={isAnyLoading}
-                    className="w-full px-4 py-2.5 text-sm text-left bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-2.5 text-sm text-left bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed dark:text-white"
                   >
                     <span className="truncate">
                       {loadingStyles
@@ -755,7 +755,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                     <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0" />
                   </button>
                   {showStyleDropdown && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                       {eventStyles.map((style) => (
                         <button
                           key={style._id}
@@ -764,10 +764,10 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                             handleInputChange("style", style._id);
                             setShowStyleDropdown(false);
                           }}
-                          className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 ${
+                          className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-600 ${
                             formData.style === style._id
-                              ? "bg-cyan-50 text-cyan-600"
-                              : "text-gray-700"
+                              ? "bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400"
+                              : "text-gray-700 dark:text-gray-200"
                           }`}
                         >
                           {style.name}
@@ -780,7 +780,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="relative dropdown-container">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Sport Group <span className="text-red-500">*</span>
                   </label>
                   <button
@@ -789,7 +789,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                       setShowSportGroupDropdown(!showSportGroupDropdown)
                     }
                     disabled={isAnyLoading}
-                    className="w-full px-4 py-2.5 text-sm text-left bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-2.5 text-sm text-left bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed dark:text-white"
                   >
                     <span className="truncate">
                       {loadingSportGroups
@@ -800,7 +800,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                     <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0" />
                   </button>
                   {showSportGroupDropdown && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                       {sportGroups.map((sg) => (
                         <button
                           key={sg._id}
@@ -809,10 +809,10 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                             handleInputChange("sportGroup", sg._id);
                             setShowSportGroupDropdown(false);
                           }}
-                          className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 ${
+                          className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-600 ${
                             formData.sportGroup === sg._id
-                              ? "bg-cyan-50 text-cyan-600"
-                              : "text-gray-700"
+                              ? "bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400"
+                              : "text-gray-700 dark:text-gray-200"
                           }`}
                         >
                           {sg.name}
@@ -823,7 +823,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                 </div>
 
                 <div className="relative dropdown-container">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Sport <span className="text-red-500">*</span>
                   </label>
                   <button
@@ -834,7 +834,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                       }
                     }}
                     disabled={!formData.sportGroup || isAnyLoading}
-                    className="w-full px-4 py-2.5 text-sm text-left bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                    className="w-full px-4 py-2.5 text-sm text-left bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-600 dark:text-white"
                   >
                     <span className="truncate">
                       {loadingSports
@@ -845,7 +845,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                     <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0" />
                   </button>
                   {showSportDropdown && formData.sportGroup && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                       {sports.map((sport) => (
                         <button
                           key={sport._id}
@@ -854,10 +854,10 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                             handleInputChange("sport", sport._id);
                             setShowSportDropdown(false);
                           }}
-                          className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 ${
+                          className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-600 ${
                             formData.sport === sport._id
-                              ? "bg-cyan-50 text-cyan-600"
-                              : "text-gray-700"
+                              ? "bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400"
+                              : "text-gray-700 dark:text-gray-200"
                           }`}
                         >
                           {sport.name}
@@ -868,13 +868,13 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                 </div>
               </div>
 
-              <p className="text-xs text-orange-600 bg-orange-50 px-3 py-2 rounded-lg">
+              <p className="text-xs text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 px-3 py-2 rounded-lg">
                 Exactly one of Facility, Salon, or Location must be provided.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="relative dropdown-container">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Facility
                   </label>
                   <button
@@ -883,7 +883,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                       setShowFacilityDropdown(!showFacilityDropdown)
                     }
                     disabled={isAnyLoading}
-                    className="w-full px-4 py-2.5 text-sm text-left bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-2.5 text-sm text-left bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed dark:text-white"
                   >
                     <span className="truncate">
                       {loadingFacilities
@@ -894,14 +894,14 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                     <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0" />
                   </button>
                   {showFacilityDropdown && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                       <button
                         type="button"
                         onClick={() => {
                           handleInputChange("facility", "");
                           setShowFacilityDropdown(false);
                         }}
-                        className="w-full px-4 py-2 text-sm text-left hover:bg-gray-50 text-gray-500"
+                        className="w-full px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-400"
                       >
                         None
                       </button>
@@ -913,10 +913,10 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                             handleInputChange("facility", facility._id);
                             setShowFacilityDropdown(false);
                           }}
-                          className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 ${
+                          className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-600 ${
                             formData.facility === facility._id
-                              ? "bg-cyan-50 text-cyan-600"
-                              : "text-gray-700"
+                              ? "bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400"
+                              : "text-gray-700 dark:text-gray-200"
                           }`}
                         >
                           {facility.name}
@@ -927,7 +927,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                 </div>
 
                 <div className="relative dropdown-container">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Salon
                   </label>
                   <button
@@ -938,7 +938,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                       }
                     }}
                     disabled={!formData.facility || isAnyLoading}
-                    className="w-full px-4 py-2.5 text-sm text-left bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                    className="w-full px-4 py-2.5 text-sm text-left bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-600 dark:text-white"
                   >
                     <span className="truncate">
                       {loadingSalons
@@ -949,14 +949,14 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                     <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0" />
                   </button>
                   {showSalonDropdown && formData.facility && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                       <button
                         type="button"
                         onClick={() => {
                           handleInputChange("salon", "");
                           setShowSalonDropdown(false);
                         }}
-                        className="w-full px-4 py-2 text-sm text-left hover:bg-gray-50 text-gray-500"
+                        className="w-full px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-400"
                       >
                         None
                       </button>
@@ -968,10 +968,10 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                             handleInputChange("salon", salon._id);
                             setShowSalonDropdown(false);
                           }}
-                          className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 ${
+                          className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-600 ${
                             formData.salon === salon._id
-                              ? "bg-cyan-50 text-cyan-600"
-                              : "text-gray-700"
+                              ? "bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400"
+                              : "text-gray-700 dark:text-gray-200"
                           }`}
                         >
                           {salon.name}
@@ -983,7 +983,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Event Location
                 </label>
                 <textarea
@@ -993,13 +993,13 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                   }
                   placeholder="If there are no Facility/Salon"
                   rows={3}
-                  className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors resize-none"
+                  className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors resize-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Event Start Date <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -1008,13 +1008,13 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                     onChange={(e) =>
                       handleInputChange("startDate", e.target.value)
                     }
-                    className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
+                    className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors dark:bg-gray-700 dark:text-white"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Event Start Time <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -1023,7 +1023,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                     onChange={(e) =>
                       handleInputChange("startTime", e.target.value)
                     }
-                    className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
+                    className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors dark:bg-gray-700 dark:text-white"
                     required
                   />
                 </div>
@@ -1031,7 +1031,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Event End Date
                   </label>
                   <input
@@ -1040,12 +1040,12 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                     onChange={(e) =>
                       handleInputChange("endDate", e.target.value)
                     }
-                    className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
+                    className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors dark:bg-gray-700 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Event End Time
                   </label>
                   <input
@@ -1054,14 +1054,14 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                     onChange={(e) =>
                       handleInputChange("endTime", e.target.value)
                     }
-                    className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
+                    className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors dark:bg-gray-700 dark:text-white"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Capacity <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -1071,20 +1071,20 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                       handleInputChange("capacity", e.target.value)
                     }
                     placeholder="Capacity"
-                    className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
+                    className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                     required
                     min="1"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Level <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={formData.level}
                     onChange={(e) => handleInputChange("level", e.target.value)}
-                    className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors bg-white"
+                    className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors bg-white dark:bg-gray-700 dark:text-white"
                     required
                   >
                     <option value="">Select Level</option>
@@ -1102,13 +1102,13 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Type <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={formData.type}
                     onChange={(e) => handleInputChange("type", e.target.value)}
-                    className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors bg-white"
+                    className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors bg-white dark:bg-gray-700 dark:text-white"
                     required
                   >
                     <option value="">Select Type</option>
@@ -1121,7 +1121,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Price Type <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -1129,7 +1129,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                     onChange={(e) =>
                       handleInputChange("priceType", e.target.value)
                     }
-                    className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors bg-white"
+                    className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors bg-white dark:bg-gray-700 dark:text-white"
                     required
                   >
                     <option value="">Select Price Type</option>
@@ -1140,7 +1140,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Participant Fee
                   </label>
                   <input
@@ -1150,13 +1150,13 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                       handleInputChange("participationFee", e.target.value)
                     }
                     placeholder="Participant Fee"
-                    className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:cursor-not-allowed dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                     disabled={formData.priceType === "Free"}
                     min="0"
                     step="0.01"
                   />
                   {formData.priceType === "Free" && (
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       Disabled if Price Type is "Free".
                     </p>
                   )}
@@ -1164,7 +1164,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Equipment
                 </label>
                 <textarea
@@ -1174,7 +1174,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                   }
                   placeholder="Equipment"
                   rows={3}
-                  className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors resize-none"
+                  className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors resize-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                 />
               </div>
 
@@ -1187,11 +1187,11 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                     onChange={(e) =>
                       handleInputChange("private", e.target.checked)
                     }
-                    className="w-4 h-4 text-cyan-500 border-gray-300 rounded focus:ring-cyan-500 focus:ring-2"
+                    className="w-4 h-4 text-cyan-500 border-gray-300 dark:border-gray-600 rounded focus:ring-cyan-500 focus:ring-2"
                   />
                   <label
                     htmlFor="isPrivate"
-                    className="ml-2 text-sm font-medium text-gray-700"
+                    className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
                     Is Private?
                   </label>
@@ -1205,11 +1205,11 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
                     onChange={(e) =>
                       handleInputChange("isRecurring", e.target.checked)
                     }
-                    className="w-4 h-4 text-cyan-500 border-gray-300 rounded focus:ring-cyan-500 focus:ring-2"
+                    className="w-4 h-4 text-cyan-500 border-gray-300 dark:border-gray-600 rounded focus:ring-cyan-500 focus:ring-2"
                   />
                   <label
                     htmlFor="isRecurring"
-                    className="ml-2 text-sm font-medium text-gray-700"
+                    className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
                     Is Recurring?
                   </label>
@@ -1219,16 +1219,16 @@ const AddEventModal: React.FC<AddEventModalProps> = ({
           </fieldset>
 
           {error && (
-            <div className="mt-6 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg">
+            <div className="mt-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
 
-          <div className="flex gap-3 pt-6 mt-6 pb-6 px-6 -mx-6 border-t border-gray-200 sticky bottom-0 bg-white">
+          <div className="flex gap-3 pt-6 mt-6 pb-6 px-6 -mx-6 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
             <button
               type="button"
               onClick={handleClose}
-              className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isAnyLoading}
             >
               Cancel

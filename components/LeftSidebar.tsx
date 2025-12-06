@@ -79,13 +79,13 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isOpen, onShowCalendar }) => 
     <div
       className={`${
         isOpen ? "w-full sm:w-96 md:w-[400px]" : "w-0"
-      } h-screen bg-white border-r border-gray-200 transition-all duration-300 overflow-hidden flex-shrink-0`}
+      } h-screen bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-700 transition-all duration-300 overflow-hidden flex-shrink-0`}
     >
       {userLoading ? (
         <div className="flex items-center justify-center h-full">
           <div className="flex flex-col items-center gap-3">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
-            <p className="text-sm text-gray-500">Loading...</p>
+            <p className="text-sm text-gray-500 dark:text-slate-400">Loading...</p>
           </div>
         </div>
       ) : isLoggedIn ? (

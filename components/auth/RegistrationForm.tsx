@@ -67,20 +67,20 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   };
 
   return (
-    <div className="p-4 h-full flex flex-col justify-start bg-gradient-to-br from-gray-50 to-white overflow-y-auto">
+    <div className="p-4 h-full flex flex-col justify-start bg-gradient-to-br from-gray-50 to-white dark:from-slate-900 dark:to-slate-800 overflow-y-auto">
       {/* Logo/Brand Section */}
-      <div className="text-center mb-6 sticky top-0 bg-gradient-to-br from-gray-50 to-white pt-2 pb-4">
+      <div className="text-center mb-6 sticky top-0 bg-gradient-to-br from-gray-50 to-white dark:from-slate-900 dark:to-slate-800 pt-2 pb-4">
         <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
           <div className="text-white text-xl font-bold">G</div>
         </div>
-        <h1 className="text-xl font-bold text-gray-800 mb-2">
+        <h1 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-2">
           Create an Account
         </h1>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-slate-400">
           Already have an account?{" "}
           <span
             onClick={onToggleForm}
-            className="text-cyan-500 cursor-pointer hover:text-cyan-600 transition-colors font-medium"
+            className="text-cyan-500 dark:text-cyan-400 cursor-pointer hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors font-medium"
           >
             Sign in here
           </span>
@@ -88,12 +88,12 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
       </div>
 
       {/* Registration Form */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-5">
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name Fields */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                 First Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -101,12 +101,16 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="First name"
-                className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
+                className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-slate-600 rounded-lg 
+                           bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100
+                           placeholder:text-gray-400 dark:placeholder:text-slate-500
+                           focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 dark:focus:border-cyan-400 
+                           transition-colors"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                 Last Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -114,7 +118,11 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Last name"
-                className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
+                className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-slate-600 rounded-lg 
+                           bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100
+                           placeholder:text-gray-400 dark:placeholder:text-slate-500
+                           focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 dark:focus:border-cyan-400 
+                           transition-colors"
                 required
               />
             </div>
@@ -122,7 +130,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
 
           {/* Phone Number */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
               Phone Number <span className="text-red-500">*</span>
             </label>
             <input
@@ -130,28 +138,35 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               placeholder="+1234567890"
-              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
+              className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-slate-600 rounded-lg 
+                         bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100
+                         placeholder:text-gray-400 dark:placeholder:text-slate-500
+                         focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 dark:focus:border-cyan-400 
+                         transition-colors"
               required
             />
           </div>
 
           {/* Birthday */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
               Birthday <span className="text-red-500">*</span>
             </label>
             <input
               type="date"
               value={birthday}
               onChange={(e) => setBirthday(e.target.value)}
-              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
+              className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-slate-600 rounded-lg 
+                         bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100
+                         focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 dark:focus:border-cyan-400 
+                         transition-colors"
               required
             />
           </div>
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
               Email <span className="text-red-500">*</span>
             </label>
             <input
@@ -159,14 +174,18 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email address"
-              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
+              className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-slate-600 rounded-lg 
+                         bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100
+                         placeholder:text-gray-400 dark:placeholder:text-slate-500
+                         focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 dark:focus:border-cyan-400 
+                         transition-colors"
               required
             />
           </div>
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
               Password <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -175,13 +194,17 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Create a strong password"
-                className="w-full px-3 py-2.5 pr-10 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
+                className="w-full px-3 py-2.5 pr-10 text-sm border border-gray-200 dark:border-slate-600 rounded-lg 
+                           bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100
+                           placeholder:text-gray-400 dark:placeholder:text-slate-500
+                           focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 dark:focus:border-cyan-400 
+                           transition-colors"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
               >
                 {showPassword ? (
                   <EyeOff className="w-4 h-4" />
@@ -190,14 +213,14 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
                 )}
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
               Use 8+ characters with letters, numbers & symbols
             </p>
           </div>
 
           {/* Confirm Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
               Confirm Password <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -206,13 +229,17 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm your password"
-                className="w-full px-3 py-2.5 pr-10 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
+                className="w-full px-3 py-2.5 pr-10 text-sm border border-gray-200 dark:border-slate-600 rounded-lg 
+                           bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100
+                           placeholder:text-gray-400 dark:placeholder:text-slate-500
+                           focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 dark:focus:border-cyan-400 
+                           transition-colors"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
               >
                 {showConfirmPassword ? (
                   <EyeOff className="w-4 h-4" />
@@ -230,21 +257,21 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
               id="terms"
               checked={agreeTerms}
               onChange={(e) => setAgreeTerms(e.target.checked)}
-              className="mt-0.5 w-4 h-4 text-cyan-500 border-gray-300 rounded focus:ring-cyan-500"
+              className="mt-0.5 w-4 h-4 text-cyan-500 border-gray-300 dark:border-slate-600 rounded focus:ring-cyan-500 bg-white dark:bg-slate-900"
             />
             <label
               htmlFor="terms"
-              className="text-sm text-gray-700 leading-relaxed"
+              className="text-sm text-gray-700 dark:text-slate-300 leading-relaxed"
             >
               I Agree{" "}
-              <span className="text-cyan-500 cursor-pointer hover:text-cyan-600 transition-colors">
+              <span className="text-cyan-500 dark:text-cyan-400 cursor-pointer hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors">
                 Terms and conditions.
               </span>
             </label>
           </div>
 
           {(validationError || error) && (
-            <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-3 py-2 rounded-lg">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-600 dark:text-red-400 text-sm px-3 py-2 rounded-lg">
               {validationError ||
                 (error as any)?.message ||
                 "Registration failed"}
@@ -254,7 +281,9 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           <button
             type="submit"
             disabled={isPending}
-            className="w-full bg-cyan-500 hover:bg-cyan-600 disabled:opacity-60 disabled:cursor-not-allowed text-white py-2.5 px-4 rounded-lg transition-colors font-medium shadow-sm hover:shadow-md text-sm"
+            className="w-full bg-cyan-500 hover:bg-cyan-600 dark:bg-cyan-600 dark:hover:bg-cyan-500 
+                       disabled:opacity-60 disabled:cursor-not-allowed 
+                       text-white py-2.5 px-4 rounded-lg transition-colors font-medium shadow-sm hover:shadow-md text-sm"
           >
             {isPending ? "Creating Account..." : "Create Account"}
           </button>

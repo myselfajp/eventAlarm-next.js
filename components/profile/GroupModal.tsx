@@ -232,31 +232,31 @@ const GroupModal: React.FC<GroupModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-auto max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl mx-auto max-h-[90vh] flex flex-col">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 shrink-0">
-          <h2 className="text-xl font-semibold text-gray-800">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 shrink-0">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
             {initialData ? "Edit Group" : "Add Group"}
           </h2>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 dark:bg-gray-800">
           {isSuccess ? (
             <div className="flex flex-col items-center justify-center text-center h-full py-12">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <Check className="w-8 h-8 text-green-600" />
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-4">
+                <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
                 Success!
               </h3>
-              <p className="text-gray-500">
+              <p className="text-gray-500 dark:text-gray-400">
                 Group saved successfully.
               </p>
             </div>
@@ -267,7 +267,7 @@ const GroupModal: React.FC<GroupModalProps> = ({
                 <div className="space-y-4">
                   {!isEditing && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Club <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
@@ -279,31 +279,31 @@ const GroupModal: React.FC<GroupModalProps> = ({
                             onFocus={() => setShowClubDropdown(true)}
                             onBlur={() => setTimeout(() => setShowClubDropdown(false), 200)}
                             placeholder="Search for club..."
-                            className={`w-full px-3 py-2.5 pl-10 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                              errors.club ? "border-red-300 focus:ring-red-200" : "border-gray-200 focus:ring-cyan-500"
+                            className={`w-full px-3 py-2.5 pl-10 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 ${
+                              errors.club ? "border-red-300 focus:ring-red-200 dark:border-red-500" : "border-gray-200 dark:border-gray-600 focus:ring-cyan-500"
                             }`}
                           />
                           <SearchIcon className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         </div>
                         
                         {showClubDropdown && (clubResults.length > 0 || isSearchingClubs || clubSearch.length >= 2) && (
-                          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                             {isSearchingClubs ? (
-                              <div className="p-3 text-sm text-gray-500 text-center">Searching...</div>
+                              <div className="p-3 text-sm text-gray-500 dark:text-gray-400 text-center">Searching...</div>
                             ) : clubResults.length > 0 ? (
                               clubResults.map(club => (
                                 <button
                                   key={club._id}
                                   type="button"
                                   onClick={() => selectClub(club)}
-                                  className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors"
+                                  className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors dark:text-white"
                                 >
                                   <div className="font-medium">{club.name}</div>
-                                  {club.vision && <div className="text-xs text-gray-500 line-clamp-1">{club.vision}</div>}
+                                  {club.vision && <div className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">{club.vision}</div>}
                                 </button>
                               ))
                             ) : clubSearch.length >= 2 ? (
-                              <div className="p-3 text-sm text-gray-500 text-center">No clubs found</div>
+                              <div className="p-3 text-sm text-gray-500 dark:text-gray-400 text-center">No clubs found</div>
                             ) : null}
                           </div>
                         )}
@@ -313,7 +313,7 @@ const GroupModal: React.FC<GroupModalProps> = ({
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Group Name {!initialData && <span className="text-red-500">*</span>}
                     </label>
                     <input
@@ -321,8 +321,8 @@ const GroupModal: React.FC<GroupModalProps> = ({
                       value={formData.name}
                       onChange={(e) => handleInputChange("name", e.target.value)}
                       placeholder="Enter group name"
-                      className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                        errors.name ? "border-red-300 focus:ring-red-200" : "border-gray-200 focus:ring-cyan-500"
+                      className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-colors dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 ${
+                        errors.name ? "border-red-300 focus:ring-red-200 dark:border-red-500" : "border-gray-200 dark:border-gray-600 focus:ring-cyan-500"
                       }`}
                       disabled={isLoading}
                     />
@@ -330,7 +330,7 @@ const GroupModal: React.FC<GroupModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Description
                     </label>
                     <textarea
@@ -338,7 +338,7 @@ const GroupModal: React.FC<GroupModalProps> = ({
                       onChange={(e) => handleInputChange("description", e.target.value)}
                       placeholder="Enter group description"
                       rows={5}
-                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors resize-none"
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors resize-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                       disabled={isLoading}
                     />
                   </div>
@@ -346,12 +346,12 @@ const GroupModal: React.FC<GroupModalProps> = ({
 
                 {/* Right Column - Photo */}
                 <div className="flex flex-col">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Group Photo
                   </label>
                   <div className="flex-1 flex items-center justify-center">
                     <div className="w-full">
-                      <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-cyan-400 transition-colors cursor-pointer">
+                      <div className="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-cyan-400 dark:hover:border-cyan-500 transition-colors cursor-pointer">
                         {photoPreview ? (
                           <div className="flex flex-col items-center space-y-3">
                             <img
@@ -362,12 +362,12 @@ const GroupModal: React.FC<GroupModalProps> = ({
                           </div>
                         ) : (
                           <div className="space-y-3">
-                            <Upload className="w-12 h-12 mx-auto text-gray-400" />
+                            <Upload className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500" />
                             <div>
-                              <p className="text-sm text-gray-600 font-medium">
+                              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
                                 {hasExistingPhoto ? "Change photo" : "Add photo"}
                               </p>
-                              <p className="text-xs text-gray-400">
+                              <p className="text-xs text-gray-400 dark:text-gray-500">
                                 PNG, JPG, JPEG up to 10MB
                               </p>
                             </div>
@@ -392,7 +392,7 @@ const GroupModal: React.FC<GroupModalProps> = ({
         {/* Error Message */}
         {generalError && (
           <div className="px-6 pb-4">
-            <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg">
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm px-4 py-3 rounded-lg">
               {generalError}
             </div>
           </div>
@@ -400,11 +400,11 @@ const GroupModal: React.FC<GroupModalProps> = ({
 
         {/* Modal Footer */}
         {!isSuccess && (
-          <div className="flex gap-3 p-6 border-t border-gray-200 shrink-0">
+          <div className="flex gap-3 p-6 border-t border-gray-200 dark:border-gray-700 shrink-0">
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50"
               disabled={isLoading}
             >
               Cancel

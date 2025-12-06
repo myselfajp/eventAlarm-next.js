@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { X, Menu, Calendar } from "lucide-react";
+import { X, Menu, Calendar, Zap } from "lucide-react";
 import LeftSidebar from "./LeftSidebar";
 import RightSidebar from "./RightSidebar";
 import Header from "./Header";
@@ -9,8 +9,10 @@ import EventsTable from "./event/EventsTable";
 import CoachCalendar from "./CoachCalendar";
 import { fetchJSON } from "@/app/lib/api";
 import { EP } from "@/app/lib/endpoints";
+import { useMe } from "@/app/hooks/useAuth";
 
 const EventsDashboard = () => {
+  const { data: user } = useMe();
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date(2025, 9, 1));
@@ -132,56 +134,84 @@ const EventsDashboard = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <LeftSidebar 
-        isOpen={leftSidebarOpen} 
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-900 overflow-hidden transition-colors duration-300">
+      <LeftSidebar
+        isOpen={leftSidebarOpen}
         onShowCalendar={() => setShowCoachCalendar(true)}
       />
 
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
         <Header
           onLeftSidebarToggle={() => setLeftSidebarOpen(!leftSidebarOpen)}
           onRightSidebarToggle={() => setRightSidebarOpen(!rightSidebarOpen)}
         />
 
-        <div className="p-6">
-          <div className="bg-gradient-to-r from-orange-50 to-blue-50 rounded-lg p-8 mb-6 flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                Good admin theme
-              </h2>
-              <p className="text-gray-600 mb-4">is a tool of enthusiasm</p>
-              <button className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition-colors">
-                Create App
-              </button>
-            </div>
-            <div className="hidden md:block">
-              <img
-                src="/api/placeholder/300/150"
-                alt="Illustration"
-                className="w-80"
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-auto">
+          <div className="p-4 sm:p-6 space-y-6">
+            {/* Welcome Banner */}
+            <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 rounded-2xl p-6 sm:p-8 overflow-hidden">
+              {/* Background decoration */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-orange-500/10 to-pink-500/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4" />
+
+              {/* Grid pattern */}
+              <div
+                className="absolute inset-0 opacity-5"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                }}
               />
+
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="px-3 py-1 bg-cyan-500/20 rounded-full">
+                    <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">
+                      Dashboard
+                    </span>
+                  </div>
+                </div>
+
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 tracking-tight">
+                  Welcome back, {user?.firstName || "User"}!
+                </h1>
+                <p className="text-slate-400 text-base sm:text-lg max-w-xl mb-6">
+                  Your sports platform is thriving. Here's a quick overview
+                  of today's activity and upcoming events.
+                </p>
+
+                <div className="flex flex-wrap gap-3">
+                  <button className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:-translate-y-0.5">
+                    <Zap className="w-4 h-4" />
+                    Create Event
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Events Section */}
+            <div>
+              {showCoachCalendar ? (
+                <CoachCalendar onBack={() => setShowCoachCalendar(false)} />
+              ) : (
+                <EventsTable
+                  events={events}
+                  isLoading={isLoading}
+                  error={error}
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  pagination={pagination}
+                  onPageChange={handlePageChange}
+                  onSearchChange={handleSearchChange}
+                  onSortChange={handleSortChange}
+                  onFilterChange={handleFilterChange}
+                  onPrivateToggle={handlePrivateToggle}
+                  isPrivateFilter={filters.private}
+                />
+              )}
             </div>
           </div>
-
-          {showCoachCalendar ? (
-            <CoachCalendar onBack={() => setShowCoachCalendar(false)} />
-          ) : (
-            <EventsTable
-              events={events}
-              isLoading={isLoading}
-              error={error}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              pagination={pagination}
-              onPageChange={handlePageChange}
-              onSearchChange={handleSearchChange}
-              onSortChange={handleSortChange}
-              onFilterChange={handleFilterChange}
-              onPrivateToggle={handlePrivateToggle}
-              isPrivateFilter={filters.private}
-            />
-          )}
         </div>
       </div>
 
@@ -195,9 +225,11 @@ const EventsDashboard = () => {
         onEventCreated={fetchEvents}
       />
 
+      {/* Mobile Toggle - Left Sidebar */}
       <button
         onClick={() => setLeftSidebarOpen(!leftSidebarOpen)}
-        className="fixed bottom-6 left-6 lg:hidden bg-cyan-500 text-white p-3 rounded-full shadow-lg z-50"
+        className="fixed bottom-6 left-6 lg:hidden bg-gradient-to-r from-cyan-500 to-blue-500 text-white p-3 rounded-full shadow-lg shadow-cyan-500/30 z-50 hover:shadow-cyan-500/50 transition-all duration-200 hover:scale-105"
+        aria-label={leftSidebarOpen ? "Close menu" : "Open menu"}
       >
         {leftSidebarOpen ? (
           <X className="w-6 h-6" />
@@ -206,9 +238,11 @@ const EventsDashboard = () => {
         )}
       </button>
 
+      {/* Mobile Toggle - Right Sidebar */}
       <button
         onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
-        className="fixed bottom-6 right-6 lg:hidden bg-cyan-500 text-white p-3 rounded-full shadow-lg z-50"
+        className="fixed bottom-6 right-6 lg:hidden bg-gradient-to-r from-cyan-500 to-blue-500 text-white p-3 rounded-full shadow-lg shadow-cyan-500/30 z-50 hover:shadow-cyan-500/50 transition-all duration-200 hover:scale-105"
+        aria-label={rightSidebarOpen ? "Close calendar" : "Open calendar"}
       >
         {rightSidebarOpen ? (
           <X className="w-6 h-6" />

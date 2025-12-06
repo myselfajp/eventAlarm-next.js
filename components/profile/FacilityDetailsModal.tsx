@@ -70,16 +70,16 @@ const FacilityDetailsModal: React.FC<FacilityDetailsModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex-shrink-0 p-6 border-b border-gray-200">
+        <div className="flex-shrink-0 p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-800">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
               Facility Details
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 p-1"
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
             >
               <X className="w-6 h-6" />
             </button>
@@ -87,12 +87,12 @@ const FacilityDetailsModal: React.FC<FacilityDetailsModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 dark:bg-gray-800">
           {facility ? (
             <div className="space-y-6">
               {/* Facility Photo and Basic Info */}
               <div className="flex items-center gap-4">
-                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
+                <div className="w-20 h-20 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center">
                   {facility.photo ? (
                     <img
                       src={
@@ -106,15 +106,15 @@ const FacilityDetailsModal: React.FC<FacilityDetailsModalProps> = ({
                       className="w-20 h-20 rounded-full object-cover"
                     />
                   ) : (
-                    <Home className="w-10 h-10 text-green-600" />
+                    <Home className="w-10 h-10 text-green-600 dark:text-green-400" />
                   )}
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900">
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
                     {facility.name}
                   </h3>
-                  <p className="text-gray-600">Sports Facility</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-gray-600 dark:text-gray-400">Sports Facility</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-500">
                     Added {formatDate(facility.createdAt)}
                   </p>
                 </div>
@@ -122,41 +122,41 @@ const FacilityDetailsModal: React.FC<FacilityDetailsModalProps> = ({
 
               {/* Contact Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Phone className="w-5 h-5 text-gray-500" />
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <Phone className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   <div>
-                    <p className="text-sm text-gray-500">Phone</p>
-                    <p className="font-medium">{facility.phone}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Phone</p>
+                    <p className="font-medium dark:text-white">{facility.phone}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Mail className="w-5 h-5 text-gray-500" />
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <Mail className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   <div>
-                    <p className="text-sm text-gray-500">Email</p>
-                    <p className="font-medium">{facility.email}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                    <p className="font-medium dark:text-white">{facility.email}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg md:col-span-2">
-                  <MapPin className="w-5 h-5 text-gray-500" />
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg md:col-span-2">
+                  <MapPin className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   <div>
-                    <p className="text-sm text-gray-500">Address</p>
-                    <p className="font-medium">{facility.address}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Address</p>
+                    <p className="font-medium dark:text-white">{facility.address}</p>
                   </div>
                 </div>
               </div>
 
               {/* Facility Details */}
-              <div className="border-t pt-6">
-                <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <Award className="w-5 h-5 text-green-600" />
+              <div className="border-t dark:border-gray-700 pt-6">
+                <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                  <Award className="w-5 h-5 text-green-600 dark:text-green-400" />
                   Facility Information
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                    <Award className="w-5 h-5 text-green-600" />
+                  <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg">
+                    <Award className="w-5 h-5 text-green-600 dark:text-green-400" />
                     <div>
-                      <p className="text-sm text-gray-600">Main Sport</p>
-                      <p className="font-medium">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Main Sport</p>
+                      <p className="font-medium dark:text-white">
                         {isLoadingSport
                           ? "Loading..."
                           : sportName || facility.mainSport}
@@ -164,32 +164,32 @@ const FacilityDetailsModal: React.FC<FacilityDetailsModalProps> = ({
                     </div>
                   </div>
                   {facility.membershipLevel && (
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <Award className="w-5 h-5 text-green-600" />
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg">
+                      <Award className="w-5 h-5 text-green-600 dark:text-green-400" />
                       <div>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
                           Membership Level
                         </p>
-                        <p className="font-medium">
+                        <p className="font-medium dark:text-white">
                           {facility.membershipLevel}
                         </p>
                       </div>
                     </div>
                   )}
                   {facility.point !== null && (
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                      <Star className="w-5 h-5 text-green-600" />
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg">
+                      <Star className="w-5 h-5 text-green-600 dark:text-green-400" />
                       <div>
-                        <p className="text-sm text-gray-600">Rating</p>
-                        <p className="font-medium">{facility.point}/10</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Rating</p>
+                        <p className="font-medium dark:text-white">{facility.point}/10</p>
                       </div>
                     </div>
                   )}
-                  <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                    <Home className="w-5 h-5 text-green-600" />
+                  <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg">
+                    <Home className="w-5 h-5 text-green-600 dark:text-green-400" />
                     <div>
-                      <p className="text-sm text-gray-600">Type</p>
-                      <p className="font-medium">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Type</p>
+                      <p className="font-medium dark:text-white">
                         {facility.private ? "Private" : "Public"}
                       </p>
                     </div>

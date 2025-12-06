@@ -20,11 +20,11 @@ import {
   Loader2,
   Shield,
   Layers,
+  Heart,
 } from "lucide-react";
 import { useMe } from "@/app/hooks/useAuth";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
-import { fetchJSON } from "@/app/lib/api";
-// import { EP } from "@/app/lib/endpoints";
+import { useRouter } from "next/navigation";
 import ParticipantModal from "./ParticipantModal";
 import CoachModal from "./CoachModal";
 import FacilityModal from "./FacilityModal";
@@ -54,7 +54,12 @@ import {
 } from "@/app/lib/club-api";
 import { editUserPhoto } from "@/app/lib/auth-api";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
+import FacilityDetailsModal from "./FacilityDetailsModal";
+import UserProfileModal from "@/components/UserProfileModal";
+import ViewEventModal from "@/components/event/ViewEventModal";
 import { EP } from "@/app/lib/endpoints";
+import { defaultFavorites, useFavorites } from "@/app/hooks/useFavorites";
+import { useFollows } from "@/app/hooks/useFollows";
 
 interface ProfileSidebarProps {
   onLogout: () => void;
@@ -69,6 +74,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   initialFacilities = [],
   initialCompanies = [],
 }) => {
+  const router = useRouter();
   const { data: user } = useMe();
   const queryClient = useQueryClient();
   const hasParticipantProfile = !!user?.participant;
@@ -118,6 +124,16 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
 
   const myClubs = myClubsData?.data || [];
   const myGroups = myGroupsData?.data || [];
+
+  const { data: favoritesData } = useFavorites();
+  const favorites = favoritesData?.data || defaultFavorites;
+  const totalFavorites =
+    (favorites.coach?.length || 0) +
+    (favorites.facility?.length || 0) +
+    (favorites.event?.length || 0);
+
+  const { data: followsData } = useFollows();
+  const totalFollows = followsData?.counts?.total || 0;
 
   const facilities = React.useMemo(() => {
     if (!user?.facility || !Array.isArray(user.facility)) return [];
@@ -745,7 +761,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
 
       <div className="flex flex-col items-center mb-6 sm:mb-8">
         <div className="relative group">
-          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center mb-3 overflow-hidden bg-gray-100">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center mb-3 overflow-hidden bg-gray-100 dark:bg-gray-700">
             {isPhotoLoading ? (
               <Loader2 className="w-8 h-8 text-cyan-500 animate-spin" />
             ) : user?.photo ? (
@@ -764,7 +780,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
           {/* Coach Badge */}
           {hasCoachProfile && (
             <div
-              className="absolute -top-2 -right-2 z-20 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100"
+              className="absolute -top-2 -right-2 z-20 w-10 h-10 bg-white dark:bg-gray-700 rounded-full flex items-center justify-center shadow-sm border border-gray-100 dark:border-gray-600"
               title="Coach"
             >
               <img
@@ -783,7 +799,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                   e.stopPropagation();
                   fileInputRef.current?.click();
                 }}
-                className="p-1.5 bg-white rounded-full shadow-md border border-gray-200 hover:bg-gray-50 text-gray-600 transition-colors"
+                className="p-1.5 bg-white dark:bg-gray-700 rounded-full shadow-md border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors"
                 title="Change Photo"
               >
                 <Edit className="w-3.5 h-3.5" />
@@ -791,7 +807,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
               {user?.photo && (
                 <button
                   onClick={handlePhotoDelete}
-                  className="p-1.5 bg-white rounded-full shadow-md border border-gray-200 hover:bg-red-50 text-red-500 transition-colors"
+                  className="p-1.5 bg-white dark:bg-gray-700 rounded-full shadow-md border border-gray-200 dark:border-gray-600 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-500 transition-colors"
                   title="Remove Photo"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -808,38 +824,52 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             onChange={handlePhotoUpload}
           />
         </div>
-        <h2 className="font-semibold text-gray-800">
+        <h2 className="font-semibold text-gray-800 dark:text-white">
           {user?.firstName && user?.lastName
             ? `${user.firstName} ${user.lastName}`
             : "User"}
         </h2>
-        <p className="text-sm text-gray-500">{user?.email || ""}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {user?.email || ""}
+        </p>
       </div>
 
-      <div className="flex justify-around mb-6 sm:mb-8 text-center">
-        <div>
-          <div className="font-bold text-gray-800 text-sm sm:text-base">0</div>
-          <div className="text-xs text-gray-500">Total Earnings</div>
-        </div>
-        <div>
-          <div className="font-bold text-gray-800 text-sm sm:text-base">0</div>
-          <div className="text-xs text-gray-500">New Referrals</div>
-        </div>
-        <div>
-          <div className="font-bold text-gray-800 text-sm sm:text-base">0</div>
-          <div className="text-xs text-gray-500">New Deals</div>
-        </div>
+      <div className="flex justify-between mb-6 sm:mb-8 text-center gap-3">
+        <button
+          onClick={() => router.push("/favorites")}
+          className="flex-1 flex flex-col items-center border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-2 rounded-lg transition-colors"
+        >
+          <div className="font-bold text-gray-800 dark:text-white text-sm sm:text-base flex items-center gap-1">
+            <Heart className="w-4 h-4 text-red-500" />
+            {totalFavorites}
+          </div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            Favorites
+          </div>
+        </button>
+        <button
+          onClick={() => router.push("/followings")}
+          className="flex-1 flex flex-col items-center border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-2 rounded-lg transition-colors"
+        >
+          <div className="font-bold text-gray-800 dark:text-white text-sm sm:text-base flex items-center gap-1">
+            <Users className="w-4 h-4 text-cyan-500" />
+            {totalFollows}
+          </div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            Following
+          </div>
+        </button>
       </div>
 
       <nav className="space-y-1">
         <button
           onClick={() => setIsFindModalOpen(true)}
-          className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          className="w-full flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
         >
-          <Search className="w-4 h-4 mr-3 text-gray-500" />
+          <Search className="w-4 h-4 mr-3 text-gray-500 dark:text-gray-400" />
           <div className="flex-1">
             <div>Find</div>
-            <div className="text-xs text-gray-400">
+            <div className="text-xs text-gray-400 dark:text-gray-500">
               Search coaches, facilities...
             </div>
           </div>
@@ -848,12 +878,12 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
         {hasCoachProfile && onShowCalendar && (
           <button
             onClick={onShowCalendar}
-            className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            className="w-full flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-            <Calendar className="w-4 h-4 mr-3 text-gray-500" />
+            <Calendar className="w-4 h-4 mr-3 text-gray-500 dark:text-gray-400" />
             <div className="flex-1 text-left">
               <div>My Calendar</div>
-              <div className="text-xs text-gray-400">
+              <div className="text-xs text-gray-400 dark:text-gray-500">
                 View events & schedules
               </div>
             </div>
@@ -862,64 +892,68 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
 
         <a
           href="#"
-          className="flex items-center px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+          className="flex items-center px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
         >
-          <Activity className="w-4 h-4 mr-3 text-gray-500" />
+          <Activity className="w-4 h-4 mr-3 text-gray-500 dark:text-gray-400" />
           Activity
         </a>
+        <button
+          onClick={() => router.push("/followings")}
+          className="w-full flex items-center px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-left"
+        >
+          <Users className="w-4 h-4 mr-3 text-gray-500 dark:text-gray-400" />
+          Following
+        </button>
         <a
           href="#"
-          className="flex items-center px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+          className="flex items-center px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
         >
-          <Users className="w-4 h-4 mr-3 text-gray-500" />
-          Followers
-        </a>
-        <a
-          href="#"
-          className="flex items-center px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <Settings className="w-4 h-4 mr-3 text-gray-500" />
+          <Settings className="w-4 h-4 mr-3 text-gray-500 dark:text-gray-400" />
           Settings
         </a>
       </nav>
 
       {/* Divider */}
-      <div className="my-4 border-t border-gray-200"></div>
+      <div className="my-4 border-t border-gray-200 dark:border-gray-700"></div>
 
       <div className="space-y-2">
         {/* Participant Profile */}
         <button
           onClick={handleOpenParticipantModal}
-          className={`w-full bg-white border rounded-lg p-3 transition-all group ${
+          className={`w-full bg-white dark:bg-gray-800 border rounded-lg p-3 transition-all group ${
             hasParticipantProfile
-              ? "border-green-300 bg-green-50"
-              : "border-blue-200 hover:border-blue-400 hover:bg-blue-50"
+              ? "border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/30"
+              : "border-blue-200 dark:border-blue-800 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30"
           }`}
         >
           <div className="flex items-center gap-2.5">
             <div
               className={`p-1.5 rounded-md ${
-                hasParticipantProfile ? "bg-green-100" : "bg-blue-100"
+                hasParticipantProfile
+                  ? "bg-green-100 dark:bg-green-900/50"
+                  : "bg-blue-100 dark:bg-blue-900/50"
               }`}
             >
               <User
                 className={`w-4 h-4 ${
-                  hasParticipantProfile ? "text-green-600" : "text-blue-600"
+                  hasParticipantProfile
+                    ? "text-green-600 dark:text-green-400"
+                    : "text-blue-600 dark:text-blue-400"
                 }`}
               />
             </div>
             <div className="flex-1">
-              <div className="font-medium text-gray-800 text-sm">
+              <div className="font-medium text-gray-800 dark:text-white text-sm">
                 Edit Profile
               </div>
-              <div className="text-xs text-gray-500 flex items-center gap-1.5">
+              <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
                 {hasParticipantProfile ? (
                   <>
-                    <span className="inline-flex items-center text-green-600">
+                    <span className="inline-flex items-center text-green-600 dark:text-green-400">
                       <Check className="w-3 h-3 mr-0.5" />
                       Added
                     </span>
-                    <span className="text-gray-400">·</span>
+                    <span className="text-gray-400 dark:text-gray-500">·</span>
                     <span>Edit your information</span>
                   </>
                 ) : (
@@ -928,10 +962,10 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
               </div>
             </div>
             <ChevronRight
-              className={`w-4 h-4 text-gray-400 ${
+              className={`w-4 h-4 text-gray-400 dark:text-gray-500 ${
                 hasParticipantProfile
-                  ? "group-hover:text-green-600"
-                  : "group-hover:text-blue-600"
+                  ? "group-hover:text-green-600 dark:group-hover:text-green-400"
+                  : "group-hover:text-blue-600 dark:group-hover:text-blue-400"
               }`}
             />
           </div>
@@ -940,36 +974,40 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
         {/* Coach Profile / Apply for Coaching */}
         <button
           onClick={handleOpenCoachModal}
-          className={`w-full bg-white border rounded-lg p-3 transition-all group ${
+          className={`w-full bg-white dark:bg-gray-800 border rounded-lg p-3 transition-all group ${
             hasCoachProfile
-              ? "border-green-300 bg-green-50"
-              : "border-orange-200 hover:border-orange-400 hover:bg-orange-50"
+              ? "border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/30"
+              : "border-orange-200 dark:border-orange-800 hover:border-orange-400 dark:hover:border-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/30"
           }`}
         >
           <div className="flex items-center gap-2.5">
             <div
               className={`p-1.5 rounded-md ${
-                hasCoachProfile ? "bg-green-100" : "bg-orange-100"
+                hasCoachProfile
+                  ? "bg-green-100 dark:bg-green-900/50"
+                  : "bg-orange-100 dark:bg-orange-900/50"
               }`}
             >
               <Users
                 className={`w-4 h-4 ${
-                  hasCoachProfile ? "text-green-600" : "text-orange-600"
+                  hasCoachProfile
+                    ? "text-green-600 dark:text-green-400"
+                    : "text-orange-600 dark:text-orange-400"
                 }`}
               />
             </div>
             <div className="flex-1">
-              <div className="font-medium text-gray-800 text-sm">
+              <div className="font-medium text-gray-800 dark:text-white text-sm">
                 {hasCoachProfile ? "Edit Coach Profile" : "Apply for Coaching"}
               </div>
-              <div className="text-xs text-gray-500 flex items-center gap-1.5">
+              <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
                 {hasCoachProfile ? (
                   <>
-                    <span className="inline-flex items-center text-green-600">
+                    <span className="inline-flex items-center text-green-600 dark:text-green-400">
                       <Check className="w-3 h-3 mr-0.5" />
                       Added
                     </span>
-                    <span className="text-gray-400">·</span>
+                    <span className="text-gray-400 dark:text-gray-500">·</span>
                     <span>Edit your credentials</span>
                   </>
                 ) : (
@@ -978,10 +1016,10 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
               </div>
             </div>
             <ChevronRight
-              className={`w-4 h-4 text-gray-400 ${
+              className={`w-4 h-4 text-gray-400 dark:text-gray-500 ${
                 hasCoachProfile
-                  ? "group-hover:text-green-600"
-                  : "group-hover:text-orange-600"
+                  ? "group-hover:text-green-600 dark:group-hover:text-green-400"
+                  : "group-hover:text-orange-600 dark:group-hover:text-orange-400"
               }`}
             />
           </div>
@@ -989,12 +1027,12 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
       </div>
 
       {/* Divider */}
-      <div className="my-4 border-t border-gray-200"></div>
+      <div className="my-4 border-t border-gray-200 dark:border-gray-700"></div>
 
       {/* My Resources Section */}
       <div className="space-y-2 pb-4">
         <div className="px-1 mb-1">
-          <h4 className="text-xs font-medium text-gray-400 uppercase">
+          <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
             My Resources
           </h4>
         </div>
@@ -1002,86 +1040,88 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
         {/* My Facilities */}
         <button
           onClick={() => setIsFacilitiesListOpen(true)}
-          className="w-full bg-white border border-gray-200 hover:border-cyan-300 hover:bg-cyan-50 rounded-lg p-3 transition-all group flex items-center justify-between"
+          className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-cyan-300 dark:hover:border-cyan-700 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 rounded-lg p-3 transition-all group flex items-center justify-between"
         >
           <div className="flex items-center gap-2.5">
-            <div className="bg-cyan-50 p-1.5 rounded-md group-hover:bg-cyan-100">
-              <Home className="w-4 h-4 text-cyan-600" />
+            <div className="bg-cyan-50 dark:bg-cyan-900/50 p-1.5 rounded-md group-hover:bg-cyan-100 dark:group-hover:bg-cyan-900/70">
+              <Home className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
             </div>
             <div>
-              <div className="font-medium text-gray-800 text-sm">
+              <div className="font-medium text-gray-800 dark:text-white text-sm">
                 My Facilities
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 {facilities.length}{" "}
                 {facilities.length === 1 ? "facility" : "facilities"}
               </div>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-cyan-600" />
+          <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-400" />
         </button>
 
         {/* My Companies */}
         <button
           onClick={() => setIsCompaniesListOpen(true)}
-          className="w-full bg-white border border-gray-200 hover:border-cyan-300 hover:bg-cyan-50 rounded-lg p-3 transition-all group flex items-center justify-between"
+          className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-cyan-300 dark:hover:border-cyan-700 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 rounded-lg p-3 transition-all group flex items-center justify-between"
         >
           <div className="flex items-center gap-2.5">
-            <div className="bg-cyan-50 p-1.5 rounded-md group-hover:bg-cyan-100">
-              <Building className="w-4 h-4 text-cyan-600" />
+            <div className="bg-cyan-50 dark:bg-cyan-900/50 p-1.5 rounded-md group-hover:bg-cyan-100 dark:group-hover:bg-cyan-900/70">
+              <Building className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
             </div>
             <div>
-              <div className="font-medium text-gray-800 text-sm">
+              <div className="font-medium text-gray-800 dark:text-white text-sm">
                 My Companies
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 {companies.length}{" "}
                 {companies.length === 1 ? "company" : "companies"}
               </div>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-cyan-600" />
+          <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-400" />
         </button>
 
         {/* My Clubs */}
         <button
           onClick={() => setIsClubsListOpen(true)}
-          className="w-full bg-white border border-gray-200 hover:border-cyan-300 hover:bg-cyan-50 rounded-lg p-3 transition-all group flex items-center justify-between"
+          className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-cyan-300 dark:hover:border-cyan-700 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 rounded-lg p-3 transition-all group flex items-center justify-between"
         >
           <div className="flex items-center gap-2.5">
-            <div className="bg-cyan-50 p-1.5 rounded-md group-hover:bg-cyan-100">
-              <Shield className="w-4 h-4 text-cyan-600" />
+            <div className="bg-cyan-50 dark:bg-cyan-900/50 p-1.5 rounded-md group-hover:bg-cyan-100 dark:group-hover:bg-cyan-900/70">
+              <Shield className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
             </div>
             <div>
-              <div className="font-medium text-gray-800 text-sm">My Clubs</div>
-              <div className="text-xs text-gray-500">
+              <div className="font-medium text-gray-800 dark:text-white text-sm">
+                My Clubs
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 {myClubs.length} {myClubs.length === 1 ? "club" : "clubs"}
               </div>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-cyan-600" />
+          <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-400" />
         </button>
 
         {/* My Groups */}
         {hasCoachProfile && (
           <button
             onClick={() => setIsGroupsListOpen(true)}
-            className="w-full bg-white border border-gray-200 hover:border-cyan-300 hover:bg-cyan-50 rounded-lg p-3 transition-all group flex items-center justify-between"
+            className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-cyan-300 dark:hover:border-cyan-700 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 rounded-lg p-3 transition-all group flex items-center justify-between"
           >
             <div className="flex items-center gap-2.5">
-              <div className="bg-cyan-50 p-1.5 rounded-md group-hover:bg-cyan-100">
-                <Layers className="w-4 h-4 text-cyan-600" />
+              <div className="bg-cyan-50 dark:bg-cyan-900/50 p-1.5 rounded-md group-hover:bg-cyan-100 dark:group-hover:bg-cyan-900/70">
+                <Layers className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
               </div>
               <div>
-                <div className="font-medium text-gray-800 text-sm">
+                <div className="font-medium text-gray-800 dark:text-white text-sm">
                   My Groups
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-gray-500 dark:text-gray-400">
                   {myGroups.length} {myGroups.length === 1 ? "group" : "groups"}
                 </div>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-cyan-600" />
+            <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-400" />
           </button>
         )}
       </div>
@@ -1158,10 +1198,10 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
       {/* Facilities List Modal */}
       {isFacilitiesListOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-auto max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl mx-auto max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white">
                 My Facilities
               </h2>
               <div className="flex items-center gap-2 sm:gap-3">
@@ -1178,7 +1218,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                 </button>
                 <button
                   onClick={() => setIsFacilitiesListOpen(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1186,17 +1226,17 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             </div>
 
             {/* Modal Body */}
-            <div className="p-4 sm:p-6">
+            <div className="p-4 sm:p-6 dark:bg-gray-800">
               {facilityError && (
-                <div className="mb-4 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg">
+                <div className="mb-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm px-4 py-3 rounded-lg">
                   {facilityError}
                 </div>
               )}
               {facilities.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <Home className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <Home className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                   <p className="text-sm mb-2">No facilities yet</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
                     Click "Add Facility" to create your first facility
                   </p>
                 </div>
@@ -1217,7 +1257,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                         handleEditFacility(editData);
                         setIsFacilitiesListOpen(false);
                       }}
-                      className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow relative cursor-pointer hover:border-cyan-300"
+                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow relative cursor-pointer hover:border-cyan-300 dark:hover:border-cyan-700 bg-white dark:bg-gray-700"
                     >
                       {/* Delete Button */}
                       <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex gap-1.5 sm:gap-2">
@@ -1240,44 +1280,44 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                           className="w-full h-40 object-cover rounded-lg mb-3"
                         />
                       )}
-                      <h3 className="font-semibold text-gray-800 text-base sm:text-lg mb-2 pr-16 sm:pr-20">
+                      <h3 className="font-semibold text-gray-800 dark:text-white text-base sm:text-lg mb-2 pr-16 sm:pr-20">
                         {facility.name}
                         {facility.private && (
-                          <span className="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                          <span className="ml-2 text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300 px-2 py-1 rounded">
                             Private
                           </span>
                         )}
                       </h3>
                       <div className="space-y-2 text-xs sm:text-sm">
                         <div className="flex items-start">
-                          <span className="font-medium text-gray-600 w-20 sm:w-24">
+                          <span className="font-medium text-gray-600 dark:text-gray-400 w-20 sm:w-24">
                             Address:
                           </span>
-                          <span className="text-gray-800 flex-1">
+                          <span className="text-gray-800 dark:text-gray-200 flex-1">
                             {facility.address}
                           </span>
                         </div>
                         <div className="flex items-center">
-                          <span className="font-medium text-gray-600 w-20 sm:w-24">
+                          <span className="font-medium text-gray-600 dark:text-gray-400 w-20 sm:w-24">
                             Phone:
                           </span>
-                          <span className="text-gray-800">
+                          <span className="text-gray-800 dark:text-gray-200">
                             {facility.phone}
                           </span>
                         </div>
                         <div className="flex items-center">
-                          <span className="font-medium text-gray-600 w-20 sm:w-24">
+                          <span className="font-medium text-gray-600 dark:text-gray-400 w-20 sm:w-24">
                             Email:
                           </span>
-                          <span className="text-gray-800 break-all">
+                          <span className="text-gray-800 dark:text-gray-200 break-all">
                             {facility.email}
                           </span>
                         </div>
                         <div className="flex items-center">
-                          <span className="font-medium text-gray-600 w-20 sm:w-24">
+                          <span className="font-medium text-gray-600 dark:text-gray-400 w-20 sm:w-24">
                             Main Sport:
                           </span>
-                          <span className="text-cyan-600 font-medium">
+                          <span className="text-cyan-600 dark:text-cyan-400 font-medium">
                             {/* We might need to fetch sport name if mainSport is just ID */}
                             {/* For now displaying ID or if populated name */}
                             {(() => {
@@ -1304,10 +1344,10 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             </div>
 
             {/* Modal Footer */}
-            <div className="flex justify-end gap-3 p-4 sm:p-6 border-t border-gray-200 sticky bottom-0 bg-white">
+            <div className="flex justify-end gap-3 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
               <button
                 onClick={() => setIsFacilitiesListOpen(false)}
-                className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                className="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
               >
                 Close
               </button>
@@ -1327,10 +1367,10 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
       {/* Companies List Modal */}
       {isCompaniesListOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-auto max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl mx-auto max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white">
                 My Companies
               </h2>
               <div className="flex items-center gap-2 sm:gap-3">
@@ -1347,7 +1387,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                 </button>
                 <button
                   onClick={() => setIsCompaniesListOpen(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1355,17 +1395,17 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             </div>
 
             {/* Modal Body */}
-            <div className="p-4 sm:p-6">
+            <div className="p-4 sm:p-6 dark:bg-gray-800">
               {companyError && (
-                <div className="mb-4 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg">
+                <div className="mb-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm px-4 py-3 rounded-lg">
                   {companyError}
                 </div>
               )}
               {companies.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <Building className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <Building className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                   <p className="text-sm mb-2">No companies yet</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
                     Click "Add Company" to create your first company
                   </p>
                 </div>
@@ -1374,7 +1414,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                   {companies.map((company) => (
                     <div
                       key={company.id}
-                      className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow relative"
+                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow relative bg-white dark:bg-gray-700"
                     >
                       {/* Edit and Delete Buttons */}
                       <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex gap-1.5 sm:gap-2">
@@ -1404,34 +1444,34 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                           className="w-full h-40 object-cover rounded-lg mb-3"
                         />
                       )}
-                      <h3 className="font-semibold text-gray-800 text-base sm:text-lg mb-2 pr-16 sm:pr-20">
+                      <h3 className="font-semibold text-gray-800 dark:text-white text-base sm:text-lg mb-2 pr-16 sm:pr-20">
                         {company.name}
                       </h3>
                       <div className="space-y-2 text-xs sm:text-sm">
                         <div className="flex items-start">
-                          <span className="font-medium text-gray-600 w-20 sm:w-24">
+                          <span className="font-medium text-gray-600 dark:text-gray-400 w-20 sm:w-24">
                             Address:
                           </span>
-                          <span className="text-gray-800 flex-1">
+                          <span className="text-gray-800 dark:text-gray-200 flex-1">
                             {company.address}
                           </span>
                         </div>
                         {company.phone && (
                           <div className="flex items-center">
-                            <span className="font-medium text-gray-600 w-20 sm:w-24">
+                            <span className="font-medium text-gray-600 dark:text-gray-400 w-20 sm:w-24">
                               Phone:
                             </span>
-                            <span className="text-gray-800">
+                            <span className="text-gray-800 dark:text-gray-200">
                               {company.phone}
                             </span>
                           </div>
                         )}
                         {company.email && (
                           <div className="flex items-center">
-                            <span className="font-medium text-gray-600 w-20 sm:w-24">
+                            <span className="font-medium text-gray-600 dark:text-gray-400 w-20 sm:w-24">
                               Email:
                             </span>
-                            <span className="text-gray-800 break-all">
+                            <span className="text-gray-800 dark:text-gray-200 break-all">
                               {company.email}
                             </span>
                           </div>
@@ -1444,10 +1484,10 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             </div>
 
             {/* Modal Footer */}
-            <div className="flex justify-end gap-3 p-4 sm:p-6 border-t border-gray-200 sticky bottom-0 bg-white">
+            <div className="flex justify-end gap-3 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
               <button
                 onClick={() => setIsCompaniesListOpen(false)}
-                className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                className="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
               >
                 Close
               </button>
@@ -1459,10 +1499,10 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
       {/* Clubs List Modal */}
       {isClubsListOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-auto max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl mx-auto max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white">
                 My Clubs
               </h2>
               <div className="flex items-center gap-2 sm:gap-3">
@@ -1479,7 +1519,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                 </button>
                 <button
                   onClick={() => setIsClubsListOpen(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1487,12 +1527,12 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             </div>
 
             {/* Modal Body */}
-            <div className="p-4 sm:p-6">
+            <div className="p-4 sm:p-6 dark:bg-gray-800">
               {myClubs.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <Shield className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <Shield className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                   <p className="text-sm mb-2">No clubs yet</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
                     You haven't created any clubs
                   </p>
                 </div>
@@ -1501,7 +1541,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                   {myClubs.map((club) => (
                     <div
                       key={club._id}
-                      className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow relative cursor-pointer hover:border-cyan-300"
+                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow relative cursor-pointer hover:border-cyan-300 dark:hover:border-cyan-700 bg-white dark:bg-gray-700"
                       onClick={() => {
                         // Transform API data to form data structure
                         const editData = {
@@ -1535,19 +1575,19 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                           className="w-full h-40 object-cover rounded-lg mb-3"
                         />
                       ) : (
-                        <div className="w-full h-40 bg-gray-100 rounded-lg mb-3 flex items-center justify-center">
-                          <Shield className="w-16 h-16 text-gray-300" />
+                        <div className="w-full h-40 bg-gray-100 dark:bg-gray-600 rounded-lg mb-3 flex items-center justify-center">
+                          <Shield className="w-16 h-16 text-gray-300 dark:text-gray-500" />
                         </div>
                       )}
-                      <h3 className="font-semibold text-gray-800 text-base sm:text-lg mb-2 pr-16 sm:pr-20">
+                      <h3 className="font-semibold text-gray-800 dark:text-white text-base sm:text-lg mb-2 pr-16 sm:pr-20">
                         {club.name}
                         {club.isApproved && (
-                          <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                          <span className="ml-2 text-xs bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 px-2 py-1 rounded">
                             Approved
                           </span>
                         )}
                         {!club.isApproved && (
-                          <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                          <span className="ml-2 text-xs bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300 px-2 py-1 rounded">
                             Pending
                           </span>
                         )}
@@ -1555,30 +1595,30 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                       <div className="space-y-2 text-xs sm:text-sm">
                         {club.vision && (
                           <div className="flex items-start">
-                            <span className="font-medium text-gray-600 w-20 sm:w-24">
+                            <span className="font-medium text-gray-600 dark:text-gray-400 w-20 sm:w-24">
                               Vision:
                             </span>
-                            <span className="text-gray-800 flex-1 line-clamp-2">
+                            <span className="text-gray-800 dark:text-gray-200 flex-1 line-clamp-2">
                               {club.vision}
                             </span>
                           </div>
                         )}
                         {club.conditions && (
                           <div className="flex items-start">
-                            <span className="font-medium text-gray-600 w-20 sm:w-24">
+                            <span className="font-medium text-gray-600 dark:text-gray-400 w-20 sm:w-24">
                               Conditions:
                             </span>
-                            <span className="text-gray-800 flex-1 line-clamp-2">
+                            <span className="text-gray-800 dark:text-gray-200 flex-1 line-clamp-2">
                               {club.conditions}
                             </span>
                           </div>
                         )}
                         {club.coaches && club.coaches.length > 0 && (
                           <div className="flex items-center">
-                            <span className="font-medium text-gray-600 w-20 sm:w-24">
+                            <span className="font-medium text-gray-600 dark:text-gray-400 w-20 sm:w-24">
                               Coaches:
                             </span>
-                            <span className="text-cyan-600 font-medium">
+                            <span className="text-cyan-600 dark:text-cyan-400 font-medium">
                               {club.coaches.length} coach
                               {club.coaches.length !== 1 ? "es" : ""}
                             </span>
@@ -1592,10 +1632,10 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             </div>
 
             {/* Modal Footer */}
-            <div className="flex justify-end gap-3 p-4 sm:p-6 border-t border-gray-200 sticky bottom-0 bg-white">
+            <div className="flex justify-end gap-3 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
               <button
                 onClick={() => setIsClubsListOpen(false)}
-                className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                className="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
               >
                 Close
               </button>
@@ -1607,10 +1647,10 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
       {/* Groups List Modal */}
       {isGroupsListOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-auto max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl mx-auto max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white">
                 My Groups
               </h2>
               <div className="flex items-center gap-2">
@@ -1623,7 +1663,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                 </button>
                 <button
                   onClick={() => setIsGroupsListOpen(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1631,12 +1671,12 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             </div>
 
             {/* Modal Body */}
-            <div className="p-4 sm:p-6">
+            <div className="p-4 sm:p-6 dark:bg-gray-800">
               {myGroups.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <Layers className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <Layers className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                   <p className="text-sm mb-2">No groups yet</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
                     You haven't created any groups
                   </p>
                 </div>
@@ -1645,7 +1685,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                   {myGroups.map((group) => (
                     <div
                       key={group._id}
-                      className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow relative cursor-pointer hover:border-cyan-300"
+                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow relative cursor-pointer hover:border-cyan-300 dark:hover:border-cyan-700 bg-white dark:bg-gray-700"
                       onClick={() => {
                         const editData = {
                           ...group,
@@ -1680,38 +1720,38 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                           className="w-full h-40 object-cover rounded-lg mb-3"
                         />
                       ) : (
-                        <div className="w-full h-40 bg-gray-100 rounded-lg mb-3 flex items-center justify-center">
-                          <Layers className="w-16 h-16 text-gray-300" />
+                        <div className="w-full h-40 bg-gray-100 dark:bg-gray-600 rounded-lg mb-3 flex items-center justify-center">
+                          <Layers className="w-16 h-16 text-gray-300 dark:text-gray-500" />
                         </div>
                       )}
-                      <h3 className="font-semibold text-gray-800 text-base sm:text-lg mb-2 pr-16 sm:pr-20">
+                      <h3 className="font-semibold text-gray-800 dark:text-white text-base sm:text-lg mb-2 pr-16 sm:pr-20">
                         {group.name}
                         {group.isApproved && (
-                          <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                          <span className="ml-2 text-xs bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 px-2 py-1 rounded">
                             Approved
                           </span>
                         )}
                         {!group.isApproved && (
-                          <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                          <span className="ml-2 text-xs bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300 px-2 py-1 rounded">
                             Pending
                           </span>
                         )}
                       </h3>
                       <div className="space-y-2 text-xs sm:text-sm">
                         <div className="flex items-center">
-                          <span className="font-medium text-gray-600 w-20 sm:w-24">
+                          <span className="font-medium text-gray-600 dark:text-gray-400 w-20 sm:w-24">
                             Club:
                           </span>
-                          <span className="text-gray-800 font-medium">
+                          <span className="text-gray-800 dark:text-gray-200 font-medium">
                             {group.clubName || "Unknown Club"}
                           </span>
                         </div>
                         {group.description && (
                           <div className="flex items-start">
-                            <span className="font-medium text-gray-600 w-20 sm:w-24">
+                            <span className="font-medium text-gray-600 dark:text-gray-400 w-20 sm:w-24">
                               Description:
                             </span>
-                            <span className="text-gray-800 flex-1 line-clamp-2">
+                            <span className="text-gray-800 dark:text-gray-200 flex-1 line-clamp-2">
                               {group.description}
                             </span>
                           </div>
@@ -1724,10 +1764,10 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             </div>
 
             {/* Modal Footer */}
-            <div className="flex justify-end gap-3 p-4 sm:p-6 border-t border-gray-200 sticky bottom-0 bg-white">
+            <div className="flex justify-end gap-3 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
               <button
                 onClick={() => setIsGroupsListOpen(false)}
-                className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                className="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
               >
                 Close
               </button>
@@ -1736,11 +1776,13 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
         </div>
       )}
 
+      {/* Favorites now live on /favorites page */}
+
       {/* Logout Button at Bottom */}
-      <div className="mt-auto pt-6 border-t border-gray-200">
+      <div className="mt-auto pt-6 border-t border-gray-200 dark:border-gray-700">
         <button
           onClick={onLogout}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
         >
           <LogOut className="w-5 h-5" />
           <span>Logout</span>
