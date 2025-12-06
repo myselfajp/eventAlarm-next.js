@@ -379,3 +379,4 @@ const FavoritesContent: React.FC = () => {
 };
 
 export default FavoritesContent;
+

@@ -51,3 +51,4 @@ const FollowingsPage = () => {
 };
 
 export default FollowingsPage;
+
