@@ -9,6 +9,7 @@ import EventsTable from "./event/EventsTable";
 import CoachCalendar from "./CoachCalendar";
 import FollowingsView from "./follow/FollowingsView";
 import FavoritesView from "./favorite/FavoritesView";
+import GogIconsBanner from "./GogIconsBanner";
 import { fetchJSON } from "@/app/lib/api";
 import { EP } from "@/app/lib/endpoints";
 import { useMe } from "@/app/hooks/useAuth";
@@ -207,6 +208,11 @@ const EventsDashboard = () => {
                 </div>
               </div>
             </div>
+
+            {/* GOG Icons Banner - Below banner - Only show on events page */}
+            {!showCoachCalendar && !showFollowings && !showFavorites && (
+              <GogIconsBanner />
+            )}
 
             {/* Events Section */}
             <div>
