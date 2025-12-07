@@ -7,6 +7,8 @@ import RightSidebar from "./RightSidebar";
 import Header from "./Header";
 import EventsTable from "./event/EventsTable";
 import CoachCalendar from "./CoachCalendar";
+import FollowingsView from "./follow/FollowingsView";
+import FavoritesView from "./favorite/FavoritesView";
 import { fetchJSON } from "@/app/lib/api";
 import { EP } from "@/app/lib/endpoints";
 import { useMe } from "@/app/hooks/useAuth";
@@ -19,6 +21,8 @@ const EventsDashboard = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [calendarView, setCalendarView] = useState("month");
   const [showCoachCalendar, setShowCoachCalendar] = useState(false);
+  const [showFollowings, setShowFollowings] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
 
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -137,7 +141,21 @@ const EventsDashboard = () => {
     <div className="flex h-screen bg-slate-50 dark:bg-slate-900 overflow-hidden transition-colors duration-300">
       <LeftSidebar
         isOpen={leftSidebarOpen}
-        onShowCalendar={() => setShowCoachCalendar(true)}
+        onShowCalendar={() => {
+          setShowFollowings(false);
+          setShowFavorites(false);
+          setShowCoachCalendar(true);
+        }}
+        onShowFollowings={() => {
+          setShowCoachCalendar(false);
+          setShowFavorites(false);
+          setShowFollowings(true);
+        }}
+        onShowFavorites={() => {
+          setShowCoachCalendar(false);
+          setShowFollowings(false);
+          setShowFavorites(true);
+        }}
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -194,6 +212,10 @@ const EventsDashboard = () => {
             <div>
               {showCoachCalendar ? (
                 <CoachCalendar onBack={() => setShowCoachCalendar(false)} />
+              ) : showFollowings ? (
+                <FollowingsView onBack={() => setShowFollowings(false)} />
+              ) : showFavorites ? (
+                <FavoritesView onBack={() => setShowFavorites(false)} />
               ) : (
                 <EventsTable
                   events={events}

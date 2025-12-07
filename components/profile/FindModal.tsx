@@ -923,28 +923,26 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
               What are you looking for?
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => setSelectedType("coach")}
-                className={`flex flex-col items-center p-3 sm:p-4 rounded-lg border-2 transition-all ${
+                className={`flex flex-col items-center p-2.5 sm:p-3 rounded-lg border transition-all ${
                   selectedType === "coach"
-                    ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/30"
-                    : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+                    ? "border-cyan-500 bg-cyan-900/30"
+                    : "border-gray-700 hover:border-gray-600"
                 }`}
               >
                 <Users
-                  className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 ${
+                  className={`w-5 h-5 sm:w-6 sm:h-6 mb-1.5 ${
                     selectedType === "coach"
                       ? "text-cyan-500"
                       : "text-gray-400 dark:text-gray-500"
                   }`}
                 />
                 <span
-                  className={`text-xs sm:text-sm font-medium ${
-                    selectedType === "coach"
-                      ? "text-cyan-700 dark:text-cyan-300"
-                      : "text-gray-600 dark:text-gray-400"
+                  className={`text-xs font-medium ${
+                    selectedType === "coach" ? "text-cyan-300" : "text-gray-400"
                   }`}
                 >
                   Coach
@@ -954,24 +952,24 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={() => setSelectedType("participant")}
-                className={`flex flex-col items-center p-3 sm:p-4 rounded-lg border-2 transition-all ${
+                className={`flex flex-col items-center p-2.5 sm:p-3 rounded-lg border transition-all ${
                   selectedType === "participant"
-                    ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/30"
-                    : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+                    ? "border-cyan-500 bg-cyan-900/30"
+                    : "border-gray-700 hover:border-gray-600"
                 }`}
               >
                 <User
-                  className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 ${
+                  className={`w-5 h-5 sm:w-6 sm:h-6 mb-1.5 ${
                     selectedType === "participant"
                       ? "text-cyan-500"
                       : "text-gray-400 dark:text-gray-500"
                   }`}
                 />
                 <span
-                  className={`text-xs sm:text-sm font-medium ${
+                  className={`text-xs font-medium ${
                     selectedType === "participant"
-                      ? "text-cyan-700 dark:text-cyan-300"
-                      : "text-gray-600 dark:text-gray-400"
+                      ? "text-cyan-300"
+                      : "text-gray-400"
                   }`}
                 >
                   Participant
@@ -981,24 +979,24 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={() => setSelectedType("facility")}
-                className={`flex flex-col items-center p-3 sm:p-4 rounded-lg border-2 transition-all ${
+                className={`flex flex-col items-center p-2.5 sm:p-3 rounded-lg border transition-all ${
                   selectedType === "facility"
-                    ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/30"
-                    : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+                    ? "border-cyan-500 bg-cyan-900/30"
+                    : "border-gray-700 hover:border-gray-600"
                 }`}
               >
                 <Home
-                  className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 ${
+                  className={`w-5 h-5 sm:w-6 sm:h-6 mb-1.5 ${
                     selectedType === "facility"
                       ? "text-cyan-500"
                       : "text-gray-400 dark:text-gray-500"
                   }`}
                 />
                 <span
-                  className={`text-xs sm:text-sm font-medium ${
+                  className={`text-xs font-medium ${
                     selectedType === "facility"
-                      ? "text-cyan-700 dark:text-cyan-300"
-                      : "text-gray-600 dark:text-gray-400"
+                      ? "text-cyan-300"
+                      : "text-gray-400"
                   }`}
                 >
                   Facility
@@ -1008,24 +1006,24 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={() => setSelectedType("company")}
-                className={`flex flex-col items-center p-3 sm:p-4 rounded-lg border-2 transition-all ${
+                className={`flex flex-col items-center p-2.5 sm:p-3 rounded-lg border transition-all ${
                   selectedType === "company"
-                    ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/30"
-                    : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+                    ? "border-cyan-500 bg-cyan-900/30"
+                    : "border-gray-700 hover:border-gray-600"
                 }`}
               >
                 <Building
-                  className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 ${
+                  className={`w-5 h-5 sm:w-6 sm:h-6 mb-1.5 ${
                     selectedType === "company"
                       ? "text-cyan-500"
                       : "text-gray-400 dark:text-gray-500"
                   }`}
                 />
                 <span
-                  className={`text-xs sm:text-sm font-medium ${
+                  className={`text-xs font-medium ${
                     selectedType === "company"
-                      ? "text-cyan-700 dark:text-cyan-300"
-                      : "text-gray-600 dark:text-gray-400"
+                      ? "text-cyan-300"
+                      : "text-gray-400"
                   }`}
                 >
                   Company
@@ -1035,24 +1033,22 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={() => setSelectedType("club")}
-                className={`flex flex-col items-center p-3 sm:p-4 rounded-lg border-2 transition-all ${
+                className={`flex flex-col items-center p-2.5 sm:p-3 rounded-lg border transition-all ${
                   selectedType === "club"
-                    ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/30"
-                    : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+                    ? "border-cyan-500 bg-cyan-900/30"
+                    : "border-gray-700 hover:border-gray-600"
                 }`}
               >
                 <Shield
-                  className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 ${
+                  className={`w-5 h-5 sm:w-6 sm:h-6 mb-1.5 ${
                     selectedType === "club"
                       ? "text-cyan-500"
                       : "text-gray-400 dark:text-gray-500"
                   }`}
                 />
                 <span
-                  className={`text-xs sm:text-sm font-medium ${
-                    selectedType === "club"
-                      ? "text-cyan-700 dark:text-cyan-300"
-                      : "text-gray-600 dark:text-gray-400"
+                  className={`text-xs font-medium ${
+                    selectedType === "club" ? "text-cyan-300" : "text-gray-400"
                   }`}
                 >
                   Club
@@ -1062,24 +1058,22 @@ const FindModal: React.FC<FindModalProps> = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={() => setSelectedType("group")}
-                className={`flex flex-col items-center p-3 sm:p-4 rounded-lg border-2 transition-all ${
+                className={`flex flex-col items-center p-2.5 sm:p-3 rounded-lg border transition-all ${
                   selectedType === "group"
-                    ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-900/30"
-                    : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+                    ? "border-cyan-500 bg-cyan-900/30"
+                    : "border-gray-700 hover:border-gray-600"
                 }`}
               >
                 <UserCheck
-                  className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 ${
+                  className={`w-5 h-5 sm:w-6 sm:h-6 mb-1.5 ${
                     selectedType === "group"
                       ? "text-cyan-500"
                       : "text-gray-400 dark:text-gray-500"
                   }`}
                 />
                 <span
-                  className={`text-xs sm:text-sm font-medium ${
-                    selectedType === "group"
-                      ? "text-cyan-700 dark:text-cyan-300"
-                      : "text-gray-600 dark:text-gray-400"
+                  className={`text-xs font-medium ${
+                    selectedType === "group" ? "text-cyan-300" : "text-gray-400"
                   }`}
                 >
                   Group
